@@ -1,0 +1,194 @@
+// Seite „Kinderfilme“: gute Filme mit passender Altersfreigabe.
+// Es zählt vor allem Bewertung und Beliebtheit – Kinder haben ihren eigenen Geschmack.
+import { KIDS as K } from './config.js?v=1.0.0';
+import * as store from './store.js?v=1.0.0';
+import * as tmdb from './tmdb.js?v=1.0.0';
+import { esc, toast } from './ui.js?v=1.0.0';
+import { ageOk } from './age.js?v=1.0.0';
+
+const FEEDBACK = [
+  ['want', '+', 'Merken'],
+  ['seen', '✓', 'Gesehen'],
+  ['liked', '♥', 'Mag ich'],
+  ['disliked', '✕', 'Mag ich nicht'],
+  ['noInterest', '–', 'Kein Interesse'],
+];
+const LABEL = { loved: '★ Lieblingsfilm', want: 'Gemerkt', seen: 'Gesehen', liked: 'Mag ich', disliked: 'Mag ich nicht', noInterest: 'Kein Interesse' };
+const HIDE = new Set(['disliked', 'noInterest']);
+const SEEN = new Set(['seen', 'liked', 'loved']);
+const pressed = (s, key) => s === key || (s === 'loved' && key === 'liked');
+
+let profile = null;
+let page = 0;
+let shownCount = 0;
+let pool = new Map(); // id → { movie, score, why }
+let run = 0;
+let forAge = null;
+
+const box = () => document.getElementById('kids-list');
+const age = () => profile.settings?.kidsAge ?? 6;
+
+// Punkte: Note und Beliebtheit, kleiner Vorrang für eigene Lieblingsstudios
+const base = (m) => (m.vote_average || 0) + Math.log10(Math.max(m.vote_count || 1, 1)) * 0.6;
+
+async function loadPage(mine) {
+  page++;
+  const a = age();
+  const lang = profile.language;
+  const today = new Date().toISOString().slice(0, 10);
+  const common = { language: lang, with_genres: K.genres.join('|'), without_genres: '27,53,10752', 'vote_average.gte': K.minVote, 'vote_count.gte': K.minVotes, sort_by: 'vote_count.desc', page };
+  const studios = profile.companies.map((c) => [c.id, ...(c.also || [])]).flat();
+  const jobs = [
+    tmdb.get('discover/movie', { ...common, certification_country: 'DE', 'certification.lte': a }).then((d) => ({ src: 'de', d })),
+    // Ohne deutsche Freigabe: US-Freigabe, wird unten am einzelnen Film nachgeprüft
+    tmdb.get('discover/movie', { ...common, certification_country: 'US', certification: K.usFallback[a].join('|') }).then((d) => ({ src: 'us', d })),
+  ];
+  if (studios.length) {
+    jobs.push(tmdb.get('discover/movie', { ...common, certification_country: 'DE', 'certification.lte': a, with_companies: studios.join('|') }).then((d) => ({ src: 'studio', d })));
+  }
+  const settled = await Promise.allSettled(jobs);
+  if (mine !== run) return false;
+  const ok = settled.filter((r) => r.status === 'fulfilled').map((r) => r.value);
+  if (!ok.length) throw settled[0].reason;
+
+  const fresh = new Map();
+  let added = 0;
+  for (const { src, d } of ok) {
+    for (const m of d.results || []) {
+      if (m.adult || !m.poster_path || !m.release_date || m.release_date > today) continue;
+      if (HIDE.has(profile.movies[m.id]?.s)) continue;
+      const known = pool.get(m.id);
+      const score = base(m) + (src === 'studio' ? K.studioBonus : 0);
+      if (known) { if (src === 'studio' && !known.studio) { known.score += K.studioBonus; known.studio = true; } continue; }
+      const dup = fresh.get(m.id);
+      if (dup) { if (src === 'studio' && !dup.studio) { dup.score += K.studioBonus; dup.studio = true; } continue; }
+      fresh.set(m.id, { movie: m, score, studio: src === 'studio', page });
+    }
+  }
+  // Jeden Film einzeln prüfen: die strengste deutsche Freigabe zählt, sonst die US-Freigabe
+  await Promise.allSettled([...fresh.values()].map(async (x) => {
+    const det = await tmdb.get(`movie/${x.movie.id}`, { append_to_response: 'release_dates' });
+    if (ageOk(det, a)) { pool.set(x.movie.id, x); added++; }
+  }));
+  return added > 0 || (ok[0].d.total_pages || 1) > page;
+}
+
+// Ungesehene zuerst (nach Punkten), dann gesehene mit Hinweis
+function ordered() {
+  const list = [...pool.values()].filter((x) => !HIDE.has(profile.movies[x.movie.id]?.s));
+  const isSeen = (x) => SEEN.has(profile.movies[x.movie.id]?.s);
+  return list.sort((a, b) => isSeen(a) - isSeen(b) || b.score - a.score);
+}
+
+export function render(p) {
+  profile = p;
+  const a = age();
+  return `
+    <p class="back"><a href="#/vorschlaege">← Vorschläge</a></p>
+    <h1>Kinderfilme</h1>
+    <div class="segmented ages" role="group" aria-label="Altersfreigabe">
+      ${K.ages.map((x) => `<button type="button" class="seg" data-kid-age="${x}" aria-pressed="${x === a}">ab ${x}</button>`).join('')}
+    </div>
+    <p class="muted small">Nach deutscher FSK, sonst nach US-Freigabe. Vor allem gut bewertete und beliebte Filme.</p>
+    <div id="kids-list" aria-live="polite"><p class="muted center">Suche Kinderfilme …</p></div>`;
+}
+
+export async function mount(p) {
+  profile = p;
+  const mine = ++run;
+  if (forAge !== `${p.id}:${age()}`) { pool = new Map(); page = 0; forAge = `${p.id}:${age()}`; }
+  shownCount = 0;
+  try {
+    while (pool.size < 20 && page < 5) { if (!(await loadPage(mine))) break; if (mine !== run) return; }
+  } catch (err) {
+    if (mine === run && box()) box().innerHTML = `<div class="card center"><p>${esc(err.message)}</p><button class="btn" type="button" data-kid="retry">Nochmal versuchen</button></div>`;
+    return;
+  }
+  if (mine !== run || !box()) return;
+  paint();
+}
+
+function paint(extra = 0) {
+  const list = ordered();
+  shownCount = Math.max(shownCount, Math.min(list.length, 20)) + extra;
+  const items = list.slice(0, shownCount);
+  if (!items.length) {
+    box().innerHTML = '<div class="card placeholder"><p><strong>Gerade keine passenden Filme gefunden.</strong></p></div>';
+    return;
+  }
+  box().innerHTML = `
+    <div class="suggestions">${items.map(card).join('')}</div>
+    <div class="row center-row"><button class="btn btn-primary" type="button" data-kid="more">Mehr laden</button></div>`;
+}
+
+function card(x) {
+  const m = x.movie;
+  const y = tmdb.year(m.release_date);
+  const s = profile.movies[m.id]?.s || null;
+  const hint = SEEN.has(s) ? 'Schon gesehen' : x.studio ? 'Von einem deiner Lieblingsstudios' : '';
+  const overview = m.overview ? `<details class="overview"><summary>Worum geht's?</summary><p>${esc(m.overview)}</p></details>` : '';
+  return `
+    <article class="film sg ${s === 'loved' ? 'is-loved' : ''}" data-kidfilm="${m.id}">
+      <button type="button" class="poster-btn" data-kfb="loved" aria-pressed="${s === 'loved'}" aria-label="${esc(m.title)} als Lieblingsfilm">
+        <img class="poster" src="${tmdb.img(m.poster_path, 'w185')}" srcset="${tmdb.img(m.poster_path, 'w185')} 185w, ${tmdb.img(m.poster_path, 'w342')} 342w"
+          sizes="(min-width: 768px) 200px, 100px" width="100" height="150" loading="lazy" decoding="async" alt="">
+        <span class="poster-star" aria-hidden="true">${s === 'loved' ? '★' : '☆'}</span>
+      </button>
+      <div class="film-info">
+        <h3 class="film-title">${esc(m.title)}${y ? ` <span class="year">${y}</span>` : ''}</h3>
+        ${hint ? `<p class="reason">${hint}</p>` : ''}
+        <p class="rating muted small">TMDB-Note ${(m.vote_average || 0).toFixed(1).replace('.', ',')}</p>
+        ${overview}
+        <div class="marks marks-5" role="group" aria-label="Rückmeldung zu ${esc(m.title)}">
+          ${FEEDBACK.map(([key, icon, label]) => `<button type="button" class="mark mark-${key}" data-kfb="${key}" aria-pressed="${pressed(s, key)}"><span aria-hidden="true">${icon}</span> ${label}</button>`).join('')}
+        </div>
+      </div>
+    </article>`;
+}
+
+function feedback(cardEl, key) {
+  const id = Number(cardEl.dataset.kidfilm);
+  const x = pool.get(id);
+  if (!x) return;
+  const m = x.movie;
+  const old = profile.movies[id]?.s || null;
+  const now = key === 'loved' ? (old === 'loved' ? 'liked' : 'loved') : pressed(old, key) ? null : key;
+  const prev = store.setMovie(profile.id, id, now, { g: m.genre_ids, l: m.original_language, y: tmdb.year(m.release_date), n: m.title });
+  if (HIDE.has(now)) {
+    cardEl.hidden = true;
+    toast(`${LABEL[now]}: ${m.title}`, { label: 'Rückgängig', run: () => { store.restoreMovie(profile.id, id, prev); cardEl.hidden = false; } });
+    return;
+  }
+  cardEl.outerHTML = card(x); // Karte bleibt stehen, zeigt den neuen Stand
+}
+
+async function more(btn) {
+  btn.disabled = true;
+  btn.textContent = 'Lädt …';
+  const mine = run;
+  if (ordered().length < shownCount + 20 && page < 10) {
+    try { await loadPage(mine); } catch { /* dann eben, was da ist */ }
+  }
+  if (mine !== run || !box()) return;
+  const before = shownCount;
+  paint(20);
+  if (Math.min(shownCount, ordered().length) <= before) toast('Mehr passende Kinderfilme gibt es gerade nicht.');
+}
+
+export function handleClick(e) {
+  const a = e.target.closest('[data-kid-age]');
+  if (a) {
+    store.updateProfile(profile.id, { settings: { ...(profile.settings || {}), kidsAge: Number(a.dataset.kidAge) } });
+    profile = store.getProfile(profile.id);
+    document.querySelectorAll('[data-kid-age]').forEach((b) => b.setAttribute('aria-pressed', String(Number(b.dataset.kidAge) === age())));
+    box().innerHTML = '<p class="muted center">Suche Kinderfilme …</p>';
+    mount(profile);
+    return true;
+  }
+  const fb = e.target.closest('[data-kfb]');
+  if (fb) { feedback(fb.closest('[data-kidfilm]'), fb.dataset.kfb); return true; }
+  const act = e.target.closest('[data-kid]')?.dataset.kid;
+  if (act === 'more') { more(e.target.closest('[data-kid]')); return true; }
+  if (act === 'retry') { mount(profile); return true; }
+  return false;
+}

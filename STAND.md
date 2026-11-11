@@ -91,8 +91,17 @@ Die Nutzerin kann nicht programmieren. Antworte auf Deutsch, knapp und ohne Fach
   - Kandidaten: eigene Vorschläge, beliebte Filme mit lockeren Genres, danach schon gemochte Filme mit „Kennst du schon – hat dir gefallen“. Quellen werden abgewechselt.
   - Knöpfe: Den schauen wir (→ Gesehen, danach Mag ich / Mag ich nicht / Später), Schon gesehen (Mag ich bleibt erhalten), Anderer Vorschlag.
   - Geprüft: Regeln eingehalten, zwei Profile bekommen verschiedene Filme, „ab 12“ zeigt nur FSK 0/6/12, 375 px ohne Querscrollen.
-- [ ] Schritt 7c Kinderfilme (dazu dritter Knopf oben auf „Vorschläge“)
-- [ ] Schritt 8 – Über-Seite, README, Abnahme
+- [x] **Schritt 7c – Kinderfilme** (11.11.2026, Version 0.9.0):
+  - Seite `#/kinder`, dritter Knopf 🧸 oben auf „Vorschläge“. Altersstufe ab 0 · ab 6 · ab 12, jedes Profil merkt sich die Wahl.
+  - Familie/Animation/Abenteuer, Note ab 6,5, ab 300 Stimmen. Jeder Film wird einzeln geprüft: strengste deutsche FSK, sonst US-Freigabe.
+  - Rangfolge nach Note und Beliebtheit, kleiner Vorrang für Lieblingsstudios. Gesehene stehen hinten mit „Schon gesehen“. „Mag ich nicht“ und „Kein Interesse“ fallen raus.
+  - Geprüft: je 20 Filme bei ab 0, 6, 12 – alle mit passender Freigabe. „Mehr laden“ bringt 20 weitere.
+- [x] **Schritt 8 – Über-Seite, README, Abnahme** (11.11.2026, Version 1.0.0):
+  - Über-Seite: TMDB-Hinweis mit Link, QR-Code (`node scripts/make-qr.js`), „Link teilen“, Abschnitt „Deine Daten“.
+  - **Offen:** Das offizielle TMDB-Logo fehlt noch, TMDB blockt das automatische Herunterladen. Bis dahin steht dort ein „TMDB“-Schild. Logo von themoviedb.org/about/logos-attribution als `docs/img/tmdb.svg` speichern, dann erscheint es von selbst.
+  - README fertig: Bedienung, Aufbau, neue Version veröffentlichen, Worker, Schlüssel.
+  - Abnahme am Rechner geprüft: Link und lokal, zwei Profile → verschiedene Vorschläge, Deutsch/Englisch, 30× Überrasch mich, keine gesehenen Filme in Vorschlägen, Gruppenabend-Regeln, Kinder-Freigaben, Speichern nach Neuladen, Sichern/Laden, 375 px ohne Querscrollen, check-secrets, Worker lehnt fremde Herkunft und fremde Adressen ab (403).
+- [ ] **Noch von dir am echten Handy:** iPhone (Home-Bildschirm-Hinweis, Umzug Safari → Home-Bildschirm-App, Teilen-Menü beim Sichern) und ein Android-Handy, alles ohne Zoomen.
 
 ## Hinweise
 

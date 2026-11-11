@@ -1,11 +1,11 @@
 // Seite „Gruppenabend“: ein Film, der zu dir passt und in eine Runde passt.
 // Jedes Handy rechnet für sich – man zeigt sich die Vorschläge und stimmt ab.
-import { GROUP as G } from './config.js?v=0.8.0';
-import * as store from './store.js?v=0.8.0';
-import * as tmdb from './tmdb.js?v=0.8.0';
-import { esc, toast } from './ui.js?v=0.8.0';
-import { compute, hasSources, genreTilt } from './recommend.js?v=0.8.0';
-import { ageOk, discoverAge } from './age.js?v=0.8.0';
+import { GROUP as G } from './config.js?v=1.0.0';
+import * as store from './store.js?v=1.0.0';
+import * as tmdb from './tmdb.js?v=1.0.0';
+import { esc, toast } from './ui.js?v=1.0.0';
+import { compute, hasSources, genreTilt } from './recommend.js?v=1.0.0';
+import { ageOk, discoverAge } from './age.js?v=1.0.0';
 
 const COMEDY = 35;
 const LIKED = new Set(['liked', 'loved']);
@@ -111,7 +111,7 @@ async function nextValid(mine) {
     if (mine !== run) return null;
     const g = (d.genres || []).map((x) => x.id);
     if (!d.poster_path || !d.runtime || d.runtime > G.maxRuntime) continue;
-    if (!genresOk(g) || !popular(d) || !ageOk(d, o.age)) continue;
+    if (!genresOk(g) || !popular(d) || !ageOk(d, o.age || null)) continue;
     return { item, details: d };
   }
   return null;

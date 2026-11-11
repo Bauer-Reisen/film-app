@@ -1,16 +1,18 @@
 // Oberfläche: Seitenwechsel über die Adresse (#/vorschlaege usw.)
-import { VERSION, LANGUAGES } from './config.js?v=0.8.0';
-import * as store from './store.js?v=0.8.0';
-import { saveBackup, readBackup, findSameName, importAsNew, mergeInto } from './backup.js?v=0.8.0';
-import { esc, dialog, toast, formatDate } from './ui.js?v=0.8.0';
-import * as platform from './platform.js?v=0.8.0';
-import * as taste from './taste.js?v=0.8.0';
-import * as suggest from './suggest.js?v=0.8.0';
-import * as watchlist from './watchlist.js?v=0.8.0';
-import * as sneak from './sneak.js?v=0.8.0';
-import * as group from './group.js?v=0.8.0';
+import { VERSION, LANGUAGES } from './config.js?v=1.0.0';
+import * as store from './store.js?v=1.0.0';
+import { saveBackup, readBackup, findSameName, importAsNew, mergeInto } from './backup.js?v=1.0.0';
+import { esc, dialog, toast, formatDate } from './ui.js?v=1.0.0';
+import * as platform from './platform.js?v=1.0.0';
+import * as taste from './taste.js?v=1.0.0';
+import * as suggest from './suggest.js?v=1.0.0';
+import * as watchlist from './watchlist.js?v=1.0.0';
+import * as sneak from './sneak.js?v=1.0.0';
+import * as group from './group.js?v=1.0.0';
+import * as kids from './kids.js?v=1.0.0';
 
 const view = document.getElementById('view');
+const APP_URL = 'https://bauer-reisen.github.io/film-app/';
 const tabs = document.querySelectorAll('.tabs a[data-tab]');
 const whoBtn = document.getElementById('who');
 
@@ -122,6 +124,12 @@ const pages = {
     render: () => group.render(current()),
     mount: () => group.mount(current()),
   },
+  kinder: {
+    title: 'Kinderfilme',
+    tab: 'vorschlaege',
+    render: () => kids.render(current()),
+    mount: () => kids.mount(current()),
+  },
   geschmack: {
     title: 'Geschmack',
     render: () => taste.render(current()),
@@ -192,14 +200,52 @@ const pages = {
     render: () => `
       <h1>Über diese App</h1>
       <div class="card stack">
-        <p>„Was schaue ich?“ schlägt dir Filme vor, die zu deinem Geschmack passen.</p>
-        <p class="muted">Filmdaten und Poster: TMDB (Logo und Hinweis folgen in Bauschritt 8).</p>
-        <p class="muted">Version ${VERSION}</p>
-      </div>`,
+        <p>„Was schaue ich?“ schlägt dir Filme vor, die zu deinem Geschmack passen – mit einem Satz, warum. Dazu gibt es „Überrasch mich“, den Gruppenabend und Kinderfilme.</p>
+      </div>
+
+      <h2>Filmdaten</h2>
+      <div class="card stack about-tmdb">
+        <a href="https://www.themoviedb.org/" target="_blank" rel="noopener" class="tmdb-logo-link">
+          <img class="tmdb-logo" src="img/tmdb.svg" alt="The Movie Database (TMDB)" width="180" height="24">
+        </a>
+        <p>Alle Filmdaten und Poster kommen von <a href="https://www.themoviedb.org/" target="_blank" rel="noopener">The Movie Database (TMDB)</a>.</p>
+        <p lang="en" class="muted">This product uses the TMDB API but is not endorsed or certified by TMDB.</p>
+      </div>
+
+      <h2>App weitergeben</h2>
+      <div class="card stack about-share">
+        <img class="qr" src="img/qr.svg" alt="QR-Code zur App" width="200" height="200">
+        <p><a href="${APP_URL}">${APP_URL.replace('https://', '')}</a></p>
+        <p class="row center-row"><button class="btn btn-primary" type="button" data-act="share-app">Link teilen</button></p>
+        <p class="muted small">Jede Person legt auf dem eigenen Handy ein eigenes Profil an.</p>
+      </div>
+
+      <h2>Deine Daten</h2>
+      <div class="card stack">
+        <p>Es gibt keine Anmeldung und kein Konto. Deine Profile liegen nur auf diesem Gerät.</p>
+        <p class="muted">Für Filmdaten fragt die App über einen kleinen Zwischenhändler (Cloudflare) bei TMDB an. Dabei werden keine Namen oder Markierungen übertragen, nur die Filmsuche selbst.</p>
+        <p class="muted">Streaming-Angebote zeigt die App bewusst nicht an.</p>
+      </div>
+      <p class="muted small center">Version ${VERSION}</p>`,
+    mount: () => {
+      const logo = view.querySelector('.tmdb-logo');
+      logo?.addEventListener('error', () => { logo.replaceWith(Object.assign(document.createElement('span'), { className: 'tmdb-badge', textContent: 'TMDB' })); });
+    },
   },
 };
 
 // ---------- Aktionen ----------
+async function shareApp() {
+  const data = { title: 'Was schaue ich?', text: 'Film-App: Was schaue ich als Nächstes?', url: APP_URL };
+  try {
+    if (navigator.share) { await navigator.share(data); return; }
+    await navigator.clipboard.writeText(APP_URL);
+    toast('Link kopiert.');
+  } catch (err) {
+    if (err?.name !== 'AbortError') toast(`Link: ${APP_URL}`);
+  }
+}
+
 async function createProfileDialog() {
   const res = await dialog({
     title: 'Profil anlegen',
@@ -294,6 +340,7 @@ view.addEventListener('click', async (e) => {
   if (currentKey === 'merkliste' && watchlist.handleClick(e)) return;
   if (currentKey === 'ueberrasch' && sneak.handleClick(e)) return;
   if (currentKey === 'gruppe' && group.handleClick(e)) return;
+  if (currentKey === 'kinder' && kids.handleClick(e)) return;
   const pick = e.target.closest('[data-pick]');
   if (pick) return selectProfile(pick.dataset.pick);
 
@@ -314,6 +361,7 @@ view.addEventListener('click', async (e) => {
     case 'delete': return deleteDialog();
     case 'home-later': platform.dismissHomeHint(); return show();
     case 'install-later': platform.dismissInstallTip(); return show();
+    case 'share-app': return shareApp();
     case 'install': await platform.install(); platform.dismissInstallTip(); return show();
   }
 });

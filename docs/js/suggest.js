@@ -1,9 +1,9 @@
 // Seite „Vorschläge“: Liste mit Begründung, fünf Rückmeldungen, Rückgängig, „Mehr“.
-import * as store from './store.js?v=0.8.0';
-import * as tmdb from './tmdb.js?v=0.8.0';
-import { esc, toast } from './ui.js?v=0.8.0';
-import { compute, visible, hasSources } from './recommend.js?v=0.8.0';
-import { RECOMMEND } from './config.js?v=0.8.0';
+import * as store from './store.js?v=1.0.0';
+import * as tmdb from './tmdb.js?v=1.0.0';
+import { esc, toast } from './ui.js?v=1.0.0';
+import { compute, visible, hasSources } from './recommend.js?v=1.0.0';
+import { RECOMMEND } from './config.js?v=1.0.0';
 
 const FEEDBACK = [
   ['want', '+', 'Merken'],
@@ -30,6 +30,7 @@ export function render(p) {
     <nav class="modes" aria-label="Besondere Vorschläge">
       <a class="mode" href="#/ueberrasch"><span aria-hidden="true">🎭</span> Überrasch mich</a>
       <a class="mode" href="#/gruppe"><span aria-hidden="true">🍿</span> Gruppenabend</a>
+      <a class="mode" href="#/kinder"><span aria-hidden="true">🧸</span> Kinderfilme</a>
     </nav>
     <div id="suggest-list" aria-live="polite"><p class="muted center">Suche passende Filme …</p></div>`;
 }

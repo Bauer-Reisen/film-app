@@ -389,3 +389,13 @@ h2 { font-size: 20px; margin: 24px 0 8px; }
   .group-poster { flex: 0 0 340px; max-width: 340px; }
   .group-actions { flex-direction: row; flex-wrap: wrap; }
 }
+
+/* Kinderfilme */
+.ages { display: flex; max-width: 420px; margin: 4px 0 8px; }
+.ages .seg { flex: 1; min-width: 0; min-height: 52px; font-size: 18px; }
+
+/* Über diese App */
+.about-tmdb .tmdb-logo { display: block; width: 180px; height: auto; }
+.tmdb-badge { display: inline-block; padding: 4px 10px; border-radius: 6px; font-weight: 800; letter-spacing: .05em; color: #0d253f; background: linear-gradient(90deg, #90cea1, #01b4e4); }
+.about-share { align-items: center; text-align: center; }
+.about-share .qr { width: 200px; height: 200px; border-radius: 8px; background: #fff; padding: 6px; }

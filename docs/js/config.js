@@ -1,7 +1,7 @@
 // ALLE Einstellungen und Grenzwerte an einer Stelle.
 // Wer etwas nachjustieren will (z. B. Mindestbewertung), ändert es nur hier.
 
-export const VERSION = '0.8.0';
+export const VERSION = '1.0.0';
 
 // Adresse des Cloudflare Workers (nicht geheim – der Schlüssel liegt nur dort).
 export const WORKER_URL = 'https://film-app-tmdb.film-app.workers.dev';
@@ -51,6 +51,7 @@ export const KIDS = {
   ages: [0, 6, 12],
   genres: [10751, 16, 12],
   minVote: 6.5, minVotes: 300,
+  studioBonus: 0.4, // kleiner Vorrang für eigene Lieblingsstudios
   usFallback: { 0: ['G'], 6: ['G', 'PG'], 12: ['G', 'PG', 'PG-13'] },
 };
 

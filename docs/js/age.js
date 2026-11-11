@@ -7,14 +7,14 @@ export function ageOf(details) {
   const list = details?.release_dates?.results || [];
   const certs = (country) => (list.find((r) => r.iso_3166_1 === country)?.release_dates || []).map((d) => d.certification).filter(Boolean);
   const de = certs('DE').map(Number).filter((n) => !isNaN(n));
-  if (de.length) return Math.min(...de);
+  if (de.length) return Math.max(...de); // mehrere Fassungen: die strengste zählt
   const us = certs('US').map((c) => US[c]).filter((n) => n != null);
-  return us.length ? Math.min(...us) : null;
+  return us.length ? Math.max(...us) : null;
 }
 
-// Passt der Film zur Grenze? (0/undefined als Grenze = egal; ohne bekannte Freigabe = nein)
+// Passt der Film zur Grenze? (null = egal; ohne bekannte Freigabe = nein)
 export function ageOk(details, maxAge) {
-  if (!maxAge) return true;
+  if (maxAge == null) return true;
   const a = ageOf(details);
   return a != null && a <= maxAge;
 }
