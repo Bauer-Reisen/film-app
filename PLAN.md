@@ -85,7 +85,7 @@ Film-App/
   }]
 }
 ```
-- **Status `s`:** `seen` (gesehen), `liked` (mag ich), `disliked` (mag ich nicht), `want` (Merken), `noInterest` (kein Interesse). Ein Film ohne Markierung hat keinen Eintrag.
+- **Status `s`:** `loved` (★ Lieblingsfilm, zählt auch als „Mag ich“, Wunsch vom 11.11.2026), `seen` (gesehen), `liked` (mag ich), `disliked` (mag ich nicht), `want` (Merken), `noInterest` (kein Interesse). Ein Film ohne Markierung hat keinen Eintrag.
 - **Merkliste:** Das sind alle Filme mit `want`. Es gibt keine zweite Liste.
 - **Zusatzangaben:** `g` (Genres), `l` (Originalsprache) und `y` (Jahr) werden beim Markieren mitgespeichert. So lässt sich „Überrasch mich" berechnen, ohne TMDB erneut zu fragen.
 - **Sprachwechsel:** Die Markierungen hängen an der Filmnummer, nicht am Titel. Beim Sprachwechsel bleibt alles erhalten.
@@ -115,7 +115,7 @@ Die Berechnung läuft im Browser. Für das iPhone ist das kein Problem: Die erst
 
 ### Wie Vorschläge entstehen
 1. **Ausgangspunkte:**
-   - die 10 zuletzt gemochten Filme
+   - alle ★ Lieblingsfilme (bis zu 10) und die 10 zuletzt gemochten Filme
    - die 5 zuletzt gemerkten Filme
    - bis zu 10 Lieblingspersonen
    - bis zu 5 Lieblingsstudios
@@ -130,6 +130,7 @@ Die Berechnung läuft im Browser. Für das iPhone ist das kein Problem: Die erst
 |---|---|
 | Lieblingsschauspieler in einer Hauptrolle | **+5** |
 | Lieblingsregisseur | +4 |
+| empfohlen wegen eines ★ Lieblingsfilms | **+5** je Film (höchstens +15) |
 | empfohlen wegen eines gemochten Films | +3 je Film (höchstens +9) |
 | empfohlen wegen eines gemerkten Films | +1,5 je Film (höchstens +3) |
 | Lieblingsstudio | +2 |

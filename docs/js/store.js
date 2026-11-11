@@ -105,7 +105,7 @@ export function profilesForPicker() {
 }
 
 // ---------- Markierungen (für spätere Schritte) ----------
-// status: 'seen' | 'liked' | 'disliked' | 'want' | 'noInterest' | null (= löschen)
+// status: 'loved' (Lieblingsfilm) | 'seen' | 'liked' | 'disliked' | 'want' | 'noInterest' | null (= löschen)
 export function setMovie(profileId, movieId, status, meta = {}) {
   const p = getProfile(profileId);
   if (!p) return null;

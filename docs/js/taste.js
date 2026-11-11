@@ -1,8 +1,8 @@
 // Seite „Geschmack“: Filme markieren, Lieblingspersonen und -studios wählen, Suche.
-import * as store from './store.js?v=0.3.0';
-import * as tmdb from './tmdb.js?v=0.3.0';
-import { esc, toast } from './ui.js?v=0.3.0';
-import { SEED_MOVIES, SEED_PEOPLE, SEED_STUDIOS } from './seeds.js?v=0.3.0';
+import * as store from './store.js?v=0.3.1';
+import * as tmdb from './tmdb.js?v=0.3.1';
+import { esc, toast } from './ui.js?v=0.3.1';
+import { SEED_MOVIES, SEED_PEOPLE, SEED_STUDIOS } from './seeds.js?v=0.3.1';
 
 const STEP = 20;
 const MARKS = [
@@ -11,7 +11,7 @@ const MARKS = [
   ['disliked', '✕', 'Mag ich nicht'],
   ['want', '+', 'Merken'],
 ];
-const STATE_LABEL = { seen: '✓ Gesehen', liked: '♥ Mag ich', disliked: '✕ Mag ich nicht', want: '+ Gemerkt', noInterest: 'Kein Interesse' };
+const STATE_LABEL = { loved: '★ Lieblingsfilm', seen: '✓ Gesehen', liked: '♥ Mag ich', disliked: '✕ Mag ich nicht', want: '+ Gemerkt', noInterest: 'Kein Interesse' };
 const SEED_IDS = new Set(SEED_MOVIES.map((m) => m.id));
 
 // Zustand der Seite – bleibt erhalten, solange die App offen ist
@@ -44,17 +44,23 @@ function poster(path, alt = '') {
     sizes="(min-width: 768px) 200px, 100px" width="100" height="150" loading="lazy" decoding="async" alt="${esc(alt)}">`;
 }
 
+// Ein Lieblingsfilm zählt auch als „Mag ich“
+const pressed = (s, key) => s === key || (s === 'loved' && key === 'liked');
+
 function filmCard(f) {
   const s = profile.movies[f.id]?.s || null;
   return `
-    <article class="film ${s ? 'is-marked' : ''}" data-film="${f.id}">
-      ${poster(f.poster)}
+    <article class="film ${s ? 'is-marked' : ''} ${s === 'loved' ? 'is-loved' : ''}" data-film="${f.id}">
+      <button type="button" class="poster-btn" data-mark="loved" aria-pressed="${s === 'loved'}" aria-label="${esc(f.title)} als Lieblingsfilm">
+        ${poster(f.poster)}
+        <span class="poster-star" aria-hidden="true">${s === 'loved' ? '★' : '☆'}</span>
+      </button>
       <div class="film-info">
         <h3 class="film-title">${esc(f.title)}${f.y ? ` <span class="year">${f.y}</span>` : ''}</h3>
         <p class="film-state">${s ? esc(STATE_LABEL[s]) : ''}</p>
         <div class="marks" role="group" aria-label="${esc(f.title)} markieren">
           ${MARKS.map(([key, icon, label]) => `
-            <button type="button" class="mark mark-${key}" data-mark="${key}" aria-pressed="${s === key}"><span aria-hidden="true">${icon}</span> ${label}</button>`).join('')}
+            <button type="button" class="mark mark-${key}" data-mark="${key}" aria-pressed="${pressed(s, key)}"><span aria-hidden="true">${icon}</span> ${label}</button>`).join('')}
         </div>
       </div>
     </article>`;
@@ -63,8 +69,10 @@ function filmCard(f) {
 function updateFilmCard(card, id) {
   const s = profile.movies[id]?.s || null;
   card.classList.toggle('is-marked', !!s);
+  card.classList.toggle('is-loved', s === 'loved');
+  card.querySelector('.poster-star').textContent = s === 'loved' ? '★' : '☆';
   card.querySelector('.film-state').textContent = s ? STATE_LABEL[s] : '';
-  card.querySelectorAll('[data-mark]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.mark === s)));
+  card.querySelectorAll('[data-mark]').forEach((b) => b.setAttribute('aria-pressed', String(pressed(s, b.dataset.mark))));
 }
 
 // ---------- Personen und Studios ----------
@@ -156,7 +164,7 @@ async function fillFilms() {
   let list = allFilms();
   if (ui.hideMarked) list = list.filter((f) => !profile.movies[f.id]);
   el.innerHTML = `
-    <p class="muted small">Tipp an, was du kennst. Unbekannte Filme einfach überscrollen. Nochmal tippen nimmt die Markierung zurück.${marked ? ` <strong>${marked} markiert.</strong>` : ''}</p>
+    <p class="muted small">Tipp an, was du kennst. Unbekannte Filme einfach überscrollen. Nochmal tippen nimmt die Markierung zurück. <strong>Aufs Poster tippen = ★ Lieblingsfilm.</strong>${marked ? ` <strong>${marked} markiert.</strong>` : ''}</p>
     <div class="films">${list.slice(0, ui.shown).map(filmCard).join('')}</div>
     <div class="row center-row">
       <button class="btn btn-primary" type="button" data-taste="more" ${ui.loading ? 'disabled' : ''}>${ui.loading ? 'Lädt …' : 'Weitere laden'}</button>
@@ -224,7 +232,7 @@ async function fillPeople() {
 
 // Personen aus Filmen, die man mag (Regie + die ersten drei Rollen)
 async function fillFromLiked(keep, skip) {
-  const liked = Object.entries(profile.movies).filter(([, m]) => m.s === 'liked').sort((a, b) => b[1].t - a[1].t).slice(0, 6);
+  const liked = Object.entries(profile.movies).filter(([, m]) => (m.s === 'liked' || m.s === 'loved')).sort((a, b) => b[1].t - a[1].t).slice(0, 6);
   if (!liked.length) return;
   const found = new Map();
   try {
@@ -305,7 +313,9 @@ export function handleClick(e) {
     const id = +card.dataset.film;
     const f = films.get(id) || {};
     const status = markBtn.dataset.mark;
-    const now = profile.movies[id]?.s === status ? null : status;
+    const old = profile.movies[id]?.s || null;
+    // Stern: an/aus (aus = bleibt „Mag ich“). Sonst: zweiter Tipp nimmt zurück.
+    const now = status === 'loved' ? (old === 'loved' ? 'liked' : 'loved') : pressed(old, status) ? null : status;
     store.setMovie(profile.id, id, now, { g: f.g, l: f.l, y: f.y });
     document.querySelectorAll(`[data-film="${id}"]`).forEach((c) => updateFilmCard(c, id));
     return true;

@@ -288,3 +288,15 @@ h2 { font-size: 20px; margin: 24px 0 8px; }
 @media (hover: hover) {
   .mark:hover, .tile:hover { border-color: var(--muted); }
 }
+
+/* ★ Lieblingsfilm: Tipp aufs Poster */
+.poster-btn { position: relative; display: block; padding: 0; border: 0; background: none; cursor: pointer; border-radius: 8px; align-self: start; }
+.poster-star {
+  position: absolute; left: 6px; bottom: 6px; display: grid; place-items: center;
+  width: 36px; height: 36px; border-radius: 50%; font-size: 22px; line-height: 1;
+  background: rgba(0, 0, 0, .65); color: #fff;
+}
+.film.is-loved .poster { outline: 3px solid var(--accent); outline-offset: -3px; box-shadow: 0 0 18px 2px color-mix(in srgb, var(--accent) 70%, transparent); }
+.film.is-loved .poster-star { background: var(--accent); color: var(--accent-text); }
+.film.is-loved .film-state { color: var(--accent); }
+@media (min-width: 768px) { .poster-btn { width: 100%; } }

@@ -1,7 +1,7 @@
 // ALLE Einstellungen und Grenzwerte an einer Stelle.
 // Wer etwas nachjustieren will (z. B. Mindestbewertung), ändert es nur hier.
 
-export const VERSION = '0.3.0';
+export const VERSION = '0.3.1';
 
 // Adresse des Cloudflare Workers (nicht geheim – der Schlüssel liegt nur dort).
 export const WORKER_URL = 'https://film-app-tmdb.film-app.workers.dev';
@@ -23,8 +23,8 @@ export const TMDB = {
 export const RECOMMEND = {
   minVote: 6.5, minVotes: 200,
   favMinVote: 5.5, favMinVotes: 50,
-  seeds: { liked: 10, want: 5, people: 10, companies: 5 },
-  points: { actor: 5, director: 4, liked: 3, likedMax: 9, want: 1.5, wantMax: 3, company: 2, genreMax: 2 },
+  seeds: { loved: 10, liked: 10, want: 5, people: 10, companies: 5 },
+  points: { actor: 5, director: 4, loved: 5, lovedMax: 15, liked: 3, likedMax: 9, want: 1.5, wantMax: 3, company: 2, genreMax: 2 },
   perSourceInBlock: 4,
   blockSize: 20,
 };

@@ -50,6 +50,7 @@ Die Nutzerin kann nicht programmieren. Antworte auf Deutsch, knapp und ohne Fach
   - `taste.js` (Seite), `tmdb.js` (Abfragen über den Worker, höchstens 6 gleichzeitig, Zwischenspeicher), `seeds.js` (233 Filme, 88 Personen, 38 Studios mit Titel/Poster DE+EN).
   - Startliste neu bauen: `node scripts/make-seeds.js` (ca. 10 Min., Zwischenstand in `.seed-cache.json`).
   - Getestet: markieren, zweiter Tipp nimmt zurück, Markierung bleibt beim Sprachwechsel. „Weitere laden“ geht nach der Startliste mit TMDB weiter, ohne doppelte Filme. „Markierte ausblenden“ funktioniert. Die Suche findet „Die Verurteilten“ und „Shawshank“ (beides Nr. 278), außerdem Personen und Studios. Favoriten für Personen und Studios, Filter Schauspiel/Regie und Indie, „Aus Filmen, die du magst“. Geprüft bei 375 px, 360 px und 1280 px, ohne Konsolenfehler.
+  - **★ Lieblingsfilm** (Wunsch, Version 0.3.1): Ein Tipp aufs Poster setzt den Status `loved`, das Poster leuchtet. Er zählt auch als „Mag ich“, bei den Vorschlägen mit +5 je Film statt +3. Ein zweiter Tipp aufs Poster macht wieder „Mag ich“ daraus, ein Tipp auf „Mag ich“ nimmt die Markierung ganz weg.
   - Gefundener Fehler: Ein Modul ohne `?v=` wird doppelt geladen und hat dann getrennte Daten. Deshalb prüft der Hook vor jedem Push jetzt auch die Versionsnummern der Importe.
 - [ ] Schritt 5 – Vorschläge
 - [ ] Schritt 6 – Merkliste
