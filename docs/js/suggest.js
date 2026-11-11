@@ -1,9 +1,9 @@
 // Seite „Vorschläge“: Liste mit Begründung, fünf Rückmeldungen, Rückgängig, „Mehr“.
-import * as store from './store.js?v=0.5.0';
-import * as tmdb from './tmdb.js?v=0.5.0';
-import { esc, toast } from './ui.js?v=0.5.0';
-import { compute, visible, hasSources } from './recommend.js?v=0.5.0';
-import { RECOMMEND } from './config.js?v=0.5.0';
+import * as store from './store.js?v=0.6.0';
+import * as tmdb from './tmdb.js?v=0.6.0';
+import { esc, toast } from './ui.js?v=0.6.0';
+import { compute, visible, hasSources } from './recommend.js?v=0.6.0';
+import { RECOMMEND } from './config.js?v=0.6.0';
 
 const FEEDBACK = [
   ['want', '+', 'Merken'],
@@ -148,3 +148,6 @@ export function handleClick(e) {
   if (act?.dataset.sg === 'retry') { mount(profile); return true; }
   return false;
 }
+
+// Für „Überrasch mich“: was gerade bei den Vorschlägen steht, soll dort nicht kommen
+export const currentIds = () => new Set(shown);

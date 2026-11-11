@@ -318,3 +318,31 @@ h2 { font-size: 20px; margin: 24px 0 8px; }
 /* Meldung breit genug, damit der Text nicht in schmale Zeilen bricht */
 .toast { width: min(440px, calc(100vw - 2 * var(--gutter))); }
 .toast span { flex: 1; }
+
+/* ---------- Überrasch mich ---------- */
+.curtain {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+  min-height: 340px; padding: 32px 20px; border-radius: 16px; text-align: center;
+  /* roter Kinovorhang aus Streifen */
+  background:
+    linear-gradient(180deg, rgba(0,0,0,.15), rgba(0,0,0,.55)),
+    repeating-linear-gradient(90deg, #6b0f1a 0 18px, #8e1626 18px 30px, #5a0b15 30px 44px);
+  border: 1px solid #3a0a10; box-shadow: inset 0 -30px 40px rgba(0,0,0,.4);
+}
+.curtain-label { margin: 0; font-size: 14px; letter-spacing: .12em; text-transform: uppercase; color: #ffd9de; }
+.curtain-text { margin: 0; font-size: 24px; font-weight: 700; color: #fff; text-shadow: 0 2px 6px rgba(0,0,0,.6); }
+.curtain + p { margin-top: 14px; }
+.reveal { display: flex; flex-direction: column; gap: 14px; }
+.reveal .poster-btn { align-self: center; width: min(260px, 62vw); }
+.reveal .poster { width: 100%; height: auto; aspect-ratio: 2 / 3; }
+.reveal-title { margin: 0; font-size: 24px; }
+.reveal-info p { margin: 6px 0; }
+.reveal.is-loved .poster { outline: 3px solid var(--accent); outline-offset: -3px; box-shadow: 0 0 18px 2px color-mix(in srgb, var(--accent) 70%, transparent); }
+.reveal.is-loved .poster-star { background: var(--accent); color: var(--accent-text); }
+.reveal .marks { margin: 10px 0 6px; }
+@media (min-width: 768px) {
+  .reveal { flex-direction: row; align-items: flex-start; gap: 24px; }
+  .reveal .poster-btn { flex: 0 0 260px; align-self: flex-start; }
+  .reveal-info { max-width: 560px; }
+  .reveal .center { text-align: left; }
+}

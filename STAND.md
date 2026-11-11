@@ -71,7 +71,14 @@ Die Nutzerin kann nicht programmieren. Antworte auf Deutsch, knapp und ohne Fach
   - `watchlist.js`: alle Filme mit `want`, neueste zuerst, mit Jahr, Laufzeit und Inhalt in der Profilsprache.
   - Knöpfe: Gesehen, Mag ich, Mag ich nicht und Entfernen. Ein Tipp aufs Poster macht den Film zum ★ Lieblingsfilm. Zu jedem Knopf gibt es Rückgängig.
   - Getestet: englisches Profil zeigt englische Titel, obwohl beim Merken deutsche gespeichert wurden. „Mag ich“ nimmt den Film heraus und setzt ihn auf liked, Rückgängig setzt ihn zurück auf want. Entfernen und Stern funktionieren, die leere Liste zeigt einen Hinweis. Keine Konsolenfehler.
-- [ ] Schritt 7 – Überrasch mich · 7b Gruppenabend · 7c Kinderfilme
+- [x] **Schritt 7 – Überrasch mich** (11.11.2026, Version 0.6.0):
+  - `surprise.js` (Kern des Geschmacks, fremdes Ziel, 6 Lockerungsstufen, höchstens 15 Abfragen) und `sneak.js` (Seite mit rotem Vorhang, Aufdecken, fünf Rückmeldungen, Stern, Anderen Film).
+  - Getestet mit einem Science-Fiction-Profil:
+    - 30 Klicks ergaben 30 verschiedene Filme, keiner war markiert. Darunter Western, Dokus, Komödien der 50er, Filme aus Iran, Italien und Japan, alle mit Note ab 7,0.
+    - Nach dem Neuladen kam keiner der 30 wieder.
+    - Eine Rückmeldung wechselt den Film nicht, ein zweiter Tipp nimmt sie zurück.
+    - Fremde Schrift im Titel (z. B. Persisch) wird durch den englischen Titel ersetzt.
+- [ ] Schritt 7b Gruppenabend · 7c Kinderfilme (dazu oben auf „Vorschläge“ die drei Knöpfe)
 - [ ] Schritt 8 – Über-Seite, README, Abnahme
 
 ## Hinweise
