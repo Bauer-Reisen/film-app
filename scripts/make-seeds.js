@@ -92,6 +92,12 @@ const STUDIOS = [
   { q: 'Illumination' }, { id: 1 }, { q: 'Legendary Pictures' }, { id: 14, i: 1 },
   { q: 'Sony Pictures Classics', i: 1 }, { q: 'IFC Films', i: 1 }, { q: 'Magnolia Pictures', i: 1 }, { q: 'Film4 Productions', i: 1 },
   { q: 'Warp Films', i: 1 }, { q: 'Wild Bunch', i: 1 }, { q: 'Gaumont' }, { q: 'Zentropa', i: 1 },
+  // Wunsch vom 11.11.2026: große Streaming- und Hollywood-Studios. best = Treffer mit den meisten Filmen
+  { id: 210099, also: [20580] }, { q: 'Netflix', best: 1 }, { q: 'Sony Pictures', best: 1 },
+  { q: 'Apple Studios', best: 1 }, { q: 'Metro-Goldwyn-Mayer', best: 1 }, { q: 'New Line Cinema', best: 1 },
+  { id: 25 }, { q: 'Bad Robot', best: 1 }, { q: 'Skydance Media', best: 1 }, { q: 'Sony Pictures Animation', best: 1 },
+  { q: 'Toei Animation', best: 1 }, { id: 7981 }, { q: 'UFA', best: 1 }, { q: 'Studio Babelsberg', best: 1 },
+  { q: 'Village Roadshow Pictures', best: 1 }, { q: 'Blue Sky Studios', best: 1 },
 ];
 
 const year = (d) => (d ? +d.slice(0, 4) : null);
@@ -143,10 +149,18 @@ for (const s of STUDIOS) {
   if (s.id) c = await api(`company/${s.id}`);
   else {
     const hits = (await api('search/company', { query: s.q })).results || [];
-    c = hits.find((h) => h.name.toLowerCase() === s.q.toLowerCase()) || hits[0];
+    if (s.best) {
+      // Unter den ersten 4 Treffern den mit den meisten bekannten Filmen nehmen
+      let most = -1;
+      for (const h of hits.slice(0, 4)) {
+        const n = (await api('discover/movie', { with_companies: h.id, 'vote_count.gte': 100 })).total_results || 0;
+        if (n > most) { most = n; c = h; }
+      }
+    } else c = hits.find((h) => h.name.toLowerCase() === s.q.toLowerCase()) || hits[0];
     if (!c) { warn.push(`Studio nicht gefunden: ${s.q}`); continue; }
     if (c.name !== s.q) warn.push(`Prüfen: ${s.q} → ${c.name} (${c.id})`);
   }
+  if (studios.some((x) => x.id === c.id)) continue;
   studios.push({ id: c.id, n: c.name, logo: c.logo_path, c: c.origin_country || '', ...(s.i ? { i: 1 } : {}), ...(s.also ? { also: s.also } : {}) });
 }
 

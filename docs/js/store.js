@@ -58,6 +58,7 @@ export const newProfile = (name, language = 'de-DE') => ({
   companies: [],
   surpriseShown: [],
   surpriseLastGenre: {},
+  themes: [], // Lieblingsthemen [{ id: 'zeit', w, t }]
   passed: [], // in „Geschmack“ übersprungene Filme (nicht markiert, aber schon durchgesehen)
   settings: { groupHorror: false, groupWar: false, groupAge: null, kidsAge: 6 },
 });
@@ -128,21 +129,19 @@ export function restoreMovie(profileId, movieId, old) {
   save();
 }
 
-// Lieblingspersonen und -studios: an/aus. entry enthält id, Name (n), Bild (p/logo), bei Personen role
-function toggleIn(listName, profileId, entry) {
+// Personen, Studios und Themen in Stufen: w = 2 (★ Liebe), 1 (♥ Gern), 0 = egal (Eintrag weg).
+// entry enthält id und Anzeige-Angaben (Name n, Bild p/logo, bei Personen role)
+export const tierOf = (x) => x?.w ?? 2; // ältere Einträge ohne Stufe galten als Favorit
+export function setTier(listName, profileId, entry, w) {
   const p = getProfile(profileId);
-  if (!p) return false;
-  const i = p[listName].findIndex((x) => x.id === entry.id);
-  if (i >= 0) p[listName].splice(i, 1);
-  else {
-    p[listName].push({ ...entry, t: Date.now() });
+  if (!p) return;
+  p[listName] = (p[listName] || []).filter((x) => x.id !== entry.id);
+  if (w) {
+    p[listName].push({ ...entry, w, t: Date.now() });
     p.marksSinceBackup = (p.marksSinceBackup || 0) + 1;
   }
   save();
-  return i < 0; // true = jetzt Favorit
 }
-export const togglePerson = (profileId, entry) => toggleIn('people', profileId, entry);
-export const toggleCompany = (profileId, entry) => toggleIn('companies', profileId, entry);
 
 // Übersprungene Filme merken, damit sie beim nächsten Öffnen nicht wieder oben stehen
 export function addPassed(profileId, ids) {
@@ -153,7 +152,7 @@ export function addPassed(profileId, ids) {
 }
 export function clearPassed(profileId) { updateProfile(profileId, { passed: [] }); }
 
-export const markCount = (p) => Object.keys(p.movies).length + p.people.length + p.companies.length;
+export const markCount = (p) => Object.keys(p.movies).length + p.people.length + p.companies.length + (p.themes || []).length;
 
 // ---------- Geräte-Einstellungen (Hinweise) ----------
 export const device = () => state.device;

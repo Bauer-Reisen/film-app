@@ -13,7 +13,8 @@ const ROUTES = [
   [/^\/3\/person\/\d+$/, 7 * DAY],
   [/^\/3\/person\/\d+\/movie_credits$/, 7 * DAY],
   [/^\/3\/company\/\d+$/, 7 * DAY],
-  [/^\/3\/search\/(movie|person|company)$/, 3600],
+  [/^\/3\/search\/(movie|person|company|keyword)$/, 3600],
+  [/^\/3\/movie\/\d+\/keywords$/, 7 * DAY],
   [/^\/3\/genre\/movie\/list$/, 7 * DAY],
   [/^\/3\/configuration$/, 7 * DAY],
 ];

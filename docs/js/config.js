@@ -1,7 +1,7 @@
 // ALLE Einstellungen und Grenzwerte an einer Stelle.
 // Wer etwas nachjustieren will (z. B. Mindestbewertung), ändert es nur hier.
 
-export const VERSION = '0.6.0';
+export const VERSION = '0.7.0';
 
 // Adresse des Cloudflare Workers (nicht geheim – der Schlüssel liegt nur dort).
 export const WORKER_URL = 'https://film-app-tmdb.film-app.workers.dev';
@@ -22,10 +22,14 @@ export const TMDB = {
 
 export const RECOMMEND = {
   minVote: 6.5, minVotes: 200,
-  favMinVote: 5.5, favMinVotes: 50,
-  seeds: { loved: 10, liked: 10, want: 5, people: 10, companies: 5 },
-  points: { actor: 5, director: 4, loved: 5, lovedMax: 15, liked: 3, likedMax: 9, want: 1.5, wantMax: 3, company: 2, genreMax: 2 },
-  perSourceInBlock: 4,
+  favMinVote: 5.5, favMinVotes: 100,
+  seeds: { loved: 10, liked: 10, want: 5, people: 12, companies: 6, themes: 8 },
+  // Personen, Studios, Themen je Stufe: 2 = ★ Liebe, 1 = ♥ Gern
+  points: {
+    actor: { 2: 9, 1: 5 }, director: { 2: 9, 1: 5 }, company: { 2: 4, 1: 2 }, theme: { 2: 5, 1: 3 },
+    loved: 4, lovedMax: 10, liked: 2.5, likedMax: 7.5, want: 1.5, wantMax: 3, themeMax: 8, genreMax: 2,
+  },
+  perSourceInBlock: 4, perStrongSourceInBlock: 6, // ★ Liebe darf öfter vorkommen
   blockSize: 20,
 };
 

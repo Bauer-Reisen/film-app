@@ -118,8 +118,7 @@ Die Berechnung läuft im Browser. Für das iPhone ist das kein Problem: Die erst
 1. **Ausgangspunkte:**
    - alle ★ Lieblingsfilme (bis zu 10) und die 10 zuletzt gemochten Filme
    - die 5 zuletzt gemerkten Filme
-   - bis zu 10 Lieblingspersonen
-   - bis zu 5 Lieblingsstudios
+   - bis zu 12 Lieblingspersonen, 6 Lieblingsstudios und 8 Lieblingsthemen (★ vor ♥)
 2. **Kandidaten holen:**
    - TMDB-Empfehlungen zu den Filmen
    - Hauptrollen der Lieblingsschauspieler
@@ -127,24 +126,27 @@ Die Berechnung läuft im Browser. Für das iPhone ist das kein Problem: Die erst
    - die besten Filme der Lieblingsstudios
 3. **Punkte:**
 
-| Grund | Punkte |
+| Grund | Punkte (★ Liebe / ♥ Gern) |
 |---|---|
-| Lieblingsschauspieler in einer Hauptrolle | **+5** |
-| Lieblingsregisseur | +4 |
-| empfohlen wegen eines ★ Lieblingsfilms | **+5** je Film (höchstens +15) |
-| empfohlen wegen eines gemochten Films | +3 je Film (höchstens +9) |
+| Lieblingsschauspieler in einer Hauptrolle | **+9** / +5 |
+| Lieblingsregisseur | **+9** / +5 |
+| Lieblingsthema (Stichwort bei TMDB) | +5 / +3 (höchstens +8) |
+| Lieblingsstudio | +4 / +2 |
+| empfohlen wegen eines ★ Lieblingsfilms | +4 je Film (höchstens +10) |
+| empfohlen wegen eines gemochten Films | +2,5 je Film (höchstens +7,5) |
 | empfohlen wegen eines gemerkten Films | +1,5 je Film (höchstens +3) |
-| Lieblingsstudio | +2 |
 | Genre-Neigung (gemochte minus nicht gemochte Genres) | höchstens ±2 |
 | Bewertung | Durchschnittsnote minus 6,5 |
 
-4. **Mindestqualität:** normal Note ab 6,5 und ab 200 Stimmen. Mit einem Lieblingsschauspieler oder Lieblingsregisseur reichen Note 5,5 und 50 Stimmen.
+Personen, Studios und Themen haben drei Stufen (Wunsch vom 11.11.2026): ★ Liebe, ♥ Gern, nichts gewählt = egal.
+
+4. **Mindestqualität:** normal Note ab 6,5 und ab 200 Stimmen. Mit einem Lieblingsschauspieler oder Lieblingsregisseur reichen Note 5,5 und 100 Stimmen.
 5. **Ausschließen:**
    - jeder markierte Film: gesehen, mag ich, mag ich nicht, kein Interesse, Merkliste
    - Filme für Erwachsene, Filme ohne Poster und Filme, die noch nicht erschienen sind
 
    Dieser Filter läuft **ganz am Schluss, bei jeder Ausgabe**.
-6. **Vielfalt:** Pro 20 Vorschläge kommen höchstens 4 aus derselben Quelle.
+6. **Vielfalt:** Pro 20 Vorschläge kommen höchstens 4 aus derselben Quelle, bei einer ★-Liebe-Person, einem ★-Studio oder ★-Thema höchstens 6.
 7. **Begründung:** Der stärkste Grund wird zu einem Satz, zum Beispiel:
    - „Mit Florence Pugh"
    - „Regie: Céline Sciamma"

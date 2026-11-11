@@ -1,13 +1,13 @@
 // Oberfläche: Seitenwechsel über die Adresse (#/vorschlaege usw.)
-import { VERSION, LANGUAGES } from './config.js?v=0.6.0';
-import * as store from './store.js?v=0.6.0';
-import { saveBackup, readBackup, findSameName, importAsNew, mergeInto } from './backup.js?v=0.6.0';
-import { esc, dialog, toast, formatDate } from './ui.js?v=0.6.0';
-import * as platform from './platform.js?v=0.6.0';
-import * as taste from './taste.js?v=0.6.0';
-import * as suggest from './suggest.js?v=0.6.0';
-import * as watchlist from './watchlist.js?v=0.6.0';
-import * as sneak from './sneak.js?v=0.6.0';
+import { VERSION, LANGUAGES } from './config.js?v=0.7.0';
+import * as store from './store.js?v=0.7.0';
+import { saveBackup, readBackup, findSameName, importAsNew, mergeInto } from './backup.js?v=0.7.0';
+import { esc, dialog, toast, formatDate } from './ui.js?v=0.7.0';
+import * as platform from './platform.js?v=0.7.0';
+import * as taste from './taste.js?v=0.7.0';
+import * as suggest from './suggest.js?v=0.7.0';
+import * as watchlist from './watchlist.js?v=0.7.0';
+import * as sneak from './sneak.js?v=0.7.0';
 
 const view = document.getElementById('view');
 const tabs = document.querySelectorAll('.tabs a[data-tab]');

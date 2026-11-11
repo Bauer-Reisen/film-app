@@ -78,6 +78,13 @@ Die Nutzerin kann nicht programmieren. Antworte auf Deutsch, knapp und ohne Fach
     - Nach dem Neuladen kam keiner der 30 wieder.
     - Eine Rückmeldung wechselt den Film nicht, ein zweiter Tipp nimmt sie zurück.
     - Fremde Schrift im Titel (z. B. Persisch) wird durch den englischen Titel ersetzt.
+- [x] **Geschmack verfeinert** (11.11.2026, Version 0.7.0):
+  - Personen, Studios und Themen in Stufen: ★ Liebe, ♥ Gern, nochmal tippen = egal.
+  - Neuer Reiter „Themen“ mit 39 Themen (z. B. Underdog, Zeitreise, Witzig & schlagfertig, Gespräche & Dialoge). Kameraführung gibt es bei TMDB nicht als Stichwort.
+  - „Aus deinen Filmen“ zählt jetzt Regie und Hauptrollen aller gemochten Filme (★ doppelt).
+  - Neue Studios: Amazon MGM, Netflix, Sony, Apple, MGM, New Line, 20th Century, Bad Robot, Skydance, Toei, Pathé, UFA, Babelsberg u. a. (54 insgesamt).
+  - Filmliste zeigt zuerst Filme der bewerteten Personen, Studios und Themen, dann den Rest.
+  - Vorschläge: Punkte nach Stufe, ★-Quellen dürfen bis zu 6 von 20 Plätzen belegen. Worker kennt jetzt Stichwort-Adressen.
 - [ ] Schritt 7b Gruppenabend · 7c Kinderfilme (dazu oben auf „Vorschläge“ die drei Knöpfe)
 - [ ] Schritt 8 – Über-Seite, README, Abnahme
 

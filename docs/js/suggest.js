@@ -1,9 +1,9 @@
 // Seite „Vorschläge“: Liste mit Begründung, fünf Rückmeldungen, Rückgängig, „Mehr“.
-import * as store from './store.js?v=0.6.0';
-import * as tmdb from './tmdb.js?v=0.6.0';
-import { esc, toast } from './ui.js?v=0.6.0';
-import { compute, visible, hasSources } from './recommend.js?v=0.6.0';
-import { RECOMMEND } from './config.js?v=0.6.0';
+import * as store from './store.js?v=0.7.0';
+import * as tmdb from './tmdb.js?v=0.7.0';
+import { esc, toast } from './ui.js?v=0.7.0';
+import { compute, visible, hasSources } from './recommend.js?v=0.7.0';
+import { RECOMMEND } from './config.js?v=0.7.0';
 
 const FEEDBACK = [
   ['want', '+', 'Merken'],

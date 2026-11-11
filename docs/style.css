@@ -346,3 +346,21 @@ h2 { font-size: 20px; margin: 24px 0 8px; }
   .reveal-info { max-width: 560px; }
   .reveal .center { text-align: left; }
 }
+
+/* ---------- Stufen ★ Liebe / ♥ Gern ---------- */
+.tile { cursor: default; }
+.tile.w2 { border-color: var(--accent); }
+.tile.w1 { border-color: var(--good); }
+.tier { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; width: 100%; margin-top: auto; }
+.tier-btn {
+  min-height: 44px; padding: 0 4px; font-size: 14px; border-radius: 10px;
+  border: 1px solid var(--line); background: var(--surface-2); cursor: pointer;
+}
+.tier-2[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-text); font-weight: 700; }
+.tier-1[aria-pressed="true"] { background: var(--good); border-color: var(--good); color: var(--accent-text); font-weight: 700; }
+.tile.theme { justify-content: space-between; min-height: 150px; }
+.tile.theme .tile-name { font-size: 16px; }
+.film-why { margin: 0 0 4px; font-size: 13px; color: var(--muted); }
+.link-btn { background: none; border: 0; padding: 0; color: var(--accent); text-decoration: underline; font: inherit; cursor: pointer; min-height: 0; }
+.sub-tabs .seg { padding: 0 6px; font-size: 15px; }
+@media (hover: hover) { .tier-btn:hover { border-color: var(--muted); } }
