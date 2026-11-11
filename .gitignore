@@ -1,0 +1,14 @@
+# Geheimes – niemals ins Repository
+.env
+.env.*
+.dev.vars
+*.secret
+
+# Werkzeuge
+node_modules/
+.wrangler/
+
+# Windows / Editor
+Thumbs.db
+desktop.ini
+.vscode/

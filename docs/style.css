@@ -1,0 +1,147 @@
+/* Film-App – dunkles Kino-Design, zuerst fürs Handy gebaut */
+
+:root {
+  --bg: #121214;
+  --surface: #1c1c20;
+  --surface-2: #26262c;
+  --line: #34343c;
+  --text: #f2f2f2;
+  --muted: #a8a8b3;
+  --accent: #f5c518;       /* Kino-Gelb */
+  --accent-text: #121214;
+  --good: #4ade80;
+  --bad: #f87171;
+  --want: #60a5fa;
+  --focus: #ffd84d;
+  --radius: 12px;
+  --tab-h: 60px;
+  --top-h: 56px;
+  --gutter: 16px;
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background: var(--bg);
+  color: var(--text);
+  font: 16px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+a { color: var(--accent); }
+
+/* Eingabefelder mind. 16 px, sonst zoomt das iPhone hinein */
+input, select, textarea, button { font: inherit; color: inherit; }
+
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; border-radius: 6px; }
+
+.skip { position: absolute; left: -9999px; }
+.skip:focus { left: var(--gutter); top: 8px; z-index: 100; background: var(--accent); color: var(--accent-text); padding: 8px 12px; }
+
+/* ---------- Kopfzeile ---------- */
+.topbar {
+  position: sticky; top: 0; z-index: 20;
+  display: flex; align-items: center; gap: 12px;
+  min-height: calc(var(--top-h) + env(safe-area-inset-top));
+  padding: env(safe-area-inset-top) calc(var(--gutter) + env(safe-area-inset-right)) 0 calc(var(--gutter) + env(safe-area-inset-left));
+  /* Kein backdrop-filter: der würde die fest unten stehende Tab-Leiste
+     in die Kopfzeile „einsperren“. */
+  background: var(--bg);
+  border-bottom: 1px solid var(--line);
+}
+.brand { display: flex; align-items: center; gap: 8px; color: var(--text); text-decoration: none; font-weight: 700; font-size: 18px; margin-right: auto; }
+.brand-icon { width: 26px; height: 26px; color: var(--accent); }
+
+.who {
+  min-height: 44px; min-width: 44px; max-width: 40vw;
+  padding: 0 14px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  cursor: pointer;
+}
+
+/* ---------- Tab-Leiste: am Handy unten ---------- */
+.tabs {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
+  display: grid; grid-template-columns: repeat(5, 1fr);
+  height: calc(var(--tab-h) + env(safe-area-inset-bottom));
+  padding: 0 env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  background: rgba(18, 18, 20, .97);
+  border-top: 1px solid var(--line);
+}
+.tabs a {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+  min-height: 44px;
+  color: var(--muted); text-decoration: none;
+  font-size: 11px; line-height: 1.1; text-align: center;
+}
+.tabs svg { width: 24px; height: 24px; }
+.tabs a[aria-current="page"] { color: var(--accent); }
+
+main {
+  padding: 16px calc(var(--gutter) + env(safe-area-inset-right)) calc(var(--tab-h) + env(safe-area-inset-bottom) + 24px) calc(var(--gutter) + env(safe-area-inset-left));
+  max-width: 1200px; margin: 0 auto;
+  outline: none;
+}
+
+/* ---------- Laptop: Tabs oben in der Kopfzeile ---------- */
+@media (min-width: 768px) {
+  .tabs {
+    position: static; display: flex; gap: 4px;
+    height: auto; padding: 0; background: none; border: 0;
+  }
+  .tabs a { flex-direction: row; gap: 6px; padding: 0 12px; font-size: 15px; border-radius: 8px; }
+  .tabs svg { width: 20px; height: 20px; }
+  .brand { margin-right: 16px; }
+  .who { margin-left: auto; }
+  main { padding-bottom: 48px; }
+}
+
+/* Hover nur bei echter Maus – am Handy bleibt sonst der Effekt hängen */
+@media (hover: hover) {
+  .tabs a:hover { color: var(--text); }
+  .btn:hover { filter: brightness(1.12); }
+}
+
+/* ---------- Bausteine ---------- */
+h1, h2, h3 { line-height: 1.2; }
+h1 { font-size: 26px; margin: 8px 0 12px; }
+h2 { font-size: 20px; margin: 24px 0 8px; }
+.muted { color: var(--muted); }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 44px; padding: 0 16px;
+  border-radius: var(--radius); border: 1px solid var(--line);
+  background: var(--surface-2); color: var(--text);
+  text-decoration: none; cursor: pointer;
+}
+.btn-primary { background: var(--accent); color: var(--accent-text); border-color: var(--accent); font-weight: 700; }
+.btn-big { min-height: 56px; font-size: 18px; padding: 0 22px; }
+
+.card {
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 16px;
+}
+.placeholder { text-align: center; padding: 40px 16px; }
+.placeholder p { margin: 8px auto; max-width: 32em; }
+
+/* ---------- Meldung (Toast) über der Tab-Leiste ---------- */
+.toast {
+  position: fixed; left: 50%; transform: translateX(-50%);
+  bottom: calc(var(--tab-h) + env(safe-area-inset-bottom) + 8px);
+  z-index: 40; max-width: calc(100vw - 2 * var(--gutter));
+  background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 10px 14px; display: none;
+}
+.toast.show { display: flex; align-items: center; gap: 12px; }
+@media (min-width: 768px) { .toast { bottom: 24px; } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}

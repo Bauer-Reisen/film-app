@@ -1,0 +1,14 @@
+{
+  "name": "Was schaue ich?",
+  "short_name": "Filmabend",
+  "description": "Passende Filmvorschläge – ohne langes Stöbern.",
+  "lang": "de",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#121214",
+  "theme_color": "#121214",
+  "icons": [
+    { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

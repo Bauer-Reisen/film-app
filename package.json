@@ -1,0 +1,19 @@
+{
+  "name": "film-app",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Was schaue ich als Nächstes? – Filmvorschläge per TMDB",
+  "type": "module",
+  "scripts": {
+    "start": "node scripts/dev.js",
+    "check": "node scripts/check-tmdb.js",
+    "check-secrets": "node scripts/check-secrets.js",
+    "deploy-worker": "npx wrangler deploy --config worker/wrangler.toml"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "wrangler": "^4.160.1"
+  }
+}

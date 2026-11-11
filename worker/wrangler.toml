@@ -1,0 +1,19 @@
+# Einstellungen für den Cloudflare Worker (Zwischenhändler zu TMDB).
+# Hier steht NICHTS Geheimes. Der TMDB-Schlüssel wird im Cloudflare-Dashboard
+# als Secret mit dem Namen TMDB_TOKEN eingetragen.
+
+name = "film-app-tmdb"
+main = "index.js"
+compatibility_date = "2026-06-01"
+
+[vars]
+# Nur diese Websites dürfen den Worker benutzen (durch Komma getrennt).
+ALLOWED_ORIGINS = "https://bauer-reisen.github.io,http://localhost:5500"
+
+# Schutz vor Missbrauch: höchstens 60 Anfragen pro Minute und Gerät
+[[ratelimits]]
+name = "RATE_LIMITER"
+namespace_id = "1001"
+  [ratelimits.simple]
+  limit = 60
+  period = 60
