@@ -1,9 +1,9 @@
 // Seite „Geschmack“: Personen, Studios und Themen in Stufen wählen, Filme markieren, Suche.
-import * as store from './store.js?v=0.7.0';
-import * as tmdb from './tmdb.js?v=0.7.0';
-import { esc, toast } from './ui.js?v=0.7.0';
-import { SEED_MOVIES, SEED_PEOPLE, SEED_STUDIOS } from './seeds.js?v=0.7.0';
-import { THEMES, themeById } from './themes.js?v=0.7.0';
+import * as store from './store.js?v=0.8.0';
+import * as tmdb from './tmdb.js?v=0.8.0';
+import { esc, toast } from './ui.js?v=0.8.0';
+import { SEED_MOVIES, SEED_PEOPLE, SEED_STUDIOS } from './seeds.js?v=0.8.0';
+import { THEMES, themeById } from './themes.js?v=0.8.0';
 
 const STEP = 20;
 const MARKS = [

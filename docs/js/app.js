@@ -1,13 +1,14 @@
 // Oberfläche: Seitenwechsel über die Adresse (#/vorschlaege usw.)
-import { VERSION, LANGUAGES } from './config.js?v=0.7.0';
-import * as store from './store.js?v=0.7.0';
-import { saveBackup, readBackup, findSameName, importAsNew, mergeInto } from './backup.js?v=0.7.0';
-import { esc, dialog, toast, formatDate } from './ui.js?v=0.7.0';
-import * as platform from './platform.js?v=0.7.0';
-import * as taste from './taste.js?v=0.7.0';
-import * as suggest from './suggest.js?v=0.7.0';
-import * as watchlist from './watchlist.js?v=0.7.0';
-import * as sneak from './sneak.js?v=0.7.0';
+import { VERSION, LANGUAGES } from './config.js?v=0.8.0';
+import * as store from './store.js?v=0.8.0';
+import { saveBackup, readBackup, findSameName, importAsNew, mergeInto } from './backup.js?v=0.8.0';
+import { esc, dialog, toast, formatDate } from './ui.js?v=0.8.0';
+import * as platform from './platform.js?v=0.8.0';
+import * as taste from './taste.js?v=0.8.0';
+import * as suggest from './suggest.js?v=0.8.0';
+import * as watchlist from './watchlist.js?v=0.8.0';
+import * as sneak from './sneak.js?v=0.8.0';
+import * as group from './group.js?v=0.8.0';
 
 const view = document.getElementById('view');
 const tabs = document.querySelectorAll('.tabs a[data-tab]');
@@ -114,6 +115,12 @@ const pages = {
     title: 'Überrasch mich',
     render: () => sneak.render(current()),
     mount: () => sneak.mount(current()),
+  },
+  gruppe: {
+    title: 'Gruppenabend',
+    tab: 'vorschlaege',
+    render: () => group.render(current()),
+    mount: () => group.mount(current()),
   },
   geschmack: {
     title: 'Geschmack',
@@ -286,6 +293,7 @@ view.addEventListener('click', async (e) => {
   if (currentKey === 'vorschlaege' && suggest.handleClick(e)) return;
   if (currentKey === 'merkliste' && watchlist.handleClick(e)) return;
   if (currentKey === 'ueberrasch' && sneak.handleClick(e)) return;
+  if (currentKey === 'gruppe' && group.handleClick(e)) return;
   const pick = e.target.closest('[data-pick]');
   if (pick) return selectProfile(pick.dataset.pick);
 

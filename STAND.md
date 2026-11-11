@@ -85,7 +85,13 @@ Die Nutzerin kann nicht programmieren. Antworte auf Deutsch, knapp und ohne Fach
   - Neue Studios: Amazon MGM, Netflix, Sony, Apple, MGM, New Line, 20th Century, Bad Robot, Skydance, Toei, Pathé, UFA, Babelsberg u. a. (54 insgesamt).
   - Filmliste zeigt zuerst Filme der bewerteten Personen, Studios und Themen, dann den Rest.
   - Vorschläge: Punkte nach Stufe, ★-Quellen dürfen bis zu 6 von 20 Plätzen belegen. Worker kennt jetzt Stichwort-Adressen.
-- [ ] Schritt 7b Gruppenabend · 7c Kinderfilme (dazu oben auf „Vorschläge“ die drei Knöpfe)
+- [x] **Schritt 7b – Gruppenabend** (11.11.2026, Version 0.8.0):
+  - Eigene Seite `#/gruppe`, erreichbar über die Knöpfe oben auf „Vorschläge“ (🎭 Überrasch mich · 🍿 Gruppenabend).
+  - Regeln: lockeres Genre, höchstens 130 Min., Note ab 6,8 und 1000 Stimmen, Thriller/Krimi nur mit Komödie, Horror und Krieg nur per Schalter. Alter: egal · ab 12 · ab 16 (FSK, sonst US-Freigabe, neu in `age.js`).
+  - Kandidaten: eigene Vorschläge, beliebte Filme mit lockeren Genres, danach schon gemochte Filme mit „Kennst du schon – hat dir gefallen“. Quellen werden abgewechselt.
+  - Knöpfe: Den schauen wir (→ Gesehen, danach Mag ich / Mag ich nicht / Später), Schon gesehen (Mag ich bleibt erhalten), Anderer Vorschlag.
+  - Geprüft: Regeln eingehalten, zwei Profile bekommen verschiedene Filme, „ab 12“ zeigt nur FSK 0/6/12, 375 px ohne Querscrollen.
+- [ ] Schritt 7c Kinderfilme (dazu dritter Knopf oben auf „Vorschläge“)
 - [ ] Schritt 8 – Über-Seite, README, Abnahme
 
 ## Hinweise
