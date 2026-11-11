@@ -1,8 +1,8 @@
 // Seite „Geschmack“: Filme markieren, Lieblingspersonen und -studios wählen, Suche.
-import * as store from './store.js?v=0.3.1';
-import * as tmdb from './tmdb.js?v=0.3.1';
-import { esc, toast } from './ui.js?v=0.3.1';
-import { SEED_MOVIES, SEED_PEOPLE, SEED_STUDIOS } from './seeds.js?v=0.3.1';
+import * as store from './store.js?v=0.4.0';
+import * as tmdb from './tmdb.js?v=0.4.0';
+import { esc, toast } from './ui.js?v=0.4.0';
+import { SEED_MOVIES, SEED_PEOPLE, SEED_STUDIOS } from './seeds.js?v=0.4.0';
 
 const STEP = 20;
 const MARKS = [
@@ -316,7 +316,7 @@ export function handleClick(e) {
     const old = profile.movies[id]?.s || null;
     // Stern: an/aus (aus = bleibt „Mag ich“). Sonst: zweiter Tipp nimmt zurück.
     const now = status === 'loved' ? (old === 'loved' ? 'liked' : 'loved') : pressed(old, status) ? null : status;
-    store.setMovie(profile.id, id, now, { g: f.g, l: f.l, y: f.y });
+    store.setMovie(profile.id, id, now, { g: f.g, l: f.l, y: f.y, n: f.title });
     document.querySelectorAll(`[data-film="${id}"]`).forEach((c) => updateFilmCard(c, id));
     return true;
   }

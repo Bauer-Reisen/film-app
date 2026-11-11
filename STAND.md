@@ -52,7 +52,20 @@ Die Nutzerin kann nicht programmieren. Antworte auf Deutsch, knapp und ohne Fach
   - Getestet: markieren, zweiter Tipp nimmt zurück, Markierung bleibt beim Sprachwechsel. „Weitere laden“ geht nach der Startliste mit TMDB weiter, ohne doppelte Filme. „Markierte ausblenden“ funktioniert. Die Suche findet „Die Verurteilten“ und „Shawshank“ (beides Nr. 278), außerdem Personen und Studios. Favoriten für Personen und Studios, Filter Schauspiel/Regie und Indie, „Aus Filmen, die du magst“. Geprüft bei 375 px, 360 px und 1280 px, ohne Konsolenfehler.
   - **★ Lieblingsfilm** (Wunsch, Version 0.3.1): Ein Tipp aufs Poster setzt den Status `loved`, das Poster leuchtet. Er zählt auch als „Mag ich“, bei den Vorschlägen mit +5 je Film statt +3. Ein zweiter Tipp aufs Poster macht wieder „Mag ich“ daraus, ein Tipp auf „Mag ich“ nimmt die Markierung ganz weg.
   - Gefundener Fehler: Ein Modul ohne `?v=` wird doppelt geladen und hat dann getrennte Daten. Deshalb prüft der Hook vor jedem Push jetzt auch die Versionsnummern der Importe.
-- [ ] Schritt 5 – Vorschläge
+- [x] **Schritt 5 – Vorschläge** (11.11.2026, Version 0.4.0):
+  - `recommend.js` (Ausgangspunkte → Kandidaten → Punkte → höchstens 4 pro Quelle je 20 → Begründungssatz), `suggest.js` (Seite).
+  - Beim Markieren wird jetzt auch der Titel gespeichert (`n`). So kann die App sagen: „Weil du „X“ mochtest“.
+  - Der Worker erlaubt jetzt 300 statt 60 Anfragen pro Minute und Gerät, weil sich beim Gruppenabend mehrere Handys ein WLAN teilen.
+  - Getestet mit zwei Profilen:
+    - Science-Fiction mit Nolan als Lieblingsregie bekommt Terminator, Blade Runner 2049 und Inception („Regie: Christopher Nolan“).
+    - Komödie mit Ghibli als Lieblingsstudio bekommt Pitch Perfect, Pretty Woman und Ghibli-Filme.
+    - Kein markierter Film erscheint.
+    - Mag ich klappt die Karte ein. Rückgängig stellt sie wieder her und nimmt die Markierung zurück.
+    - Der Stern aufs Poster funktioniert.
+    - „Mehr Vorschläge“ bringt keine doppelten Filme.
+    - Ein leeres Profil zeigt einen Hinweis auf „Geschmack“.
+    - Geprüft bei 375 px und 1280 px, ohne Konsolenfehler.
+  - Noch offen für Schritt 7: Die drei Knöpfe Überrasch mich, Gruppenabend und Kinderfilme kommen oben auf diese Seite.
 - [ ] Schritt 6 – Merkliste
 - [ ] Schritt 7 – Überrasch mich · 7b Gruppenabend · 7c Kinderfilme
 - [ ] Schritt 8 – Über-Seite, README, Abnahme
@@ -62,7 +75,7 @@ Die Nutzerin kann nicht programmieren. Antworte auf Deutsch, knapp und ohne Fach
 - Die Browser-Vorschau nutzt den Eintrag `film-app` (Port 5500).
 - **Virenschutz:** AVG prüft verschlüsselte Verbindungen mit. Deshalb muss vor `wrangler`-Befehlen `NODE_USE_SYSTEM_CA=1` gesetzt werden. In PowerShell `npx.cmd` statt `npx` verwenden, weil die Ausführung von Skripten gesperrt ist.
 - **Worker aktualisieren:** `NODE_USE_SYSTEM_CA=1 npx wrangler deploy --config worker/wrangler.toml`. Das Secret bleibt dabei erhalten.
-- **Missbrauchsschutz:** höchstens 60 Anfragen pro Minute und Gerät. `check-tmdb.js` wartet automatisch, wenn das Limit erreicht ist.
+- **Missbrauchsschutz:** höchstens 300 Anfragen pro Minute und Gerät (bzw. WLAN). `check-tmdb.js` wartet automatisch, wenn das Limit erreicht ist.
 - **Neue Version:**
   - Vor jedem Hochladen `node scripts/set-version.js X.Y.Z` ausführen. Das setzt die Nummer in `config.js`, `version.json`, `index.html`, allen Importen und `package.json`.
   - Die App vergleicht beim Öffnen `version.json` mit ihrer eigenen Nummer und lädt bei Abweichung selbst neu. Ohne neue Nummer bekommen Handys das Update erst nach etwa 10 Minuten oder noch später.

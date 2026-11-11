@@ -1,10 +1,11 @@
 // Oberfläche: Seitenwechsel über die Adresse (#/vorschlaege usw.)
-import { VERSION, LANGUAGES } from './config.js?v=0.3.1';
-import * as store from './store.js?v=0.3.1';
-import { saveBackup, readBackup, findSameName, importAsNew, mergeInto } from './backup.js?v=0.3.1';
-import { esc, dialog, toast, formatDate } from './ui.js?v=0.3.1';
-import * as platform from './platform.js?v=0.3.1';
-import * as taste from './taste.js?v=0.3.1';
+import { VERSION, LANGUAGES } from './config.js?v=0.4.0';
+import * as store from './store.js?v=0.4.0';
+import { saveBackup, readBackup, findSameName, importAsNew, mergeInto } from './backup.js?v=0.4.0';
+import { esc, dialog, toast, formatDate } from './ui.js?v=0.4.0';
+import * as platform from './platform.js?v=0.4.0';
+import * as taste from './taste.js?v=0.4.0';
+import * as suggest from './suggest.js?v=0.4.0';
 
 const view = document.getElementById('view');
 const tabs = document.querySelectorAll('.tabs a[data-tab]');
@@ -104,14 +105,8 @@ const pages = {
   },
   vorschlaege: {
     title: 'Vorschläge',
-    render: () => `
-      ${installTipCard()}
-      <h1>Vorschläge</h1>
-      <div class="card placeholder">
-        <p><strong>Hier erscheinen bald deine Filmvorschläge.</strong></p>
-        <p class="muted">Dafür markierst du zuerst unter „Geschmack“ ein paar Filme.</p>
-        <p><a class="btn btn-primary btn-big" href="#/geschmack">Zum Geschmack</a></p>
-      </div>`,
+    render: () => installTipCard() + suggest.render(current()),
+    mount: () => suggest.mount(current()),
   },
   ueberrasch: {
     title: 'Überrasch mich',
@@ -293,6 +288,7 @@ fileInput.addEventListener('change', async () => {
 
 view.addEventListener('click', async (e) => {
   if (currentKey === 'geschmack' && taste.handleClick(e)) return;
+  if (currentKey === 'vorschlaege' && suggest.handleClick(e)) return;
   const pick = e.target.closest('[data-pick]');
   if (pick) return selectProfile(pick.dataset.pick);
 

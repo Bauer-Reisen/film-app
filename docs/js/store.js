@@ -111,7 +111,7 @@ export function setMovie(profileId, movieId, status, meta = {}) {
   if (!p) return null;
   const old = p.movies[movieId] || null;
   if (status) {
-    p.movies[movieId] = { s: status, t: Date.now(), g: meta.g ?? old?.g ?? [], l: meta.l ?? old?.l ?? '', y: meta.y ?? old?.y ?? null };
+    p.movies[movieId] = { s: status, t: Date.now(), g: meta.g ?? old?.g ?? [], l: meta.l ?? old?.l ?? '', y: meta.y ?? old?.y ?? null, n: meta.n ?? old?.n ?? '' }; // n = Titel (für Begründungen)
     p.marksSinceBackup = (p.marksSinceBackup || 0) + 1;
   } else {
     delete p.movies[movieId];

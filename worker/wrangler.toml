@@ -15,5 +15,5 @@ ALLOWED_ORIGINS = "https://bauer-reisen.github.io,http://localhost:5500"
 name = "RATE_LIMITER"
 namespace_id = "1001"
   [ratelimits.simple]
-  limit = 60
+  limit = 300
   period = 60

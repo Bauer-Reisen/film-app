@@ -300,3 +300,17 @@ h2 { font-size: 20px; margin: 24px 0 8px; }
 .film.is-loved .poster-star { background: var(--accent); color: var(--accent-text); }
 .film.is-loved .film-state { color: var(--accent); }
 @media (min-width: 768px) { .poster-btn { width: 100%; } }
+
+/* ---------- Vorschläge ---------- */
+.reason { margin: 0 0 2px; font-weight: 700; color: var(--accent); font-size: 15px; }
+.rating { margin: 0 0 6px; }
+.overview { margin: 0 0 8px; font-size: 15px; }
+.overview summary { cursor: pointer; color: var(--muted); min-height: 32px; display: flex; align-items: center; }
+.overview p { margin: 4px 0 0; }
+.marks-5 .mark-noInterest { grid-column: 1 / -1; }
+.sg[hidden] { display: none; }
+@media (min-width: 768px) {
+  .suggestions { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 18px; }
+  .suggestions .film { grid-template-columns: 140px 1fr; border: 1px solid var(--line); border-radius: var(--radius); padding: 12px; background: var(--surface); }
+  .suggestions .poster-btn { width: 140px; }
+}

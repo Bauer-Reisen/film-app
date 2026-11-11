@@ -87,7 +87,7 @@ Film-App/
 ```
 - **Status `s`:** `loved` (★ Lieblingsfilm, zählt auch als „Mag ich“, Wunsch vom 11.11.2026), `seen` (gesehen), `liked` (mag ich), `disliked` (mag ich nicht), `want` (Merken), `noInterest` (kein Interesse). Ein Film ohne Markierung hat keinen Eintrag.
 - **Merkliste:** Das sind alle Filme mit `want`. Es gibt keine zweite Liste.
-- **Zusatzangaben:** `g` (Genres), `l` (Originalsprache) und `y` (Jahr) werden beim Markieren mitgespeichert. So lässt sich „Überrasch mich" berechnen, ohne TMDB erneut zu fragen.
+- **Zusatzangaben:** `g` (Genres), `l` (Originalsprache), `y` (Jahr) und `n` (Titel, für die Begründungen) werden beim Markieren mitgespeichert. So lässt sich „Überrasch mich" berechnen, ohne TMDB erneut zu fragen.
 - **Sprachwechsel:** Die Markierungen hängen an der Filmnummer, nicht am Titel. Beim Sprachwechsel bleibt alles erhalten.
 - **Dauerhaft speichern:** Die App bittet den Browser darum (`navigator.storage.persist()`). Am iPhone ist das keine Garantie. Deshalb gelten der Home-Bildschirm und die Sicherungsdatei als eigentlicher Schutz.
 
