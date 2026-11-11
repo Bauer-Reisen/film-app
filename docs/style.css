@@ -314,3 +314,7 @@ h2 { font-size: 20px; margin: 24px 0 8px; }
   .suggestions .film { grid-template-columns: 140px 1fr; border: 1px solid var(--line); border-radius: var(--radius); padding: 12px; background: var(--surface); }
   .suggestions .poster-btn { width: 140px; }
 }
+.mark-remove { color: var(--muted); }
+/* Meldung breit genug, damit der Text nicht in schmale Zeilen bricht */
+.toast { width: min(440px, calc(100vw - 2 * var(--gutter))); }
+.toast span { flex: 1; }

@@ -67,7 +67,10 @@ Die Nutzerin kann nicht programmieren. Antworte auf Deutsch, knapp und ohne Fach
     - Ein leeres Profil zeigt einen Hinweis auf „Geschmack“.
     - Geprüft bei 375 px und 1280 px, ohne Konsolenfehler.
   - Noch offen für Schritt 7: Die drei Knöpfe Überrasch mich, Gruppenabend und Kinderfilme kommen oben auf diese Seite.
-- [ ] Schritt 6 – Merkliste
+- [x] **Schritt 6 – Merkliste** (11.11.2026, Version 0.5.0):
+  - `watchlist.js`: alle Filme mit `want`, neueste zuerst, mit Jahr, Laufzeit und Inhalt in der Profilsprache.
+  - Knöpfe: Gesehen, Mag ich, Mag ich nicht und Entfernen. Ein Tipp aufs Poster macht den Film zum ★ Lieblingsfilm. Zu jedem Knopf gibt es Rückgängig.
+  - Getestet: englisches Profil zeigt englische Titel, obwohl beim Merken deutsche gespeichert wurden. „Mag ich“ nimmt den Film heraus und setzt ihn auf liked, Rückgängig setzt ihn zurück auf want. Entfernen und Stern funktionieren, die leere Liste zeigt einen Hinweis. Keine Konsolenfehler.
 - [ ] Schritt 7 – Überrasch mich · 7b Gruppenabend · 7c Kinderfilme
 - [ ] Schritt 8 – Über-Seite, README, Abnahme
 

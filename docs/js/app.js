@@ -1,11 +1,12 @@
 // Oberfläche: Seitenwechsel über die Adresse (#/vorschlaege usw.)
-import { VERSION, LANGUAGES } from './config.js?v=0.4.1';
-import * as store from './store.js?v=0.4.1';
-import { saveBackup, readBackup, findSameName, importAsNew, mergeInto } from './backup.js?v=0.4.1';
-import { esc, dialog, toast, formatDate } from './ui.js?v=0.4.1';
-import * as platform from './platform.js?v=0.4.1';
-import * as taste from './taste.js?v=0.4.1';
-import * as suggest from './suggest.js?v=0.4.1';
+import { VERSION, LANGUAGES } from './config.js?v=0.5.0';
+import * as store from './store.js?v=0.5.0';
+import { saveBackup, readBackup, findSameName, importAsNew, mergeInto } from './backup.js?v=0.5.0';
+import { esc, dialog, toast, formatDate } from './ui.js?v=0.5.0';
+import * as platform from './platform.js?v=0.5.0';
+import * as taste from './taste.js?v=0.5.0';
+import * as suggest from './suggest.js?v=0.5.0';
+import * as watchlist from './watchlist.js?v=0.5.0';
 
 const view = document.getElementById('view');
 const tabs = document.querySelectorAll('.tabs a[data-tab]');
@@ -124,11 +125,8 @@ const pages = {
   },
   merkliste: {
     title: 'Merkliste',
-    render: () => `
-      <h1>Merkliste</h1>
-      <div class="card placeholder">
-        <p class="muted">Noch nichts gemerkt – tippe bei einem Film auf „Merken“.</p>
-      </div>`,
+    render: () => watchlist.render(current()),
+    mount: () => watchlist.mount(current()),
   },
   profil: {
     title: 'Profil',
@@ -289,6 +287,7 @@ fileInput.addEventListener('change', async () => {
 view.addEventListener('click', async (e) => {
   if (currentKey === 'geschmack' && taste.handleClick(e)) return;
   if (currentKey === 'vorschlaege' && suggest.handleClick(e)) return;
+  if (currentKey === 'merkliste' && watchlist.handleClick(e)) return;
   const pick = e.target.closest('[data-pick]');
   if (pick) return selectProfile(pick.dataset.pick);
 

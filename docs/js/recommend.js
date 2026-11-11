@@ -1,9 +1,9 @@
 // Vorschläge berechnen – nachvollziehbar, ohne „Lernen“:
 // Ausgangspunkte holen → Kandidaten sammeln → Punkte vergeben → Vielfalt → Begründung.
 // Alle Zahlen stehen in config.js (RECOMMEND).
-import { RECOMMEND as R } from './config.js?v=0.4.1';
-import * as tmdb from './tmdb.js?v=0.4.1';
-import { SEED_MOVIES, SEED_STUDIOS } from './seeds.js?v=0.4.1';
+import { RECOMMEND as R } from './config.js?v=0.5.0';
+import * as tmdb from './tmdb.js?v=0.5.0';
+import { SEED_MOVIES, SEED_STUDIOS } from './seeds.js?v=0.5.0';
 
 const seedById = new Map(SEED_MOVIES.map((m) => [m.id, m]));
 const studioName = new Map(SEED_STUDIOS.map((s) => [s.id, s.n]));
