@@ -58,6 +58,7 @@ export const newProfile = (name, language = 'de-DE') => ({
   companies: [],
   surpriseShown: [],
   surpriseLastGenre: {},
+  passed: [], // in „Geschmack“ übersprungene Filme (nicht markiert, aber schon durchgesehen)
   settings: { groupHorror: false, groupWar: false, groupAge: null, kidsAge: 6 },
 });
 
@@ -142,6 +143,15 @@ function toggleIn(listName, profileId, entry) {
 }
 export const togglePerson = (profileId, entry) => toggleIn('people', profileId, entry);
 export const toggleCompany = (profileId, entry) => toggleIn('companies', profileId, entry);
+
+// Übersprungene Filme merken, damit sie beim nächsten Öffnen nicht wieder oben stehen
+export function addPassed(profileId, ids) {
+  const p = getProfile(profileId);
+  if (!p || !ids.length) return;
+  p.passed = [...new Set([...(p.passed || []), ...ids])].slice(-3000);
+  save();
+}
+export function clearPassed(profileId) { updateProfile(profileId, { passed: [] }); }
 
 export const markCount = (p) => Object.keys(p.movies).length + p.people.length + p.companies.length;
 

@@ -1,6 +1,6 @@
 {
   "name": "film-app",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "private": true,
   "description": "Was schaue ich als Nächstes? – Filmvorschläge per TMDB",
   "type": "module",

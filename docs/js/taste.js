@@ -1,8 +1,8 @@
 // Seite „Geschmack“: Filme markieren, Lieblingspersonen und -studios wählen, Suche.
-import * as store from './store.js?v=0.4.0';
-import * as tmdb from './tmdb.js?v=0.4.0';
-import { esc, toast } from './ui.js?v=0.4.0';
-import { SEED_MOVIES, SEED_PEOPLE, SEED_STUDIOS } from './seeds.js?v=0.4.0';
+import * as store from './store.js?v=0.4.1';
+import * as tmdb from './tmdb.js?v=0.4.1';
+import { esc, toast } from './ui.js?v=0.4.1';
+import { SEED_MOVIES, SEED_PEOPLE, SEED_STUDIOS } from './seeds.js?v=0.4.1';
 
 const STEP = 20;
 const MARKS = [
@@ -16,8 +16,8 @@ const SEED_IDS = new Set(SEED_MOVIES.map((m) => m.id));
 
 // Zustand der Seite – bleibt erhalten, solange die App offen ist
 const ui = {
-  sub: 'filme', query: '', hideMarked: false,
-  shown: STEP, extra: [], extraLang: null, discoverPage: 0, loading: false,
+  sub: 'filme', query: '', showAll: false, done: null,
+  shown: STEP, extra: [], extraLang: null, discoverPage: 0,
   personFilter: 'all', studioFilter: 'all',
 };
 const films = new Map();   // id → Film (für die Zusatzangaben beim Markieren)
@@ -133,6 +133,7 @@ export function render(p) {
 
 export function mount(view, p) {
   profile = p;
+  ui.done = null; // beim Öffnen neu festhalten, was erledigt ist
   const input = view.querySelector('#taste-search');
   input.addEventListener('input', () => {
     ui.query = input.value;
@@ -156,60 +157,59 @@ function fillBody() {
 }
 
 // ----- Filme -----
+// Beim Öffnen der Seite wird festgehalten, was schon erledigt ist (markiert oder übersprungen).
+// Diese Filme bleiben ausgeblendet; was man jetzt markiert, bleibt bis zum nächsten Öffnen sichtbar.
 const allFilms = () => remember([...SEED_MOVIES.map(fromSeed), ...ui.extra]);
+const candidates = () => (ui.showAll ? allFilms() : allFilms().filter((f) => !ui.done.has(f.id)));
+
+function snapshotDone() {
+  ui.done = new Set([...Object.keys(profile.movies).map(Number), ...(profile.passed || [])]);
+  ui.shown = STEP;
+}
+
+// Notfalls weitere Filme bei TMDB holen, bis genug da sind
+async function ensure(n) {
+  while (candidates().length < n && ui.discoverPage < 50) {
+    ui.discoverPage++;
+    const data = await tmdb.get('discover/movie', { language: profile.language, sort_by: 'vote_count.desc', page: ui.discoverPage });
+    const known = new Set([...SEED_IDS, ...ui.extra.map((f) => f.id)]);
+    ui.extra.push(...(data.results || []).filter((m) => !known.has(m.id)).map(fromTmdb));
+  }
+}
 
 async function fillFilms() {
   const el = body();
+  if (!ui.done) snapshotDone();
   const marked = Object.keys(profile.movies).length;
-  let list = allFilms();
-  if (ui.hideMarked) list = list.filter((f) => !profile.movies[f.id]);
+  const passed = (profile.passed || []).length;
+  try { await ensure(ui.shown); } catch (err) { toast(err.message); }
+  if (body() !== el || ui.sub !== 'filme' || ui.query.trim().length >= 2) return;
+  const doneInfo = ui.showAll
+    ? `<p class="muted small">Du siehst alle Filme, auch die schon markierten. <button class="btn btn-small" type="button" data-taste="toggle-all">Nur neue zeigen</button></p>`
+    : ui.done.size
+      ? `<p class="muted small">${marked} markiert${passed ? `, ${passed} übersprungen` : ''} – die sind ausgeblendet, hier kommen nur neue. <button class="btn btn-small" type="button" data-taste="toggle-all">Alle zeigen</button></p>`
+      : '';
   el.innerHTML = `
-    <p class="muted small">Tipp an, was du kennst. Unbekannte Filme einfach überscrollen. Nochmal tippen nimmt die Markierung zurück. <strong>Aufs Poster tippen = ★ Lieblingsfilm.</strong>${marked ? ` <strong>${marked} markiert.</strong>` : ''}</p>
-    <div class="films">${list.slice(0, ui.shown).map(filmCard).join('')}</div>
+    <p class="muted small">Tipp an, was du kennst. Unbekannte Filme einfach überscrollen. Nochmal tippen nimmt die Markierung zurück. <strong>Aufs Poster tippen = ★ Lieblingsfilm.</strong></p>
+    ${doneInfo}
+    <div class="films">${candidates().slice(0, ui.shown).map(filmCard).join('')}</div>
     <div class="row center-row">
-      <button class="btn btn-primary" type="button" data-taste="more" ${ui.loading ? 'disabled' : ''}>${ui.loading ? 'Lädt …' : 'Weitere laden'}</button>
-      <button class="btn" type="button" data-taste="hide" aria-pressed="${ui.hideMarked}">${ui.hideMarked ? 'Markierte wieder zeigen' : 'Markierte ausblenden'}</button>
+      <button class="btn btn-primary" type="button" data-taste="more">Weitere laden</button>
     </div>`;
 }
 
-async function loadMore() {
-  ui.shown += STEP;
-  const need = () => {
-    const list = allFilms();
-    return (ui.hideMarked ? list.filter((f) => !profile.movies[f.id]) : list).length < ui.shown;
-  };
-  if (need()) {
-    ui.loading = true;
-    replaceMoreButton();
-    try {
-      while (need() && ui.discoverPage < 50) {
-        ui.discoverPage++;
-        const data = await tmdb.get('discover/movie', { language: profile.language, sort_by: 'vote_count.desc', page: ui.discoverPage });
-        const known = new Set([...SEED_IDS, ...ui.extra.map((f) => f.id)]);
-        ui.extra.push(...(data.results || []).filter((m) => !known.has(m.id)).map(fromTmdb));
-      }
-    } catch (err) {
-      ui.shown -= STEP;
-      toast(err.message);
-    } finally {
-      ui.loading = false;
-    }
-  }
-  // Nur die neuen Karten anhängen, damit nichts springt
+async function loadMore(btn) {
   const grid = body()?.querySelector('.films');
   if (!grid) return;
-  let list = allFilms();
-  if (ui.hideMarked) list = list.filter((f) => !profile.movies[f.id] || grid.querySelector(`[data-film="${f.id}"]`));
-  const present = new Set([...grid.querySelectorAll('[data-film]')].map((c) => +c.dataset.film));
-  grid.insertAdjacentHTML('beforeend', list.slice(0, ui.shown).filter((f) => !present.has(f.id)).map(filmCard).join(''));
-  replaceMoreButton();
-}
-
-function replaceMoreButton() {
-  const b = body()?.querySelector('[data-taste="more"]');
-  if (!b) return;
-  b.disabled = ui.loading;
-  b.textContent = ui.loading ? 'Lädt …' : 'Weitere laden';
+  const present = [...grid.querySelectorAll('[data-film]')].map((c) => +c.dataset.film);
+  // Wer weiterblättert, ist an den bisherigen vorbei – die nicht markierten gelten als übersprungen
+  if (!ui.showAll) store.addPassed(profile.id, present.filter((id) => !profile.movies[id]));
+  ui.shown += STEP;
+  btn.disabled = true; btn.textContent = 'Lädt …';
+  try { await ensure(ui.shown); } catch (err) { ui.shown -= STEP; toast(err.message); }
+  btn.disabled = false; btn.textContent = 'Weitere laden';
+  const have = new Set(present);
+  grid.insertAdjacentHTML('beforeend', candidates().slice(0, ui.shown).filter((f) => !have.has(f.id)).map(filmCard).join(''));
 }
 
 // ----- Personen -----
@@ -341,8 +341,8 @@ export function handleClick(e) {
   const sf = e.target.closest('[data-sfilter]');
   if (sf) { ui.studioFilter = sf.dataset.sfilter; fillStudios(); return true; }
   const act = e.target.closest('[data-taste]')?.dataset.taste;
-  if (act === 'more') { loadMore(); return true; }
-  if (act === 'hide') { ui.hideMarked = !ui.hideMarked; ui.shown = STEP; fillFilms(); return true; }
+  if (act === 'more') { loadMore(e.target.closest('[data-taste]')); return true; }
+  if (act === 'toggle-all') { ui.showAll = !ui.showAll; snapshotDone(); fillFilms(); return true; }
   if (act === 'search') { runSearch(); return true; }
   return false;
 }

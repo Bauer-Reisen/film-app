@@ -81,7 +81,8 @@ Film-App/
     "people":    [ { "id": 525, "role": "director", "t": 1762870200000 } ],
     "companies": [ { "id": 41077, "t": 1762870300000 } ],
     "surpriseShown": [ { "id": 11216, "t": 1762870400000 } ],
-    "surpriseLastGenre": { "18": 1762870400000 }
+    "surpriseLastGenre": { "18": 1762870400000 },
+    "passed": [ 550, 680 ]
   }]
 }
 ```
@@ -258,7 +259,8 @@ Damit sucht man privat gezielt einen Film für Kinder.
 - **Laptop:** Kachelraster mit 4–6 Spalten.
 - **Buttons mit Text:** **✓ Gesehen · ♥ Mag ich · ✕ Mag ich nicht · + Merken**. Ein zweiter Tipp nimmt die Markierung zurück. Unbekannte Filme einfach überscrollen.
 - **Personen und Studios:** Ein Tipp schaltet den Favoriten an oder aus (☆/★). Filter: Alle/Schauspiel/Regie bzw. Alle/Klein & Independent.
-- **Unten:** „Weitere laden" und „Markierte ausblenden".
+- **Nur neue Filme (Wunsch vom 11.11.2026):** Beim Öffnen sind alle schon markierten und übersprungenen Filme ausgeblendet. „Übersprungen“ heißt: Der Film stand in der Liste, man hat auf „Weitere laden“ getippt, ohne ihn zu markieren. Er wird im Profil unter `passed` gemerkt. Was man gerade markiert, bleibt sichtbar bis zum nächsten Öffnen. Der Knopf „Alle zeigen“ zeigt alle Filme, „Nur neue zeigen“ blendet die erledigten wieder aus.
+- **Unten:** „Weitere laden“.
 
 ### Vorschläge
 - **Oben:** groß der Button „Überrasch mich".
