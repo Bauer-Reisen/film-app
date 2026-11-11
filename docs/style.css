@@ -142,6 +142,82 @@ h2 { font-size: 20px; margin: 24px 0 8px; }
 .toast.show { display: flex; align-items: center; gap: 12px; }
 @media (min-width: 768px) { .toast { bottom: 24px; } }
 
+/* ---------- Seiten ohne Tab-Leiste („Wer schaut?") ---------- */
+.no-tabs .tabs { display: none; }
+.no-tabs main { padding-bottom: calc(env(safe-area-inset-bottom) + 32px); }
+
+.center { text-align: center; }
+.small { font-size: 15px; }
+.row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.center-row { justify-content: center; margin: 20px 0; }
+.stack > * { margin: 0 0 10px; }
+.stack > *:last-child { margin-bottom: 0; }
+.card + .card, .card + p, h1 + .card { margin-top: 14px; }
+.link { color: var(--accent); text-decoration: underline; }
+
+.btn-danger { color: var(--bad); border-color: color-mix(in srgb, var(--bad) 50%, var(--line)); }
+.btn-small { min-height: 36px; padding: 0 12px; font-size: 15px; }
+
+/* Profilauswahl */
+.people {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 12px;
+  max-width: 640px; margin: 16px auto;
+}
+.person {
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  min-height: 132px; padding: 14px 8px;
+  border-radius: var(--radius); border: 2px solid var(--line); background: var(--surface);
+  cursor: pointer; position: relative;
+}
+.person.is-last { border-color: var(--accent); }
+.avatar {
+  display: grid; place-items: center; width: 64px; height: 64px; border-radius: 50%;
+  background: var(--surface-2); color: var(--accent); font-size: 28px; font-weight: 700;
+}
+.pname { font-weight: 600; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tag { font-size: 12px; color: var(--accent-text); background: var(--accent); border-radius: 999px; padding: 1px 8px; }
+@media (hover: hover) { .person:hover { border-color: var(--muted); } }
+
+.note { max-width: 640px; margin: 8px auto; color: var(--muted); text-align: center; }
+.note summary { cursor: pointer; list-style: none; padding: 10px 0; }
+.note summary::-webkit-details-marker { display: none; }
+.note p { margin: 4px 0; }
+
+/* Hinweis-Karten */
+.hint { border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); }
+.hint p { margin: 0 0 10px; }
+.hint details summary { list-style: none; display: inline-flex; margin-bottom: 8px; }
+.hint details summary::-webkit-details-marker { display: none; }
+.steps { margin: 6px 0 12px; padding-left: 22px; }
+.steps li { margin: 6px 0; }
+.inline-icon { width: 20px; height: 20px; vertical-align: -4px; color: var(--want); }
+
+/* Umschalter Deutsch | Englisch */
+.segmented { display: inline-flex; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+.seg { min-height: 44px; min-width: 110px; padding: 0 16px; border: 0; background: var(--surface-2); cursor: pointer; }
+.seg + .seg { border-left: 1px solid var(--line); }
+.seg[aria-pressed="true"] { background: var(--accent); color: var(--accent-text); font-weight: 700; }
+
+/* Dialoge */
+.dlg {
+  width: min(440px, calc(100vw - 2 * var(--gutter)));
+  border: 1px solid var(--line); border-radius: 16px;
+  background: var(--surface); color: var(--text); padding: 20px;
+}
+.dlg::backdrop { background: rgba(0, 0, 0, .65); }
+.dlg h2 { margin: 0 0 12px; }
+.dlg-body p { margin: 0 0 10px; }
+.dlg-error { color: var(--bad); min-height: 1.2em; margin: 4px 0; }
+.dlg-buttons { display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end; }
+.field { display: flex; flex-direction: column; gap: 6px; margin: 0 0 14px; border: 0; padding: 0; }
+.field legend { padding: 0; margin-bottom: 6px; }
+.field input[type="text"] {
+  min-height: 48px; padding: 0 12px; font-size: 16px;
+  border-radius: 10px; border: 1px solid var(--line); background: var(--bg);
+}
+.radio { display: flex; align-items: center; gap: 10px; min-height: 44px; }
+.radio input { width: 22px; height: 22px; accent-color: var(--accent); }
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }

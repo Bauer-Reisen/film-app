@@ -40,7 +40,12 @@ Die Nutzerin kann nicht programmieren. Antworte auf Deutsch, knapp und ohne Fach
     | LAIKA | 11537 |
     | Constantin | 47 |
 
-- [ ] Schritt 3 – Profile
+- [x] **Schritt 3 – Profile** (11.11.2026, Version 0.2.0):
+  - `store.js` (localStorage `filmapp.v1`), `backup.js` (Sichern/Laden/Zusammenführen), `ui.js` (Dialog, Toast), `platform.js` (iOS/Android, Home-Bildschirm).
+  - „Wer schaut?": 1 Profil → öffnet direkt; mehrere → Auswahl, zuletzt genutztes oben. Aktuelles Profil gilt pro Sitzung (sessionStorage).
+  - Getestet: anlegen (doppelter Name abgefangen, Enter = Speichern), Neustart, wechseln, Sprache (Markierung bleibt), umbenennen, abbrechen, sichern (Dateiname), laden (Zusammenführen: neuere Markierung gewinnt; als neues Profil; kaputte Datei), löschen. 375 px + 1280 px, keine Konsolenfehler.
+  - App-Icons als PNG (`scripts/make-icons.js`), Manifest für Android-Installation.
+  - Nicht im Browser prüfbar: iPhone-Hinweis zum Home-Bildschirm und Teilen-Menü – am echten iPhone testen.
 - [ ] Schritt 4 – Geschmack
 - [ ] Schritt 5 – Vorschläge
 - [ ] Schritt 6 – Merkliste
