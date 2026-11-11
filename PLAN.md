@@ -275,7 +275,7 @@ Damit sucht man privat gezielt einen Film für Kinder.
 - **Altersfreigabe (optional):** eine Auswahl **„Alter: egal · ab 12 · ab 16“**, standardmäßig „egal“.
 - **Schalter oben:** **„+ Horror“** und **„+ Krieg“**. Sie sind normalerweise aus, und jedes Profil merkt sich die letzte Wahl. Ändert man einen Schalter, kommt sofort ein neuer Vorschlag.
 - **Großansicht zum Herzeigen:** Poster über fast die ganze Breite, Titel groß, darunter Genre, Jahr und Laufzeit, ein Satz Inhalt und gegebenenfalls „Kennst du schon – hat dir gefallen“. Sie ist gut lesbar, wenn man das Handy in die Runde hält.
-- **Buttons:** **„Anderer Vorschlag“** und **„Den schauen wir“**. Nach „Den schauen wir“ erscheint: „Viel Spaß! Wie war's? [Mag ich] [Mag ich nicht] [Später]“.
+- **Buttons:** **„Anderer Vorschlag“**, **„Schon gesehen“** und **„Den schauen wir“**. „Schon gesehen“ markiert den Film im eigenen Profil als gesehen und zeigt sofort den nächsten Vorschlag. Er kommt dort nie wieder, es sei denn, er war ein gemochter Film (Wunsch vom 11.11.2026). Nach „Den schauen wir“ erscheint: „Viel Spaß! Wie war's? [Mag ich] [Mag ich nicht] [Später]“.
 
 ### Kinderfilme
 - **Oben:** die Altersauswahl **„ab 0 · ab 6 · ab 12“** als drei große Knöpfe.
