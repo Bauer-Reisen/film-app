@@ -46,7 +46,11 @@ Die Nutzerin kann nicht programmieren. Antworte auf Deutsch, knapp und ohne Fach
   - Getestet: anlegen (doppelter Name abgefangen, Enter = Speichern), Neustart, wechseln, Sprache (Markierung bleibt), umbenennen, abbrechen, sichern (Dateiname), laden (Zusammenführen: neuere Markierung gewinnt; als neues Profil; kaputte Datei), löschen. 375 px + 1280 px, keine Konsolenfehler.
   - App-Icons als PNG (`scripts/make-icons.js`), Manifest für Android-Installation.
   - Nicht im Browser prüfbar: iPhone-Hinweis zum Home-Bildschirm und Teilen-Menü – am echten iPhone testen.
-- [ ] Schritt 4 – Geschmack
+- [x] **Schritt 4 – Geschmack** (11.11.2026, Version 0.3.0):
+  - `taste.js` (Seite), `tmdb.js` (Abfragen über den Worker, höchstens 6 gleichzeitig, Zwischenspeicher), `seeds.js` (233 Filme, 88 Personen, 38 Studios mit Titel/Poster DE+EN).
+  - Startliste neu bauen: `node scripts/make-seeds.js` (ca. 10 Min., Zwischenstand in `.seed-cache.json`).
+  - Getestet: markieren, zweiter Tipp nimmt zurück, Markierung bleibt beim Sprachwechsel. „Weitere laden“ geht nach der Startliste mit TMDB weiter, ohne doppelte Filme. „Markierte ausblenden“ funktioniert. Die Suche findet „Die Verurteilten“ und „Shawshank“ (beides Nr. 278), außerdem Personen und Studios. Favoriten für Personen und Studios, Filter Schauspiel/Regie und Indie, „Aus Filmen, die du magst“. Geprüft bei 375 px, 360 px und 1280 px, ohne Konsolenfehler.
+  - Gefundener Fehler: Ein Modul ohne `?v=` wird doppelt geladen und hat dann getrennte Daten. Deshalb prüft der Hook vor jedem Push jetzt auch die Versionsnummern der Importe.
 - [ ] Schritt 5 – Vorschläge
 - [ ] Schritt 6 – Merkliste
 - [ ] Schritt 7 – Überrasch mich · 7b Gruppenabend · 7c Kinderfilme

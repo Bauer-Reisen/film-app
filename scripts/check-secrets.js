@@ -34,3 +34,18 @@ if (hits.length) {
   process.exit(1);
 }
 console.log('✓ Kein Schlüssel im Code gefunden.');
+
+// Zusatzprüfung: Alle Importe tragen dieselbe Versionsnummer wie config.js.
+// Sonst lädt der Browser ein Modul doppelt, und zwei Teile der App hätten getrennte Daten.
+const version = readFileSync('docs/js/config.js', 'utf8').match(/VERSION = '([^']+)'/)[1];
+const wrong = [];
+for (const f of files.filter((f) => /^docs\/js\/.+\.js$/.test(f))) {
+  for (const m of readFileSync(f, 'utf8').matchAll(/from '(\.\/[^']+)'/g)) {
+    if (!m[1].endsWith(`?v=${version}`)) wrong.push(`${f}: ${m[1]}`);
+  }
+}
+if (wrong.length) {
+  console.error(`\n✋ Importe ohne Versionsnummer ${version}:\n   ${wrong.join('\n   ')}\nBitte zuerst ausführen: node scripts/set-version.js ${version}\n`);
+  process.exit(1);
+}
+console.log(`✓ Alle Importe tragen Version ${version}.`);

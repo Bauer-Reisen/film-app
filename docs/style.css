@@ -221,3 +221,70 @@ h2 { font-size: 20px; margin: 24px 0 8px; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* ---------- Geschmack ---------- */
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.search { display: block; margin: 0 0 12px; }
+.search input {
+  width: 100%; min-height: 48px; padding: 0 14px; font-size: 16px;
+  border-radius: var(--radius); border: 1px solid var(--line); background: var(--surface);
+}
+.sub-tabs { display: flex; width: 100%; margin-bottom: 12px; }
+.sub-tabs .seg, .filter .seg { flex: 1; min-width: 0; }
+.filter { display: flex; max-width: 420px; margin-bottom: 8px; }
+.filter .seg { font-size: 15px; padding: 0 10px; }
+[hidden] { display: none !important; }
+
+/* Film-Liste: am Handy eine Zeile pro Film */
+.films { display: flex; flex-direction: column; }
+.film {
+  display: grid; grid-template-columns: 100px 1fr; gap: 12px;
+  padding: 12px 0; border-bottom: 1px solid var(--line);
+}
+.poster { width: 100px; height: 150px; object-fit: cover; border-radius: 8px; background: var(--surface-2); display: block; }
+.poster.noimg { display: grid; place-items: center; color: var(--muted); font-size: 13px; text-align: center; }
+.film-info { display: flex; flex-direction: column; min-width: 0; }
+.film-title { font-size: 17px; margin: 2px 0 2px; overflow-wrap: anywhere; }
+.year { color: var(--muted); font-weight: 400; font-size: 15px; }
+.film-state { margin: 0 0 6px; min-height: 1.3em; font-size: 14px; font-weight: 700; color: var(--accent); }
+.marks { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: auto; }
+.mark {
+  min-height: 44px; padding: 2px 6px; font-size: 14px; line-height: 1.15;
+  border-radius: 10px; border: 1px solid var(--line); background: var(--surface-2); cursor: pointer;
+}
+.mark span { font-weight: 700; }
+.mark[aria-pressed="true"] { font-weight: 700; color: var(--accent-text); }
+.mark-seen[aria-pressed="true"] { background: #d4d4d8; border-color: #d4d4d8; }
+.mark-liked[aria-pressed="true"] { background: var(--good); border-color: var(--good); }
+.mark-disliked[aria-pressed="true"] { background: var(--bad); border-color: var(--bad); }
+.mark-want[aria-pressed="true"] { background: var(--want); border-color: var(--want); }
+.film.is-marked .poster { outline: 3px solid var(--accent); outline-offset: -3px; }
+
+/* Personen und Studios: Kacheln */
+.tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+.tile {
+  display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center;
+  padding: 12px 8px; min-height: 44px; border-radius: var(--radius);
+  border: 2px solid var(--line); background: var(--surface); cursor: pointer;
+}
+.tile.is-fav { border-color: var(--accent); }
+.face { width: 72px; height: 72px; border-radius: 50%; object-fit: cover; background: var(--surface-2); }
+.face.noimg, .logo.noimg { display: grid; place-items: center; color: var(--accent); font-size: 26px; font-weight: 700; }
+.logo { display: grid; place-items: center; width: 100%; height: 72px; padding: 8px; border-radius: 8px; background: #f2f2f2; }
+.logo img { max-width: 100%; max-height: 56px; object-fit: contain; }
+.logo.noimg { background: var(--surface-2); }
+.tile-name { font-weight: 700; overflow-wrap: anywhere; }
+.tile-sub { font-size: 13px; color: var(--muted); }
+.star { font-size: 14px; color: var(--muted); }
+.tile.is-fav .star { color: var(--accent); font-weight: 700; }
+.tag-indie { background: var(--want); }
+
+@media (min-width: 768px) {
+  .films { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 18px; }
+  .film { grid-template-columns: 1fr; border: 0; padding: 0; gap: 8px; }
+  .poster { width: 100%; height: auto; aspect-ratio: 2 / 3; }
+  .tiles { grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); }
+}
+@media (hover: hover) {
+  .mark:hover, .tile:hover { border-color: var(--muted); }
+}

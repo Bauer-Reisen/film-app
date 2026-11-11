@@ -1,9 +1,10 @@
 // Oberfläche: Seitenwechsel über die Adresse (#/vorschlaege usw.)
-import { VERSION, LANGUAGES } from './config.js?v=0.2.1';
-import * as store from './store.js?v=0.2.1';
-import { saveBackup, readBackup, findSameName, importAsNew, mergeInto } from './backup.js?v=0.2.1';
-import { esc, dialog, toast, formatDate } from './ui.js?v=0.2.1';
-import * as platform from './platform.js?v=0.2.1';
+import { VERSION, LANGUAGES } from './config.js?v=0.3.0';
+import * as store from './store.js?v=0.3.0';
+import { saveBackup, readBackup, findSameName, importAsNew, mergeInto } from './backup.js?v=0.3.0';
+import { esc, dialog, toast, formatDate } from './ui.js?v=0.3.0';
+import * as platform from './platform.js?v=0.3.0';
+import * as taste from './taste.js?v=0.3.0';
 
 const view = document.getElementById('view');
 const tabs = document.querySelectorAll('.tabs a[data-tab]');
@@ -123,12 +124,8 @@ const pages = {
   },
   geschmack: {
     title: 'Geschmack',
-    render: () => `
-      <h1>Geschmack</h1>
-      <div class="card placeholder">
-        <p><strong>Hier klickst du dich durch Filme, Personen und Studios.</strong></p>
-        <p class="muted">Kommt in Bauschritt 4.</p>
-      </div>`,
+    render: () => taste.render(current()),
+    mount: () => taste.mount(view, current()),
   },
   merkliste: {
     title: 'Merkliste',
@@ -295,6 +292,7 @@ fileInput.addEventListener('change', async () => {
 });
 
 view.addEventListener('click', async (e) => {
+  if (currentKey === 'geschmack' && taste.handleClick(e)) return;
   const pick = e.target.closest('[data-pick]');
   if (pick) return selectProfile(pick.dataset.pick);
 
@@ -323,6 +321,7 @@ whoBtn.addEventListener('click', () => leaveProfile());
 window.addEventListener('installable', () => show());
 
 // ---------- Anzeigen ----------
+let currentKey = null;
 function show() {
   let key = (location.hash.replace(/^#\/?/, '') || 'vorschlaege').split('?')[0];
   if (!pages[key]) key = 'vorschlaege';
@@ -331,7 +330,9 @@ function show() {
   const activeTab = page.tab || key;
 
   document.body.classList.toggle('no-tabs', !!page.noTabs);
+  currentKey = key;
   view.innerHTML = page.render();
+  page.mount?.();
   document.title = `${page.title} · Was schaue ich?`;
   tabs.forEach((a) => {
     if (a.dataset.tab === activeTab) a.setAttribute('aria-current', 'page');

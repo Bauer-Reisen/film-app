@@ -127,6 +127,22 @@ export function restoreMovie(profileId, movieId, old) {
   save();
 }
 
+// Lieblingspersonen und -studios: an/aus. entry enthält id, Name (n), Bild (p/logo), bei Personen role
+function toggleIn(listName, profileId, entry) {
+  const p = getProfile(profileId);
+  if (!p) return false;
+  const i = p[listName].findIndex((x) => x.id === entry.id);
+  if (i >= 0) p[listName].splice(i, 1);
+  else {
+    p[listName].push({ ...entry, t: Date.now() });
+    p.marksSinceBackup = (p.marksSinceBackup || 0) + 1;
+  }
+  save();
+  return i < 0; // true = jetzt Favorit
+}
+export const togglePerson = (profileId, entry) => toggleIn('people', profileId, entry);
+export const toggleCompany = (profileId, entry) => toggleIn('companies', profileId, entry);
+
 export const markCount = (p) => Object.keys(p.movies).length + p.people.length + p.companies.length;
 
 // ---------- Geräte-Einstellungen (Hinweise) ----------
