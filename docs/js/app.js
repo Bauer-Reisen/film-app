@@ -1,9 +1,9 @@
 // Oberfläche: Seitenwechsel über die Adresse (#/vorschlaege usw.)
-import { VERSION, LANGUAGES } from './config.js';
-import * as store from './store.js';
-import { saveBackup, readBackup, findSameName, importAsNew, mergeInto } from './backup.js';
-import { esc, dialog, toast, formatDate } from './ui.js';
-import * as platform from './platform.js';
+import { VERSION, LANGUAGES } from './config.js?v=0.2.1';
+import * as store from './store.js?v=0.2.1';
+import { saveBackup, readBackup, findSameName, importAsNew, mergeInto } from './backup.js?v=0.2.1';
+import { esc, dialog, toast, formatDate } from './ui.js?v=0.2.1';
+import * as platform from './platform.js?v=0.2.1';
 
 const view = document.getElementById('view');
 const tabs = document.querySelectorAll('.tabs a[data-tab]');
@@ -345,3 +345,21 @@ function show() {
 
 window.addEventListener('hashchange', show);
 show();
+
+// ---------- Update-Prüfung ----------
+// Handys heben die Seite eine Weile auf. Beim Öffnen (und beim Zurückkehren in
+// die App) fragen wir kurz nach, ob es eine neue Version gibt, und laden sie.
+async function checkForUpdate() {
+  if (location.hostname === 'localhost') return;
+  try {
+    const res = await fetch(`version.json?t=${Date.now()}`, { cache: 'no-store' });
+    const { version } = await res.json();
+    if (!version || version === VERSION) return;
+    const key = 'filmapp.reloadedFor';
+    if (sessionStorage.getItem(key) === version) return; // nie endlos neu laden
+    sessionStorage.setItem(key, version);
+    location.replace(`${location.pathname}?v=${version}${location.hash}`);
+  } catch { /* offline – egal */ }
+}
+checkForUpdate();
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') checkForUpdate(); });

@@ -58,5 +58,8 @@ Die Nutzerin kann nicht programmieren. Antworte auf Deutsch, knapp und ohne Fach
 - **Virenschutz:** AVG prüft verschlüsselte Verbindungen mit. Deshalb muss vor `wrangler`-Befehlen `NODE_USE_SYSTEM_CA=1` gesetzt werden. In PowerShell `npx.cmd` statt `npx` verwenden, weil die Ausführung von Skripten gesperrt ist.
 - **Worker aktualisieren:** `NODE_USE_SYSTEM_CA=1 npx wrangler deploy --config worker/wrangler.toml`. Das Secret bleibt dabei erhalten.
 - **Missbrauchsschutz:** höchstens 60 Anfragen pro Minute und Gerät. `check-tmdb.js` wartet automatisch, wenn das Limit erreicht ist.
+- **Neue Version:**
+  - Vor jedem Hochladen `node scripts/set-version.js X.Y.Z` ausführen. Das setzt die Nummer in `config.js`, `version.json`, `index.html`, allen Importen und `package.json`.
+  - Die App vergleicht beim Öffnen `version.json` mit ihrer eigenen Nummer und lädt bei Abweichung selbst neu. Ohne neue Nummer bekommen Handys das Update erst nach etwa 10 Minuten oder noch später.
 - **Hochladen:** `git push`. Die Anmeldung bei GitHub ist gespeichert, und der Hook prüft vorher auf Schlüssel.
 
