@@ -1,19 +1,19 @@
 // Oberfläche: Seitenwechsel über die Adresse (#/vorschlaege usw.)
-import { VERSION, LANGUAGES } from './config.js?v=1.7.0';
-import * as store from './store.js?v=1.7.0';
-import { saveBackup, readBackup, findSameName, importAsNew, mergeInto } from './backup.js?v=1.7.0';
-import { esc, dialog, toast, formatDate } from './ui.js?v=1.7.0';
-import * as platform from './platform.js?v=1.7.0';
-import * as taste from './taste.js?v=1.7.0';
-import * as suggest from './suggest.js?v=1.7.0';
-import * as watchlist from './watchlist.js?v=1.7.0';
-import * as sneak from './sneak.js?v=1.7.0';
-import * as group from './group.js?v=1.7.0';
-import * as kids from './kids.js?v=1.7.0';
-import * as rewatch from './rewatch.js?v=1.7.0';
-import * as trailer from './trailer.js?v=1.7.0';
-import { initRuntimes } from './runtime.js?v=1.7.0';
-import { mediaOf } from './media.js?v=1.7.0';
+import { VERSION, LANGUAGES } from './config.js?v=1.8.0';
+import * as store from './store.js?v=1.8.0';
+import { saveBackup, readBackup, findSameName, importAsNew, mergeInto } from './backup.js?v=1.8.0';
+import { esc, dialog, toast, formatDate } from './ui.js?v=1.8.0';
+import * as platform from './platform.js?v=1.8.0';
+import * as taste from './taste.js?v=1.8.0';
+import * as suggest from './suggest.js?v=1.8.0';
+import * as watchlist from './watchlist.js?v=1.8.0';
+import * as sneak from './sneak.js?v=1.8.0';
+import * as group from './group.js?v=1.8.0';
+import * as kids from './kids.js?v=1.8.0';
+import * as rewatch from './rewatch.js?v=1.8.0';
+import * as trailer from './trailer.js?v=1.8.0';
+import { initRuntimes } from './runtime.js?v=1.8.0';
+import { mediaOf } from './media.js?v=1.8.0';
 
 const view = document.getElementById('view');
 const APP_URL = 'https://bauer-reisen.github.io/film-app/';
@@ -213,7 +213,8 @@ const pages = {
     render: () => `
       <h1>Über diese App</h1>
       <div class="card stack">
-        <p>„Was schaue ich?“ schlägt dir Filme vor, die zu deinem Geschmack passen – mit einem Satz, warum. Dazu gibt es „Überrasch mich“, den Gruppenabend und Kinderfilme.</p>
+        <p>„Was schaue ich?“ schlägt dir Filme und Serien vor, die zu deinem Geschmack passen – mit einem Satz, warum. Dazu gibt es „Überrasch mich“, den Gruppenabend, Kinderfilme und Kinderserien.</p>
+        <p>Oben schaltest du zwischen <strong>Filme</strong> und <strong>Serien</strong> um. Was du bei Filmen magst, hilft auch bei den Serien – und umgekehrt.</p>
       </div>
 
       <h2>Filmdaten</h2>
@@ -221,7 +222,7 @@ const pages = {
         <a href="https://www.themoviedb.org/" target="_blank" rel="noopener" class="tmdb-logo-link">
           <img class="tmdb-logo" src="img/tmdb.svg" alt="The Movie Database (TMDB)" width="180" height="24">
         </a>
-        <p>Alle Filmdaten und Poster kommen von <a href="https://www.themoviedb.org/" target="_blank" rel="noopener">The Movie Database (TMDB)</a>.</p>
+        <p>Alle Film- und Seriendaten und Poster kommen von <a href="https://www.themoviedb.org/" target="_blank" rel="noopener">The Movie Database (TMDB)</a>.</p>
         <p lang="en" class="muted">This product uses the TMDB API but is not endorsed or certified by TMDB.</p>
       </div>
 

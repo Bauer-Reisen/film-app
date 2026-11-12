@@ -138,6 +138,8 @@ Die Nutzerin kann nicht programmieren. Antworte auf Deutsch, knapp und ohne Fach
   - **Lieblingsserie:** zieht aus den ★-Serien (`rewatchShownTv`).
   - Geprüft (375 und 1280 px): 20× Überrasch mich = 20 verschiedene Serien; Angefangen → Weiterschauen gespeichert; Gruppenabend ab 12 nur Serien bis 12, Folgen ≤ 60 Min.; Kinderserien ab 0 und ab 6 ohne zu hohe Freigabe; Lieblingsserie wechselt zwischen den ★-Serien. Filmseiten danach unverändert. Keine Konsolenfehler. Testprofil gelöscht.
   - Bekannt: Die Folgenlänge kommt bei manchen Serien von der letzten Folge und kann abweichen (z. B. Friends „ca. 48 Min.“ wegen Doppelfolge zum Schluss).
+- [x] **Serien S4 – Abschluss** (12.11.2026, Version 1.8.0): „Über diese App“ und README erwähnen Serien, den Umschalter und „Angefangen“. Live geprüft: Filme und Serien auf allen Seiten.
+- [ ] **Noch von dir am echten Handy:** Serien ausprobieren – Umschalter oben, ein paar Serien markieren (auch ⏸ Angefangen), Vorschläge, Überrasch mich, Gruppenabend, Kinderserien, Lieblingsserie, Merkliste „Weiterschauen“.
 - [ ] **Noch von dir am echten Handy:** iPhone (Home-Bildschirm-Hinweis, Umzug Safari → Home-Bildschirm-App, Teilen-Menü beim Sichern) und ein Android-Handy, alles ohne Zoomen.
 
 ## Hinweise

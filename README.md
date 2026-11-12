@@ -1,6 +1,6 @@
 # Was schaue ich? – Film-App
 
-Die App erfasst einmal deinen Filmgeschmack und schlägt dir dann Filme vor, die du noch nicht kennst – jeweils mit einem Satz, warum. Außerdem gibt es „Überrasch mich“, „Gruppenabend“ und „Kinderfilme“.
+Die App erfasst einmal deinen Geschmack und schlägt dir dann Filme und Serien vor, die du noch nicht kennst – jeweils mit einem Satz, warum. Außerdem gibt es „Überrasch mich“, „Gruppenabend“, „Kinderfilme“ und „Kinderserien“.
 
 ## Benutzen
 
@@ -18,6 +18,7 @@ Tipp: Leg die App gleich beim ersten Öffnen auf deinen Home-Bildschirm. Wie das
 5. **Gruppenabend:** Jeder tippt auf dem eigenen Handy. Jedes Handy zeigt einen Film, der zum eigenen Geschmack und in eine Runde passt. Dann wird abgestimmt.
 6. **Kinderfilme:** gute Filme ab 0, ab 6 oder ab 12 (FSK, sonst US-Freigabe).
 7. **Merkliste:** alles, was du dir gemerkt hast.
+8. **Filme · Serien:** Der Umschalter oben wechselt alle Seiten zwischen Filmen und Serien. Bei Serien gibt es zusätzlich Sender und den Knopf **⏸ Angefangen** („Will ich weiterschauen“ oder „Hat mich verloren“). Was du bei Filmen magst, bringt passende Serien – und umgekehrt.
 
 ### Profile mitnehmen
 Profile liegen nur im Browser des jeweiligen Geräts. Unter **Profil → Profil sichern** entsteht eine kleine Datei. Mit **Profil laden** holt man sie auf einem anderen Gerät wieder rein.
@@ -45,12 +46,14 @@ Wichtige Dateien in `docs/js/`:
 
 | Datei | Inhalt |
 |---|---|
-| `config.js` | alle Stellschrauben (Punkte, Grenzen, Gruppen- und Kinderregeln) und die Versionsnummer |
+| `config.js` | alle Stellschrauben (Punkte, Grenzen, Gruppen- und Kinderregeln; für Serien `RECOMMEND_TV`, `SURPRISE_TV`, `GROUP_TV`, `KIDS_TV`, Brücke Film↔Serie `BRIDGE`) und die Versionsnummer |
+| `media.js` | alles, was sich zwischen Filmen und Serien unterscheidet (Adressen, Wörter, Profilfelder, „Angefangen“) |
 | `recommend.js` | wie Vorschläge entstehen |
 | `surprise.js` | „Überrasch mich“ |
-| `group.js` / `kids.js` | Gruppenabend / Kinderfilme |
+| `group.js` / `kids.js` | Gruppenabend / Kinderfilme und -serien |
 | `age.js` | Altersfreigaben |
-| `seeds.js` | Startlisten (wird mit `node scripts/make-seeds.js` erzeugt) |
+| `seeds.js` | Startlisten Filme (wird mit `node scripts/make-seeds.js` erzeugt) |
+| `seeds-tv.js` | Startlisten Serien, Serien-Personen und Sender (`node scripts/make-seeds-tv.js`) |
 | `themes.js` | Themen und ihre TMDB-Stichwörter |
 
 ### Neue Version veröffentlichen
@@ -76,6 +79,6 @@ Hinter einem Virenscanner, der Verbindungen prüft (z. B. AVG), vorher `NODE_USE
 
 ## Quelle der Filmdaten
 
-Alle Filmdaten und Poster stammen von [The Movie Database (TMDB)](https://www.themoviedb.org/).
+Alle Film- und Seriendaten und Poster stammen von [The Movie Database (TMDB)](https://www.themoviedb.org/).
 
 This product uses the TMDB API but is not endorsed or certified by TMDB.
