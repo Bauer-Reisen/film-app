@@ -1,13 +1,26 @@
 // Laufzeit nachladen: TMDB-Listen enthalten sie nicht, nur die Details.
 // Filme: „· 112 Min.“, Serien: „· 3 Staffeln · ca. 50 Min.“
 // Geladen wird erst, wenn eine Karte (fast) auf dem Bildschirm ist – so bleiben es wenige Abfragen.
-import * as tmdb from './tmdb.js?v=1.5.0';
-import { tvLength } from './media.js?v=1.5.0';
+import * as tmdb from './tmdb.js?v=1.6.0';
+import { tvLength } from './media.js?v=1.6.0';
 
 const known = new Map(); // 'movie:id' / 'tv:id' → Text ('' = unbekannt)
 
 // Platzhalter, den die Seiten in ihre Karten schreiben
 export const runtimeSlot = (id, media = 'movie') => `<span class="runtime" data-runtime="${id}" data-rtmedia="${media}"></span>`;
+
+// Titel in fremder Schrift (z. B. Koreanisch), weil es keinen deutschen gibt? Dann den englischen nachladen.
+const FOREIGN = /[^\p{Script=Latin}\p{N}\p{P}\p{Zs}\p{S}]/u;
+export const titleText = (title, id, media = 'movie') => (FOREIGN.test(title || '')
+  ? `<span data-titlefix="${id}" data-rtmedia="${media}">${String(title).replace(/[<>&"]/g, '')}</span>`
+  : null);
+async function fixTitle(el) {
+  el.dataset.done = '1';
+  try {
+    const d = await tmdb.get(`${el.dataset.rtmedia || 'movie'}/${el.dataset.titlefix}`, { language: 'en-US' });
+    if (d.title && !FOREIGN.test(d.title)) el.textContent = d.title;
+  } catch { /* dann bleibt der Originaltitel */ }
+}
 
 const keyOf = (el) => `${el.dataset.rtmedia || 'movie'}:${el.dataset.runtime}`;
 const show = (el, text) => { el.dataset.done = '1'; el.textContent = text ? ` · ${text}` : ''; };
@@ -33,7 +46,11 @@ export function initRuntimes(root, language) {
       if (e.target.matches('[data-runtime]')) fill(e.target, language());
     }
   }, { rootMargin: '400px 0px' });
-  const scan = () => root.querySelectorAll('[data-runtime]:not([data-done]):not([data-watched])').forEach((el) => {
+  const scan = () => {
+    root.querySelectorAll('[data-titlefix]:not([data-done])').forEach(fixTitle);
+    scanRuntimes();
+  };
+  const scanRuntimes = () => root.querySelectorAll('[data-runtime]:not([data-done]):not([data-watched])').forEach((el) => {
     if (known.has(keyOf(el))) { show(el, known.get(keyOf(el))); return; }
     el.dataset.watched = '1';
     seen.observe(el.closest('article') || el); // die ganze Karte beobachten (der Platzhalter selbst ist anfangs leer)

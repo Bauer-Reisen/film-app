@@ -1,13 +1,14 @@
 // Seite „Merkliste“: alle Filme bzw. Serien mit „Merken“, neueste zuerst.
 // Bei Serien steht oben „Weiterschauen“ (angefangen, will ich zu Ende schauen).
 // Titel und Poster kommen immer in der Profilsprache (Startliste oder TMDB).
-import * as store from './store.js?v=1.5.0';
-import * as tmdb from './tmdb.js?v=1.5.0';
-import { esc, toast } from './ui.js?v=1.5.0';
-import { trailerBtn } from './trailer.js?v=1.5.0';
-import { SEED_MOVIES } from './seeds.js?v=1.5.0';
-import { SEED_SHOWS } from './seeds-tv.js?v=1.5.0';
-import { MEDIA, mediaOf, marksOf, tvLength, askStarted, stateLabel } from './media.js?v=1.5.0';
+import * as store from './store.js?v=1.6.0';
+import * as tmdb from './tmdb.js?v=1.6.0';
+import { esc, toast } from './ui.js?v=1.6.0';
+import { trailerBtn } from './trailer.js?v=1.6.0';
+import { titleText } from './runtime.js?v=1.6.0';
+import { SEED_MOVIES } from './seeds.js?v=1.6.0';
+import { SEED_SHOWS } from './seeds-tv.js?v=1.6.0';
+import { MEDIA, mediaOf, marksOf, tvLength, askStarted, stateLabel } from './media.js?v=1.6.0';
 
 const seedById = { movie: new Map(SEED_MOVIES.map((m) => [m.id, m])), tv: new Map(SEED_SHOWS.map((m) => [m.id, m])) };
 const ACTIONS = [
@@ -92,7 +93,7 @@ function card(m) {
         ${poster}<span class="poster-star" aria-hidden="true">☆</span>
       </button>
       <div class="film-info">
-        <h3 class="film-title">${esc(x.title)}</h3>
+        <h3 class="film-title">${titleText(x.title, m.id, md) || esc(x.title)}</h3>
         <p class="rating muted small">${esc(meta)}</p>
         <div class="film-extra">${x.overview ? `<details class="overview"><summary>Worum geht's?</summary><p>${esc(x.overview)}</p></details>` : ''}${trailerBtn(m.id, x.title, false, md)}</div>
         <div class="marks ${md === 'tv' ? 'marks-5' : ''}" role="group" aria-label="${esc(x.title)}">

@@ -323,7 +323,7 @@ h2 { font-size: 20px; margin: 24px 0 8px; }
 .overview { margin: 0 0 8px; font-size: 15px; }
 .overview summary { cursor: pointer; color: var(--muted); min-height: 32px; display: flex; align-items: center; }
 .overview p { margin: 4px 0 0; }
-.marks-5 .mark-noInterest { grid-column: 1 / -1; }
+.marks-5 .mark-noInterest:nth-child(odd) { grid-column: 1 / -1; }
 /* Ungerade Zahl an Knöpfen: der letzte geht über die ganze Breite */
 .marks-5 > .mark:last-child:nth-child(odd) { grid-column: 1 / -1; }
 .mark-started[aria-pressed="true"] { background: #a1a1aa; border-color: #a1a1aa; }

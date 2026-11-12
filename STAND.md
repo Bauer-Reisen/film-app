@@ -124,6 +124,12 @@ Die Nutzerin kann nicht programmieren. Antworte auf Deutsch, knapp und ohne Fach
   - Merkliste bei Serien: oben „Weiterschauen“, darunter „Gemerkt“.
   - Geprüft: altes Profil ohne Serien-Felder lädt und behält seine Filme; alte Sicherung laden und mit Serien zusammenführen; „Haus des Geldes“ und „Money Heist“ finden dieselbe Serie; Sender bewerten; Trailer zu „Dark“; Filmvorschläge unverändert. 360, 375, 800 und 1280 px ohne Querscrollen, keine Konsolenfehler. Testprofile gelöscht.
   - Bei 768–1099 px stehen oben nur noch Symbol, Umschalter und Tab-Namen ohne Bildchen, sonst passt die Zeile nicht.
+- [x] **Serien S2 – Vorschläge mit Brücke** (12.11.2026, Version 1.6.0):
+  - `recommend.js` rechnet für Filme und Serien (`compute(profile, page, media)`). Bei Serien zählen zusätzlich Lieblingssender (+4/+2), Studios (+3/+1,5) und „Weiterschauen“ (wie Merken). „Hat mich verloren“ zählt bei der Genre-Neigung halb negativ. Grenzen in `config.js` unter `RECOMMEND_TV`.
+  - **Brücke** (`BRIDGE` in config.js): bis zu 6 ★/♥-Titel der anderen Seite bringen gleichen Titel/Stoff (+6), gleiche Stichwörter mit passendem Genre (+3/+2) und ihre Regie/Hauptrollen (+4). Begründung z. B. „Weil du den Film „Fargo“ liebst“, „Mit Steve Buscemi aus „Fargo““, „Von Vince Gilligan („Breaking Bad“)“.
+  - „Heute Lust auf“ und „Aus welcher Zeit“ auch für Serien (Klassiker bei Serien: vor 1990). Kinderserien erscheinen in den normalen Vorschlägen nur, wenn man selbst welche mag.
+  - Titel in fremder Schrift (z. B. Koreanisch) werden durch den englischen ersetzt.
+  - Geprüft: Profil nur mit Filmen (Fargo, Arrival ★) bekommt die Serie „Fargo“ und Serien mit Buscemi/McDormand. Profil nur mit Serien (Breaking Bad, Dark ★) bekommt „El Camino“, Filme von Baran bo Odar, Pulp Fiction, Zodiac. Serien-Vorschläge: Better Call Saul, The Penguin, FROM … Keine markierten Titel, „Mehr“ ohne doppelte, Angefangen + Rückgängig, Filter Zeitreise + 2010er. 375 und 1280 px, keine Konsolenfehler. Testprofile gelöscht.
 - [ ] **Noch von dir am echten Handy:** iPhone (Home-Bildschirm-Hinweis, Umzug Safari → Home-Bildschirm-App, Teilen-Menü beim Sichern) und ein Android-Handy, alles ohne Zoomen.
 
 ## Hinweise

@@ -1,6 +1,6 @@
 // Filme oder Serien: alles, was sich zwischen beiden unterscheidet, steht hier.
 // Die Seiten fragen hier nach (Adressen, Wörter, Profilfelder), statt alles doppelt zu bauen.
-import { dialog, esc } from './ui.js?v=1.5.0';
+import { dialog, esc } from './ui.js?v=1.6.0';
 
 // Serien-Genres, die nie vorgeschlagen werden: Nachrichten, Reality, Seifenoper, Talkshow
 export const TV_EXCLUDE = [10763, 10764, 10766, 10767];
@@ -48,6 +48,25 @@ export function tvLength(d) {
   return [n ? `${n} ${n === 1 ? 'Staffel' : 'Staffeln'}` : null, min ? `ca. ${min} Min.` : null].filter(Boolean).join(' · ');
 }
 export const episodeMinutes = (d) => d?.episode_run_time?.[0] || d?.last_episode_to_air?.runtime || d?.next_episode_to_air?.runtime || 0;
+
+// Rollen einer Person: bei Filmen Regie bzw. Hauptrolle, bei Serien Idee/Regie bzw. tragende Rolle (ab 4 Folgen)
+export function creditsOf(d, role, mediaId) {
+  if (mediaId === 'tv') {
+    return role === 'director'
+      ? (d.crew || []).filter((m) => m.job === 'Creator' || (m.job === 'Director' && (m.episode_count || 0) >= 2))
+      : (d.cast || []).filter((m) => (m.episode_count || 0) >= 4);
+  }
+  return role === 'director' ? (d.crew || []).filter((m) => m.job === 'Director') : (d.cast || []).filter((m) => m.order != null && m.order <= 4);
+}
+
+// Genres zwischen Filmen und Serien übersetzen (TMDB hat für Serien eigene Sammel-Genres)
+const MOVIE_TO_TV = { 28: [10759], 12: [10759], 14: [10765], 878: [10765], 10752: [10768], 36: [10768], 53: [9648, 80], 27: [9648], 10749: [18] };
+const TV_TO_MOVIE = { 10759: [28, 12], 10765: [878, 14], 10768: [10752, 36], 10762: [10751, 16] };
+const SAME = new Set([16, 35, 80, 99, 18, 10751, 9648, 37]);
+export function mapGenres(ids, from) {
+  const table = from === 'movie' ? MOVIE_TO_TV : TV_TO_MOVIE;
+  return [...new Set((ids || []).flatMap((g) => table[g] || (SAME.has(g) ? [g] : [])))];
+}
 
 // Status „Angefangen“ bei Serien – zwei Arten
 export const STARTED = new Set(['paused', 'dropped']);

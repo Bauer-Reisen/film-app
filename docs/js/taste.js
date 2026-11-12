@@ -1,12 +1,12 @@
 // Seite „Geschmack“: Personen, Studios/Sender und Themen in Stufen wählen, Filme oder Serien markieren, Suche.
-import * as store from './store.js?v=1.5.0';
-import * as tmdb from './tmdb.js?v=1.5.0';
-import { esc, toast } from './ui.js?v=1.5.0';
-import { runtimeSlot } from './runtime.js?v=1.5.0';
-import { SEED_MOVIES, SEED_PEOPLE, SEED_STUDIOS } from './seeds.js?v=1.5.0';
-import { SEED_SHOWS, SEED_TV_PEOPLE, SEED_NETWORKS } from './seeds-tv.js?v=1.5.0';
-import { THEMES, themeById } from './themes.js?v=1.5.0';
-import { MEDIA, mediaOf, marksOf, excludedGenre, askStarted, stateLabel, STARTED } from './media.js?v=1.5.0';
+import * as store from './store.js?v=1.6.0';
+import * as tmdb from './tmdb.js?v=1.6.0';
+import { esc, toast } from './ui.js?v=1.6.0';
+import { runtimeSlot, titleText } from './runtime.js?v=1.6.0';
+import { SEED_MOVIES, SEED_PEOPLE, SEED_STUDIOS } from './seeds.js?v=1.6.0';
+import { SEED_SHOWS, SEED_TV_PEOPLE, SEED_NETWORKS } from './seeds-tv.js?v=1.6.0';
+import { THEMES, themeById } from './themes.js?v=1.6.0';
+import { MEDIA, mediaOf, marksOf, excludedGenre, askStarted, stateLabel, STARTED, creditsOf } from './media.js?v=1.6.0';
 
 const STEP = 20;
 const MARKS = [
@@ -67,7 +67,7 @@ function filmCard(f) {
         <span class="poster-star" aria-hidden="true">${s === 'loved' ? '★' : '☆'}</span>
       </button>
       <div class="film-info">
-        <h3 class="film-title">${esc(f.title)}${f.y ? ` <span class="year">${f.y}${runtimeSlot(f.id, media())}</span>` : ` <span class="year">${runtimeSlot(f.id, media())}</span>`}</h3>
+        <h3 class="film-title">${titleText(f.title, f.id, media()) || esc(f.title)}${f.y ? ` <span class="year">${f.y}${runtimeSlot(f.id, media())}</span>` : ` <span class="year">${runtimeSlot(f.id, media())}</span>`}</h3>
         ${f.why ? `<p class="film-why">Von deinen Lieblingen: ${esc(f.why)}</p>` : ''}
         <p class="film-state">${s ? esc(stateLabel(media(), s)) : ''}</p>
         <div class="marks ${tv ? 'marks-5' : ''}" role="group" aria-label="${esc(f.title)} markieren">
@@ -223,16 +223,6 @@ const passedList = () => (media() === 'tv' ? profile.passedTv : profile.passed) 
 function snapshotDone() {
   L().done = new Set([...Object.keys(marks()).map(Number), ...passedList()]);
   L().shown = STEP;
-}
-
-// Rollen einer Person: bei Filmen Regie bzw. Hauptrolle, bei Serien Idee/Regie bzw. tragende Rolle (ab 4 Folgen)
-export function creditsOf(d, role, mediaId) {
-  if (mediaId === 'tv') {
-    return role === 'director'
-      ? (d.crew || []).filter((m) => m.job === 'Creator' || (m.job === 'Director' && (m.episode_count || 0) >= 2))
-      : (d.cast || []).filter((m) => (m.episode_count || 0) >= 4);
-  }
-  return role === 'director' ? (d.crew || []).filter((m) => m.job === 'Director') : (d.cast || []).filter((m) => m.order != null && m.order <= 4);
 }
 
 // Titel der gewählten Personen, Studios, Sender und Themen – bekannte zuerst, damit man schnell abhaken kann
@@ -490,7 +480,8 @@ async function runSearch() {
 async function mark(card, status) {
   const md = media();
   const id = +card.dataset.film;
-  const f = films[md].get(id) || {};
+  const f = { ...(films[md].get(id) || {}) };
+  f.title = card.querySelector('[data-titlefix]')?.textContent || f.title; // ggf. der englische statt fremder Schrift
   const old = marks()[id]?.s || null;
   let now;
   if (status === 'loved') now = old === 'loved' ? 'liked' : 'loved'; // Stern: an/aus (aus = bleibt „Mag ich“)

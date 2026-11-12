@@ -1,12 +1,13 @@
 // Seite „Vorschläge“: Liste mit Begründung, fünf Rückmeldungen, Rückgängig, „Mehr“.
-import * as store from './store.js?v=1.5.0';
-import * as tmdb from './tmdb.js?v=1.5.0';
-import { esc, toast } from './ui.js?v=1.5.0';
-import { runtimeSlot } from './runtime.js?v=1.5.0';
-import { trailerBtn } from './trailer.js?v=1.5.0';
-import { compute, computeFiltered, visible, hasSources, ERAS, eraById } from './recommend.js?v=1.5.0';
-import { THEMES, themeById } from './themes.js?v=1.5.0';
-import { RECOMMEND } from './config.js?v=1.5.0';
+import * as store from './store.js?v=1.6.0';
+import * as tmdb from './tmdb.js?v=1.6.0';
+import { esc, toast } from './ui.js?v=1.6.0';
+import { runtimeSlot, titleText } from './runtime.js?v=1.6.0';
+import { trailerBtn } from './trailer.js?v=1.6.0';
+import { compute, computeFiltered, visible, hasSources, erasFor, eraById } from './recommend.js?v=1.6.0';
+import { MEDIA, mediaOf, askStarted, stateLabel } from './media.js?v=1.6.0';
+import { THEMES, themeById } from './themes.js?v=1.6.0';
+import { RECOMMEND } from './config.js?v=1.6.0';
 
 const FEEDBACK = [
   ['want', '+', 'Merken'],
@@ -15,7 +16,8 @@ const FEEDBACK = [
   ['disliked', '✕', 'Mag ich nicht'],
   ['noInterest', '–', 'Kein Interesse'],
 ];
-const LABEL = { loved: '★ Lieblingsfilm', want: 'Gemerkt', seen: 'Gesehen', liked: 'Mag ich', disliked: 'Mag ich nicht', noInterest: 'Kein Interesse' };
+const FEEDBACK_TV = [...FEEDBACK.slice(0, 4), ['started', '⏸', 'Angefangen'], FEEDBACK[4]];
+const label = (md, s) => stateLabel(md, s).replace(/^[^\p{L}]+/u, '');
 
 let profile = null;
 let pool = [];       // alle berechneten Vorschläge (sortiert)
@@ -25,7 +27,9 @@ let run = 0;
 const byId = new Map();
 let mood = ''; // „Heute Lust auf …“ – gilt, solange die App offen ist
 let era = '';  // „Aus welcher Zeit?“
-const calc = () => (mood || era ? computeFiltered(profile, { theme: mood, era }, page) : compute(profile, page));
+let md = 'movie'; // Filme oder Serien – wie gerade oben eingestellt
+const calc = () => (mood || era ? computeFiltered(profile, { theme: mood, era }, page, md) : compute(profile, page, md));
+const W = () => MEDIA[md].w;
 
 function moodPicker() {
   const favs = (profile.themes || []).filter((t) => themeById.has(t.id)).map((t) => themeById.get(t.id));
@@ -42,7 +46,7 @@ function moodPicker() {
     <label class="mood"><span>Aus welcher Zeit</span>
       <select id="era">
         <option value="">egal</option>
-        ${ERAS.map((e) => `<option value="${e.id}" ${e.id === era ? 'selected' : ''}>${esc(e.n)}</option>`).join('')}
+        ${erasFor(md).map((e) => `<option value="${e.id}" ${e.id === era ? 'selected' : ''}>${esc(e.n)}</option>`).join('')}
       </select>
     </label>`;
 }
@@ -51,19 +55,23 @@ const box = () => document.getElementById('suggest-list');
 
 export function render(p) {
   profile = p;
+  md = mediaOf(p);
+  if (era && !eraById(md).has(era)) era = '';
   return `
     <h1>Vorschläge</h1>
     <nav class="modes" aria-label="Besondere Vorschläge">
       <a class="mode" href="#/gruppe"><span aria-hidden="true">🍿</span> Gruppenabend</a>
-      <a class="mode" href="#/kinder"><span aria-hidden="true">🧸</span> Kinderfilme</a>
-      <a class="mode" href="#/liebling"><span aria-hidden="true">★</span> Lieblingsfilm</a>
+      <a class="mode" href="#/kinder"><span aria-hidden="true">🧸</span> ${W().kids}</a>
+      <a class="mode" href="#/liebling"><span aria-hidden="true">★</span> ${W().fav}</a>
     </nav>
     ${moodPicker()}
-    <div id="suggest-list" aria-live="polite"><p class="muted center">Suche passende Filme …</p></div>`;
+    <div id="suggest-list" aria-live="polite"><p class="muted center">Suche passende ${W().many} …</p></div>`;
 }
 
 export async function mount(p) {
   profile = p;
+  md = mediaOf(p);
+  byId.clear();
   const mine = ++run;
   shown = []; page = 1;
   const sel = document.getElementById('mood');
@@ -71,14 +79,14 @@ export async function mount(p) {
   if (sel && selEra) sel.onchange = selEra.onchange = () => {
     mood = sel.value;
     era = selEra.value;
-    box().innerHTML = '<p class="muted center">Suche passende Filme …</p>';
+    box().innerHTML = `<p class="muted center">Suche passende ${W().many} …</p>`;
     mount(profile);
   };
-  if (!hasSources(p) && !mood && !era) {
+  if (!hasSources(p, md) && !mood && !era) {
     box().innerHTML = `
       <div class="card placeholder">
         <p><strong>Noch keine Vorschläge – die App kennt deinen Geschmack noch nicht.</strong></p>
-        <p class="muted">Markiere unter „Geschmack“ ein paar Filme mit „Mag ich“ oder wähle Lieblingspersonen. Schon 3–5 Filme reichen für den Anfang.</p>
+        <p class="muted">Markiere unter „Geschmack“ ein paar ${W().many} mit „Mag ich“ oder wähle Lieblingspersonen. Schon 3–5 reichen für den Anfang. Gemochte ${md === 'tv' ? 'Filme' : 'Serien'} zählen auch.</p>
         <p><a class="btn btn-primary btn-big" href="#/geschmack">Zum Geschmack</a></p>
       </div>`;
     return;
@@ -89,17 +97,17 @@ export async function mount(p) {
     if (mine === run && box()) box().innerHTML = errorBox(err.message);
     return;
   }
-  if (mine !== run || !box()) return; // inzwischen woanders hingetippt
+  if (mine !== run || !box() || mediaOf(profile) !== md) return; // inzwischen woanders hingetippt
   pool.forEach((x) => byId.set(x.movie.id, x));
-  const first = visible(profile, pool).slice(0, RECOMMEND.blockSize);
+  const first = visible(profile, pool, md).slice(0, RECOMMEND.blockSize);
   shown = first.map((x) => x.movie.id);
   if (!first.length) {
     box().innerHTML = `<div class="card placeholder"><p><strong>Gerade keine neuen Vorschläge.</strong></p>
-      <p class="muted">Markiere unter „Geschmack“ weitere Filme oder Personen – dann kommen neue dazu.</p></div>`;
+      <p class="muted">Markiere unter „Geschmack“ weitere ${W().many} oder Personen – dann kommen neue dazu.</p></div>`;
     return;
   }
   box().innerHTML = `
-    <p class="muted small">${mood || era ? `${[mood && `Thema „${esc(themeById.get(mood).n)}“`, era && esc(eraById.get(era).n)].filter(Boolean).join(', ')} – sortiert nach deinem Geschmack.` : 'Passend zu dem, was du magst.'} Tipp aufs Poster = ★ Lieblingsfilm.</p>
+    <p class="muted small">${mood || era ? `${[mood && `Thema „${esc(themeById.get(mood).n)}“`, era && esc(eraById(md).get(era).n)].filter(Boolean).join(', ')} – sortiert nach deinem Geschmack.` : 'Passend zu dem, was du magst.'} Tipp aufs Poster = ★ ${W().fav}.</p>
     <div class="suggestions">${first.map(card).join('')}</div>
     <div class="row center-row"><button class="btn btn-primary" type="button" data-sg="more">Mehr Vorschläge</button></div>`;
 }
@@ -112,18 +120,18 @@ function card(x) {
   const overview = m.overview ? `<details class="overview"><summary>Worum geht's?</summary><p>${esc(m.overview)}</p></details>` : '';
   return `
     <article class="film sg" data-sgfilm="${m.id}">
-      <button type="button" class="poster-btn" data-fb="loved" aria-label="${esc(m.title)} als Lieblingsfilm">
+      <button type="button" class="poster-btn" data-fb="loved" aria-label="${esc(m.title)} als ${W().fav}">
         <img class="poster" src="${tmdb.img(m.poster_path, 'w185')}" srcset="${tmdb.img(m.poster_path, 'w185')} 185w, ${tmdb.img(m.poster_path, 'w342')} 342w"
           sizes="(min-width: 768px) 200px, 100px" width="100" height="150" loading="lazy" decoding="async" alt="">
         <span class="poster-star" aria-hidden="true">☆</span>
       </button>
       <div class="film-info">
-        <h3 class="film-title">${esc(m.title)}${y ? ` <span class="year">${y}</span>` : ''}</h3>
+        <h3 class="film-title">${titleText(m.title, m.id, md) || esc(m.title)}${y ? ` <span class="year">${y}</span>` : ''}</h3>
         <p class="reason">${esc(x.text)}</p>
-        <p class="rating muted small">TMDB-Note ${m.vote_average.toFixed(1).replace('.', ',')}${runtimeSlot(m.id)}</p>
-        <div class="film-extra">${overview}${trailerBtn(m.id, m.title)}</div>
+        <p class="rating muted small">TMDB-Note ${m.vote_average.toFixed(1).replace('.', ',')}${runtimeSlot(m.id, md)}</p>
+        <div class="film-extra">${overview}${trailerBtn(m.id, m.title, false, md)}</div>
         <div class="marks marks-5" role="group" aria-label="Rückmeldung zu ${esc(m.title)}">
-          ${FEEDBACK.map(([key, icon, label]) => `<button type="button" class="mark mark-${key}" data-fb="${key}"><span aria-hidden="true">${icon}</span> ${label}</button>`).join('')}
+          ${(md === 'tv' ? FEEDBACK_TV : FEEDBACK).map(([key, icon, label]) => `<button type="button" class="mark mark-${key}" data-fb="${key}"><span aria-hidden="true">${icon}</span> ${label}</button>`).join('')}
         </div>
       </div>
     </article>`;
@@ -132,7 +140,7 @@ function card(x) {
 // Nächsten passenden Vorschlag ans Ende hängen, damit die Liste voll bleibt
 function nextFromPool(n) {
   const taken = new Set(shown);
-  return visible(profile, pool).filter((x) => !taken.has(x.movie.id)).slice(0, n);
+  return visible(profile, pool, md).filter((x) => !taken.has(x.movie.id)).slice(0, n);
 }
 
 function append(items) {
@@ -154,12 +162,16 @@ async function refreshPool() {
 async function feedback(cardEl, status) {
   const id = Number(cardEl.dataset.sgfilm);
   const x = byId.get(id);
+  if (!x) return;
   const m = x.movie;
-  const old = store.setMovie(profile.id, id, status, { g: m.genre_ids, l: m.original_language, y: tmdb.year(m.release_date), n: m.title });
+  const mine = md;
+  const title = cardEl.querySelector('[data-titlefix]')?.textContent || m.title; // ggf. der englische statt fremder Schrift
+  if (status === 'started') { status = await askStarted(title); if (!status) return; }
+  const old = store.setMark(profile.id, mine, id, status, { g: m.genre_ids, l: m.original_language, y: tmdb.year(m.release_date), n: title });
   cardEl.hidden = true;
-  toast(`${LABEL[status]}: ${m.title}`, {
+  toast(`${label(mine, status)}: ${title}`, {
     label: 'Rückgängig',
-    run: () => { store.restoreMovie(profile.id, id, old); cardEl.hidden = false; },
+    run: () => { store.restoreMark(profile.id, mine, id, old); cardEl.hidden = false; },
   });
   await refreshPool();
   append(nextFromPool(1));
@@ -177,7 +189,7 @@ async function more(btn) {
   append(items);
   btn.disabled = false;
   btn.textContent = 'Mehr Vorschläge';
-  if (!items.length) { btn.hidden = true; toast('Mehr Vorschläge gibt es gerade nicht. Markiere weitere Filme!'); }
+  if (!items.length) { btn.hidden = true; toast(`Mehr Vorschläge gibt es gerade nicht. Markiere weitere ${W().many}!`); }
 }
 
 export function handleClick(e) {
@@ -190,4 +202,4 @@ export function handleClick(e) {
 }
 
 // Für „Überrasch mich“: was gerade bei den Vorschlägen steht, soll dort nicht kommen
-export const currentIds = () => new Set(shown);
+export const currentIds = (media = 'movie') => (media === md ? new Set(shown) : new Set());

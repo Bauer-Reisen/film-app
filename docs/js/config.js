@@ -1,7 +1,7 @@
 // ALLE Einstellungen und Grenzwerte an einer Stelle.
 // Wer etwas nachjustieren will (z. B. Mindestbewertung), ändert es nur hier.
 
-export const VERSION = '1.5.0';
+export const VERSION = '1.6.0';
 
 // Adresse des Cloudflare Workers (nicht geheim – der Schlüssel liegt nur dort).
 export const WORKER_URL = 'https://film-app-tmdb.film-app.workers.dev';
@@ -34,6 +34,25 @@ export const RECOMMEND = {
   recentMinVotes: 30, recentMinVote: 6.0, // ganz neue Filme haben noch wenige Stimmen
   perSourceInBlock: 4, perStrongSourceInBlock: 6, // ★ Liebe darf öfter vorkommen
   blockSize: 20,
+};
+
+// Serien: weniger Stimmen als Filme, dafür meist höhere Noten. Punkte sonst wie RECOMMEND.
+export const RECOMMEND_TV = {
+  minVote: 7.0, minVotes: 100,
+  favMinVote: 6.3, favMinVotes: 40,
+  seeds: { networks: 6 },
+  points: { network: { 2: 4, 1: 2 }, studio: { 2: 3, 1: 1.5 }, paused: 1.5, pausedMax: 3 },
+  themeMinVotes: 50, themeMinVote: 6.8,
+  filterMinVotes: 80, filterMinVote: 7.0,
+  recentMinVotes: 15, recentMinVote: 6.5,
+};
+
+// Brücke Film ↔ Serie: ★/♥-Titel der anderen Seite bringen Vorschläge
+export const BRIDGE = {
+  sources: 6, people: 5,
+  points: { bridgeTitle: 6, bridgeTopic: { 2: 3, 1: 2 }, bridgeTopicMax: 6, bridgePerson: 4, bridgePersonMax: 6 },
+  // Stichwörter, die nichts über den Inhalt sagen (Roman-Vorlage, Abspann-Szenen, Regisseurin …)
+  genericKeywords: /^(based on|aftercreditsstinger|duringcreditsstinger|woman director|sequel|prequel|remake|reboot|independent film|anime|miniseries|sitcom|tv series|live action|adaptation|female protagonist|male protagonist|duringcredits|post-credits|spin off|spin-off|anthology|biography|new york city|los angeles|london|usa|19\d0s|20\d0s|\d{4}s)/i,
 };
 
 export const SURPRISE = {
