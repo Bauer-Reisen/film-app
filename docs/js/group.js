@@ -1,11 +1,12 @@
 // Seite „Gruppenabend“: ein Film, der zu dir passt und in eine Runde passt.
 // Jedes Handy rechnet für sich – man zeigt sich die Vorschläge und stimmt ab.
-import { GROUP as G } from './config.js?v=1.0.0';
-import * as store from './store.js?v=1.0.0';
-import * as tmdb from './tmdb.js?v=1.0.0';
-import { esc, toast } from './ui.js?v=1.0.0';
-import { compute, hasSources, genreTilt } from './recommend.js?v=1.0.0';
-import { ageOk, discoverAge } from './age.js?v=1.0.0';
+import { GROUP as G } from './config.js?v=1.1.0';
+import * as store from './store.js?v=1.1.0';
+import * as tmdb from './tmdb.js?v=1.1.0';
+import { esc, toast } from './ui.js?v=1.1.0';
+import { trailerBtn } from './trailer.js?v=1.1.0';
+import { compute, hasSources, genreTilt } from './recommend.js?v=1.1.0';
+import { ageOk, discoverAge } from './age.js?v=1.1.0';
 
 const COMEDY = 35;
 const LIKED = new Set(['liked', 'loved']);
@@ -204,6 +205,7 @@ function paint() {
         <p class="group-meta">${esc([genres, y, `${m.runtime} Min.`].filter(Boolean).join(' · '))}</p>
         ${knownHint}${why}
         <p>${m.overview ? esc(firstSentence(m.overview)) : ''}</p>
+        <p>${trailerBtn(m.id, m.title)}</p>
         ${actions}
       </div>
     </article>`;

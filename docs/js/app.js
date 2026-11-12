@@ -1,15 +1,16 @@
 // Oberfläche: Seitenwechsel über die Adresse (#/vorschlaege usw.)
-import { VERSION, LANGUAGES } from './config.js?v=1.0.0';
-import * as store from './store.js?v=1.0.0';
-import { saveBackup, readBackup, findSameName, importAsNew, mergeInto } from './backup.js?v=1.0.0';
-import { esc, dialog, toast, formatDate } from './ui.js?v=1.0.0';
-import * as platform from './platform.js?v=1.0.0';
-import * as taste from './taste.js?v=1.0.0';
-import * as suggest from './suggest.js?v=1.0.0';
-import * as watchlist from './watchlist.js?v=1.0.0';
-import * as sneak from './sneak.js?v=1.0.0';
-import * as group from './group.js?v=1.0.0';
-import * as kids from './kids.js?v=1.0.0';
+import { VERSION, LANGUAGES } from './config.js?v=1.1.0';
+import * as store from './store.js?v=1.1.0';
+import { saveBackup, readBackup, findSameName, importAsNew, mergeInto } from './backup.js?v=1.1.0';
+import { esc, dialog, toast, formatDate } from './ui.js?v=1.1.0';
+import * as platform from './platform.js?v=1.1.0';
+import * as taste from './taste.js?v=1.1.0';
+import * as suggest from './suggest.js?v=1.1.0';
+import * as watchlist from './watchlist.js?v=1.1.0';
+import * as sneak from './sneak.js?v=1.1.0';
+import * as group from './group.js?v=1.1.0';
+import * as kids from './kids.js?v=1.1.0';
+import * as trailer from './trailer.js?v=1.1.0';
 
 const view = document.getElementById('view');
 const APP_URL = 'https://bauer-reisen.github.io/film-app/';
@@ -224,6 +225,7 @@ const pages = {
       <div class="card stack">
         <p>Es gibt keine Anmeldung und kein Konto. Deine Profile liegen nur auf diesem Gerät.</p>
         <p class="muted">Für Filmdaten fragt die App über einen kleinen Zwischenhändler (Cloudflare) bei TMDB an. Dabei werden keine Namen oder Markierungen übertragen, nur die Filmsuche selbst.</p>
+        <p class="muted">Trailer kommen von YouTube. YouTube wird erst geladen, wenn du auf „Trailer“ tippst, in der datensparsamen Variante ohne Werbe-Cookies.</p>
         <p class="muted">Streaming-Angebote zeigt die App bewusst nicht an.</p>
       </div>
       <p class="muted small center">Version ${VERSION}</p>`,
@@ -335,6 +337,7 @@ fileInput.addEventListener('change', async () => {
 });
 
 view.addEventListener('click', async (e) => {
+  if (current() && trailer.handleClick(e, current().language)) return;
   if (currentKey === 'geschmack' && taste.handleClick(e)) return;
   if (currentKey === 'vorschlaege' && suggest.handleClick(e)) return;
   if (currentKey === 'merkliste' && watchlist.handleClick(e)) return;

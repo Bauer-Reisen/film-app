@@ -1,9 +1,11 @@
 // Seite „Vorschläge“: Liste mit Begründung, fünf Rückmeldungen, Rückgängig, „Mehr“.
-import * as store from './store.js?v=1.0.0';
-import * as tmdb from './tmdb.js?v=1.0.0';
-import { esc, toast } from './ui.js?v=1.0.0';
-import { compute, visible, hasSources } from './recommend.js?v=1.0.0';
-import { RECOMMEND } from './config.js?v=1.0.0';
+import * as store from './store.js?v=1.1.0';
+import * as tmdb from './tmdb.js?v=1.1.0';
+import { esc, toast } from './ui.js?v=1.1.0';
+import { trailerBtn } from './trailer.js?v=1.1.0';
+import { compute, computeTheme, visible, hasSources } from './recommend.js?v=1.1.0';
+import { THEMES, themeById } from './themes.js?v=1.1.0';
+import { RECOMMEND } from './config.js?v=1.1.0';
 
 const FEEDBACK = [
   ['want', '+', 'Merken'],
@@ -20,6 +22,22 @@ let shown = [];      // ids, die gerade auf der Seite stehen
 let page = 1;
 let run = 0;
 const byId = new Map();
+let mood = ''; // „Heute Lust auf …“ – gilt, solange die App offen ist
+const calc = () => (mood ? computeTheme(profile, mood, page) : compute(profile, page));
+
+function moodPicker() {
+  const favs = (profile.themes || []).filter((t) => themeById.has(t.id)).map((t) => themeById.get(t.id));
+  const rest = THEMES.filter((t) => !favs.includes(t)).sort((a, b) => a.n.localeCompare(b.n, 'de'));
+  const opt = (t) => `<option value="${t.id}" ${t.id === mood ? 'selected' : ''}>${esc(t.n)}</option>`;
+  return `
+    <label class="mood"><span>Heute Lust auf</span>
+      <select id="mood">
+        <option value="">alles, was zu mir passt</option>
+        ${favs.length ? `<optgroup label="Deine Lieblingsthemen">${favs.map(opt).join('')}</optgroup>` : ''}
+        <optgroup label="${favs.length ? 'Weitere Themen' : 'Themen'}">${rest.map(opt).join('')}</optgroup>
+      </select>
+    </label>`;
+}
 
 const box = () => document.getElementById('suggest-list');
 
@@ -32,6 +50,7 @@ export function render(p) {
       <a class="mode" href="#/gruppe"><span aria-hidden="true">🍿</span> Gruppenabend</a>
       <a class="mode" href="#/kinder"><span aria-hidden="true">🧸</span> Kinderfilme</a>
     </nav>
+    ${moodPicker()}
     <div id="suggest-list" aria-live="polite"><p class="muted center">Suche passende Filme …</p></div>`;
 }
 
@@ -39,7 +58,13 @@ export async function mount(p) {
   profile = p;
   const mine = ++run;
   shown = []; page = 1;
-  if (!hasSources(p)) {
+  const sel = document.getElementById('mood');
+  if (sel) sel.onchange = () => {
+    mood = sel.value;
+    box().innerHTML = '<p class="muted center">Suche passende Filme …</p>';
+    mount(profile);
+  };
+  if (!hasSources(p) && !mood) {
     box().innerHTML = `
       <div class="card placeholder">
         <p><strong>Noch keine Vorschläge – die App kennt deinen Geschmack noch nicht.</strong></p>
@@ -49,7 +74,7 @@ export async function mount(p) {
     return;
   }
   try {
-    pool = await compute(p, page);
+    pool = await calc();
   } catch (err) {
     if (mine === run && box()) box().innerHTML = errorBox(err.message);
     return;
@@ -64,7 +89,7 @@ export async function mount(p) {
     return;
   }
   box().innerHTML = `
-    <p class="muted small">Passend zu dem, was du magst. Tipp aufs Poster = ★ Lieblingsfilm.</p>
+    <p class="muted small">${mood ? `Thema „${esc(themeById.get(mood).n)}“, sortiert nach deinem Geschmack.` : 'Passend zu dem, was du magst.'} Tipp aufs Poster = ★ Lieblingsfilm.</p>
     <div class="suggestions">${first.map(card).join('')}</div>
     <div class="row center-row"><button class="btn btn-primary" type="button" data-sg="more">Mehr Vorschläge</button></div>`;
 }
@@ -86,7 +111,7 @@ function card(x) {
         <h3 class="film-title">${esc(m.title)}${y ? ` <span class="year">${y}</span>` : ''}</h3>
         <p class="reason">${esc(x.text)}</p>
         <p class="rating muted small">TMDB-Note ${m.vote_average.toFixed(1).replace('.', ',')}</p>
-        ${overview}
+        <div class="film-extra">${overview}${trailerBtn(m.id, m.title)}</div>
         <div class="marks marks-5" role="group" aria-label="Rückmeldung zu ${esc(m.title)}">
           ${FEEDBACK.map(([key, icon, label]) => `<button type="button" class="mark mark-${key}" data-fb="${key}"><span aria-hidden="true">${icon}</span> ${label}</button>`).join('')}
         </div>
@@ -110,7 +135,7 @@ function append(items) {
 // Nach jeder Rückmeldung neu rechnen (höchstens eine neue Abfrage, der Rest ist gemerkt)
 async function refreshPool() {
   try {
-    const fresh = await compute(profile, page);
+    const fresh = await calc();
     fresh.forEach((x) => byId.set(x.movie.id, x));
     pool = fresh;
   } catch { /* alte Liste bleibt */ }

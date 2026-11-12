@@ -1,11 +1,11 @@
 // Vorschläge berechnen – nachvollziehbar, ohne „Lernen“:
 // Ausgangspunkte holen → Kandidaten sammeln → Punkte vergeben → Vielfalt → Begründung.
 // Alle Zahlen stehen in config.js (RECOMMEND).
-import { RECOMMEND as R } from './config.js?v=1.0.0';
-import * as tmdb from './tmdb.js?v=1.0.0';
-import { SEED_MOVIES, SEED_STUDIOS } from './seeds.js?v=1.0.0';
-import { tierOf } from './store.js?v=1.0.0';
-import { themeById } from './themes.js?v=1.0.0';
+import { RECOMMEND as R } from './config.js?v=1.1.0';
+import * as tmdb from './tmdb.js?v=1.1.0';
+import { SEED_MOVIES, SEED_STUDIOS } from './seeds.js?v=1.1.0';
+import { tierOf } from './store.js?v=1.1.0';
+import { themeById } from './themes.js?v=1.1.0';
 
 const seedById = new Map(SEED_MOVIES.map((m) => [m.id, m]));
 const studioName = new Map(SEED_STUDIOS.map((s) => [s.id, s.n]));
@@ -191,3 +191,37 @@ function diversify(list) {
 
 // Endfilter bei jeder Ausgabe: nichts, was schon markiert ist
 export const visible = (profile, list) => list.filter((x) => !profile.movies[x.movie.id]);
+
+// „Heute Lust auf …“: Filme zu einem Thema, sortiert nach deinem Geschmack.
+// Filme, die auch in deinen normalen Vorschlägen stehen, kommen zuerst.
+export async function computeTheme(profile, themeId, page = 1) {
+  const th = themeById.get(themeId);
+  if (!th) return [];
+  const lang = profile.language;
+  const today = new Date().toISOString().slice(0, 10);
+  const own = new Map((await compute(profile, 1).catch(() => [])).map((x) => [x.movie.id, x]));
+  const tilt = genreTilt(profile);
+  const jobs = [];
+  for (let p = (page - 1) * 3 + 1; p <= page * 3; p++) {
+    jobs.push(tmdb.get('discover/movie', {
+      language: lang, with_keywords: th.k.join('|'), sort_by: 'vote_count.desc', without_genres: 10770,
+      'vote_count.gte': R.themeMinVotes, 'vote_average.gte': R.themeMinVote, page: p,
+    }));
+  }
+  const settled = await Promise.allSettled(jobs);
+  const ok = settled.filter((r) => r.status === 'fulfilled').map((r) => r.value);
+  if (!ok.length) throw settled[0].reason;
+  const seen = new Set();
+  const list = [];
+  for (const m of ok.flatMap((d) => d.results || [])) {
+    if (seen.has(m.id)) continue;
+    seen.add(m.id);
+    if (m.adult || !m.poster_path || !m.release_date || m.release_date > today || profile.movies[m.id]) continue;
+    const mine = own.get(m.id);
+    const t = tilt(m.genre_ids);
+    const score = (mine ? mine.score + 3 : 0) + t * 1.5 + (m.vote_average - 6.5) + Math.log10(Math.max(m.vote_count, 1)) * 0.3;
+    const text = mine ? `${th.n} · ${mine.text}` : t > 0.5 ? `${th.n} · passt zu deinen Lieblingsgenres` : `${th.n} · beliebt zu diesem Thema`;
+    list.push({ movie: m, score, reasons: mine?.reasons || [], source: `mood:${themeId}`, text });
+  }
+  return list.sort((a, b) => b.score - a.score);
+}

@@ -101,6 +101,9 @@ Die Nutzerin kann nicht programmieren. Antworte auf Deutsch, knapp und ohne Fach
   - **Offen:** Das offizielle TMDB-Logo fehlt noch, TMDB blockt das automatische Herunterladen. Bis dahin steht dort ein „TMDB“-Schild. Logo von themoviedb.org/about/logos-attribution als `docs/img/tmdb.svg` speichern, dann erscheint es von selbst.
   - README fertig: Bedienung, Aufbau, neue Version veröffentlichen, Worker, Schlüssel.
   - Abnahme am Rechner geprüft: Link und lokal, zwei Profile → verschiedene Vorschläge, Deutsch/Englisch, 30× Überrasch mich, keine gesehenen Filme in Vorschlägen, Gruppenabend-Regeln, Kinder-Freigaben, Speichern nach Neuladen, Sichern/Laden, 375 px ohne Querscrollen, check-secrets, Worker lehnt fremde Herkunft und fremde Adressen ab (403).
+- [x] **Trailer und „Heute Lust auf …“** (12.11.2026, Version 1.1.0):
+  - Knopf „▶ Trailer“ auf allen Filmkarten (Vorschläge, Merkliste, Überrasch mich, Gruppenabend, Kinderfilme). Öffnet ein Fenster mit eingebettetem YouTube-Trailer (youtube-nocookie, erst beim Tippen geladen), Profilsprache vor Englisch. Ohne Trailer kommt eine kurze Meldung. Neu: `trailer.js`. Über-Seite nennt YouTube.
+  - Vorschläge: Auswahl „Heute Lust auf …“ mit allen 39 Themen (Lieblingsthemen oben). Liefert Filme zum Thema, sortiert nach Geschmack; Filme aus den eigenen Vorschlägen zuerst. Gilt, solange die App offen ist.
 - [ ] **Noch von dir am echten Handy:** iPhone (Home-Bildschirm-Hinweis, Umzug Safari → Home-Bildschirm-App, Teilen-Menü beim Sichern) und ein Android-Handy, alles ohne Zoomen.
 
 ## Hinweise

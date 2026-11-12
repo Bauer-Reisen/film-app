@@ -1,9 +1,10 @@
 // Seite „Merkliste“: alle Filme mit „Merken“, neueste zuerst.
 // Titel und Poster kommen immer in der Profilsprache (Startliste oder TMDB).
-import * as store from './store.js?v=1.0.0';
-import * as tmdb from './tmdb.js?v=1.0.0';
-import { esc, toast } from './ui.js?v=1.0.0';
-import { SEED_MOVIES } from './seeds.js?v=1.0.0';
+import * as store from './store.js?v=1.1.0';
+import * as tmdb from './tmdb.js?v=1.1.0';
+import { esc, toast } from './ui.js?v=1.1.0';
+import { trailerBtn } from './trailer.js?v=1.1.0';
+import { SEED_MOVIES } from './seeds.js?v=1.1.0';
 
 const seedById = new Map(SEED_MOVIES.map((m) => [m.id, m]));
 const ACTIONS = [
@@ -80,7 +81,7 @@ function card(m) {
       <div class="film-info">
         <h3 class="film-title">${esc(x.title)}</h3>
         <p class="rating muted small">${esc(meta)}</p>
-        ${x.overview ? `<details class="overview"><summary>Worum geht's?</summary><p>${esc(x.overview)}</p></details>` : ''}
+        <div class="film-extra">${x.overview ? `<details class="overview"><summary>Worum geht's?</summary><p>${esc(x.overview)}</p></details>` : ''}${trailerBtn(m.id, x.title)}</div>
         <div class="marks" role="group" aria-label="${esc(x.title)}">
           ${ACTIONS.map(([key, icon, label]) => `<button type="button" class="mark mark-${key}" data-wl="${key}"><span aria-hidden="true">${icon}</span> ${label}</button>`).join('')}
         </div>

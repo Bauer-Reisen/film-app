@@ -1,9 +1,10 @@
 // Seite „Überrasch mich“: Vorhang → Aufdecken → Rückmeldung oder anderer Film.
-import * as store from './store.js?v=1.0.0';
-import * as tmdb from './tmdb.js?v=1.0.0';
-import { esc, toast } from './ui.js?v=1.0.0';
-import { draw, genreName } from './surprise.js?v=1.0.0';
-import { currentIds } from './suggest.js?v=1.0.0';
+import * as store from './store.js?v=1.1.0';
+import * as tmdb from './tmdb.js?v=1.1.0';
+import { esc, toast } from './ui.js?v=1.1.0';
+import { trailerBtn } from './trailer.js?v=1.1.0';
+import { draw, genreName } from './surprise.js?v=1.1.0';
+import { currentIds } from './suggest.js?v=1.1.0';
 
 const FEEDBACK = [
   ['want', '+', 'Merken'],
@@ -70,6 +71,7 @@ function paint() {
         <h2 class="reveal-title">${esc(m.title)}${y ? ` <span class="year">${y}</span>` : ''}</h2>
         <p class="muted small">${esc([genres, m.runtime ? `${m.runtime} Min.` : null, m.vote_average ? `TMDB-Note ${m.vote_average.toFixed(1).replace('.', ',')}` : null].filter(Boolean).join(' · '))}</p>
         <p>${m.overview ? esc(m.overview) : '<span class="muted">Keine Inhaltsangabe.</span>'}</p>
+        <p>${trailerBtn(m.id, m.title)}</p>
         <p class="film-state">${s ? esc(STATE_LABEL[s]) : ''}</p>
         <div class="marks marks-5" role="group" aria-label="Rückmeldung zu ${esc(m.title)}">
           ${FEEDBACK.map(([key, icon, label]) => `<button type="button" class="mark mark-${key}" data-snfb="${key}" aria-pressed="${pressed(s, key)}"><span aria-hidden="true">${icon}</span> ${label}</button>`).join('')}
