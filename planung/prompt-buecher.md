@@ -12,9 +12,9 @@ Ich habe eine fertige Web-App „Was schaue ich als Nächstes?“ für Filme und
 ## Was ich will
 - Der Umschalter oben bekommt einen dritten Teil: **Filme · Serien · Bücher**. Die Reiter unten bleiben gleich, bei Büchern heißt „Merkliste“ sinngemäß Leseliste.
 - Markieren: Gelesen · Mag ich · Mag ich nicht · Merken, ★ per Tipp aufs Cover. Zusätzlich **„Abgebrochen“**.
-- Geschmack für Bücher: Lieblingsautorinnen und -autoren (mit ★ Liebe / ♥ Gern wie bei Personen), dieselben **Themen** wie bei Filmen, Genres, eine Startliste mit ca. 150 bekannten Büchern quer durch Länder und Jahrzehnte – deutsche und internationale.
+- Geschmack für Bücher: Lieblingsautorinnen und -autoren (mit ★ Liebe / ♥ Gern wie bei Personen), dieselben **Themen** wie bei Filmen, Genres, eine Startliste mit ca. 150 bekannten Büchern quer durch Länder und Jahrzehnte, als englische Ausgaben (Originale und bekannte Übersetzungen ins Englische).
 - Vorschläge mit Begründung, „Heute Lust auf …“, „Aus welcher Zeit“, Lieblingsbuch, Überrasch mich. Statt Laufzeit: Seitenzahl.
-- Buchtitel und Beschreibung möglichst auf Deutsch, wenn das Profil Deutsch ist.
+- **Ich lese Bücher auf Englisch.** Deshalb bei Büchern eine eigene Sprach-Einstellung pro Profil („Bücher lese ich auf: Englisch | Deutsch“), unabhängig von der Film-Sprache, Standard Englisch. Titel, Cover, Beschreibung und Vorschläge kommen dann in englischen Ausgaben. Beim Scannen zählt das Buch, egal in welcher Sprache die gescannte Ausgabe ist: alle Ausgaben eines Werks gelten als dasselbe Buch.
 
 ## Bücher schnell erfassen: Scannen (sehr wichtig)
 Bei Büchern ist es schwer, aus einer Liste zu erkennen, was man gelesen hat: Cover sind je nach Verlag anders, Titel verschwimmen. Deshalb:
@@ -35,7 +35,7 @@ Ich möchte, dass sich die Bereiche gegenseitig helfen. Beispiel: Wer „Forrest
 4. Ehrlich bewerten, was ohne KI geht: Feine „fühlt sich ähnlich an“-Verbindungen wie Forrest Gump → Hundertjähriger entstehen hier über gemeinsame Themen. Falls das nicht reicht, mir Möglichkeiten nennen (z. B. eine kleine, von Hand gepflegte Liste solcher Paare) – **keine** KI-Dienste mit laufenden Kosten ohne meine Zustimmung.
 
 ## Technik und Regeln (wichtig)
-- **Datenquelle prüfen, bevor gebaut wird:** Mit einem kleinen Prüfskript (wie `scripts/check-tmdb.js`) vergleichen, wie gut **Open Library** (frei, ohne Schlüssel) und **Google Books** deutsche Bücher, Cover, Beschreibungen, Seitenzahlen, Schlagwörter und Bewertungen liefern. Mir das Ergebnis kurz erklären und eine Quelle empfehlen. Falls ein Schlüssel nötig ist: nur im Cloudflare Worker als Secret (trage ich selbst ein), nie im Code. Frag mich nie nach dem Schlüssel.
+- **Datenquelle prüfen, bevor gebaut wird:** Mit einem kleinen Prüfskript (wie `scripts/check-tmdb.js`) vergleichen, wie gut **Open Library** (frei, ohne Schlüssel) und **Google Books** englische Bücher (Schwerpunkt) und deutsche Bücher, Cover, Beschreibungen, Seitenzahlen, Schlagwörter und Bewertungen liefern. Mir das Ergebnis kurz erklären und eine Quelle empfehlen. Falls ein Schlüssel nötig ist: nur im Cloudflare Worker als Secret (trage ich selbst ein), nie im Code. Frag mich nie nach dem Schlüssel.
 - Abfragen laufen über den vorhandenen Worker (neue Adressen in die Erlaubnis-Liste), damit alles an einer Stelle geschützt ist.
 - Quelle der Buchdaten auf der Über-Seite nennen, so wie TMDB.
 - Bestehende Profile und Sicherungsdateien müssen weiter funktionieren.
@@ -43,7 +43,7 @@ Ich möchte, dass sich die Bereiche gegenseitig helfen. Beispiel: Wer „Forrest
 - Am iPhone ohne Zoomen bedienbar (375 px), kein Login, keine Kauf-Links.
 
 ## Wie wir vorgehen
-1. Prüfskript laufen lassen (auch: wie gut findet die Quelle Bücher per ISBN, gerade deutsche?), Ergebnis erklären. Dann `PLAN.md` um einen Abschnitt „Bücher“ erweitern (Datenquelle, Datenmodell, Brücke, Punkte, Seiten, Bauschritte) und mir eine kurze Zusammenfassung zeigen. **Auf mein OK warten.**
+1. Prüfskript laufen lassen (auch: wie gut findet die Quelle Bücher per ISBN, und erkennt sie verschiedene Ausgaben eines Werks als dasselbe Buch?), Ergebnis erklären. Dann `PLAN.md` um einen Abschnitt „Bücher“ erweitern (Datenquelle, Datenmodell, Brücke, Punkte, Seiten, Bauschritte) und mir eine kurze Zusammenfassung zeigen. **Auf mein OK warten.**
 2. Danach alle Bauschritte am Stück durchbauen, ohne zwischendurch zu fragen. Nach jedem Schritt selbst im Browser prüfen (375 px und Laptop), Testprofile danach löschen, `STAND.md` aktualisieren, hochladen und live prüfen.
 3. Am Ende: was ich am echten Handy testen soll.
 
