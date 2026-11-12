@@ -1,17 +1,17 @@
 // Oberfläche: Seitenwechsel über die Adresse (#/vorschlaege usw.)
-import { VERSION, LANGUAGES } from './config.js?v=1.3.1';
-import * as store from './store.js?v=1.3.1';
-import { saveBackup, readBackup, findSameName, importAsNew, mergeInto } from './backup.js?v=1.3.1';
-import { esc, dialog, toast, formatDate } from './ui.js?v=1.3.1';
-import * as platform from './platform.js?v=1.3.1';
-import * as taste from './taste.js?v=1.3.1';
-import * as suggest from './suggest.js?v=1.3.1';
-import * as watchlist from './watchlist.js?v=1.3.1';
-import * as sneak from './sneak.js?v=1.3.1';
-import * as group from './group.js?v=1.3.1';
-import * as kids from './kids.js?v=1.3.1';
-import * as rewatch from './rewatch.js?v=1.3.1';
-import * as trailer from './trailer.js?v=1.3.1';
+import { VERSION, LANGUAGES } from './config.js?v=1.3.2';
+import * as store from './store.js?v=1.3.2';
+import { saveBackup, readBackup, findSameName, importAsNew, mergeInto } from './backup.js?v=1.3.2';
+import { esc, dialog, toast, formatDate } from './ui.js?v=1.3.2';
+import * as platform from './platform.js?v=1.3.2';
+import * as taste from './taste.js?v=1.3.2';
+import * as suggest from './suggest.js?v=1.3.2';
+import * as watchlist from './watchlist.js?v=1.3.2';
+import * as sneak from './sneak.js?v=1.3.2';
+import * as group from './group.js?v=1.3.2';
+import * as kids from './kids.js?v=1.3.2';
+import * as rewatch from './rewatch.js?v=1.3.2';
+import * as trailer from './trailer.js?v=1.3.2';
 
 const view = document.getElementById('view');
 const APP_URL = 'https://bauer-reisen.github.io/film-app/';
@@ -379,7 +379,7 @@ view.addEventListener('click', async (e) => {
 
 whoBtn.addEventListener('click', () => leaveProfile());
 
-// ---------- Tabs: Wechsel ohne Browser-Verlauf, dazu Wischen ----------
+// ---------- Tabs: Wechsel ohne Browser-Verlauf ----------
 // Tab-Wechsel ersetzen den Eintrag im Verlauf. Sonst blättert die Wisch-Geste
 // des Browsers (vom Rand aus) durch alte Seiten statt durch die Tabs.
 tabs.forEach((a) => a.addEventListener('click', (e) => {
@@ -388,30 +388,6 @@ tabs.forEach((a) => a.addEventListener('click', (e) => {
   location.replace(a.getAttribute('href'));
 }));
 
-// Nach links wischen = nächster Tab, nach rechts = vorheriger
-const TAB_ORDER = [...tabs].map((a) => a.dataset.tab);
-let swipe = null;
-view.addEventListener('touchstart', (e) => {
-  swipe = null;
-  if (e.touches.length !== 1 || document.body.classList.contains('no-tabs')) return;
-  const t = e.touches[0];
-  if (t.clientX < 28 || t.clientX > window.innerWidth - 28) return; // Rand gehört dem Browser
-  if (e.target.closest('.modes, .segmented, input, select, textarea, dialog, .no-swipe')) return;
-  swipe = { x: t.clientX, y: t.clientY, time: Date.now() };
-}, { passive: true });
-view.addEventListener('touchend', (e) => {
-  if (!swipe) return;
-  const t = e.changedTouches[0];
-  const dx = t.clientX - swipe.x;
-  const dy = t.clientY - swipe.y;
-  const slow = Date.now() - swipe.time > 700;
-  swipe = null;
-  if (slow || Math.abs(dx) < 70 || Math.abs(dx) < Math.abs(dy) * 2) return; // eher gescrollt als gewischt
-  const i = TAB_ORDER.indexOf(pages[currentKey]?.tab || currentKey);
-  const next = TAB_ORDER[i + (dx < 0 ? 1 : -1)];
-  if (i < 0 || !next) return;
-  location.replace(`#/${next}`);
-}, { passive: true });
 window.addEventListener('installable', () => show());
 
 // ---------- Anzeigen ----------

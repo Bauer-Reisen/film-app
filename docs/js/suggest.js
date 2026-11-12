@@ -1,11 +1,11 @@
 // Seite „Vorschläge“: Liste mit Begründung, fünf Rückmeldungen, Rückgängig, „Mehr“.
-import * as store from './store.js?v=1.3.1';
-import * as tmdb from './tmdb.js?v=1.3.1';
-import { esc, toast } from './ui.js?v=1.3.1';
-import { trailerBtn } from './trailer.js?v=1.3.1';
-import { compute, computeFiltered, visible, hasSources, ERAS, eraById } from './recommend.js?v=1.3.1';
-import { THEMES, themeById } from './themes.js?v=1.3.1';
-import { RECOMMEND } from './config.js?v=1.3.1';
+import * as store from './store.js?v=1.3.2';
+import * as tmdb from './tmdb.js?v=1.3.2';
+import { esc, toast } from './ui.js?v=1.3.2';
+import { trailerBtn } from './trailer.js?v=1.3.2';
+import { compute, computeFiltered, visible, hasSources, ERAS, eraById } from './recommend.js?v=1.3.2';
+import { THEMES, themeById } from './themes.js?v=1.3.2';
+import { RECOMMEND } from './config.js?v=1.3.2';
 
 const FEEDBACK = [
   ['want', '+', 'Merken'],
@@ -53,7 +53,6 @@ export function render(p) {
   return `
     <h1>Vorschläge</h1>
     <nav class="modes" aria-label="Besondere Vorschläge">
-      <a class="mode" href="#/ueberrasch"><span aria-hidden="true">🎭</span> Überrasch mich</a>
       <a class="mode" href="#/gruppe"><span aria-hidden="true">🍿</span> Gruppenabend</a>
       <a class="mode" href="#/kinder"><span aria-hidden="true">🧸</span> Kinderfilme</a>
       <a class="mode" href="#/liebling"><span aria-hidden="true">★</span> Lieblingsfilm</a>

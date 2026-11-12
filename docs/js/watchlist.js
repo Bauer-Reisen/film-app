@@ -1,10 +1,10 @@
 // Seite „Merkliste“: alle Filme mit „Merken“, neueste zuerst.
 // Titel und Poster kommen immer in der Profilsprache (Startliste oder TMDB).
-import * as store from './store.js?v=1.3.1';
-import * as tmdb from './tmdb.js?v=1.3.1';
-import { esc, toast } from './ui.js?v=1.3.1';
-import { trailerBtn } from './trailer.js?v=1.3.1';
-import { SEED_MOVIES } from './seeds.js?v=1.3.1';
+import * as store from './store.js?v=1.3.2';
+import * as tmdb from './tmdb.js?v=1.3.2';
+import { esc, toast } from './ui.js?v=1.3.2';
+import { trailerBtn } from './trailer.js?v=1.3.2';
+import { SEED_MOVIES } from './seeds.js?v=1.3.2';
 
 const seedById = new Map(SEED_MOVIES.map((m) => [m.id, m]));
 const ACTIONS = [
