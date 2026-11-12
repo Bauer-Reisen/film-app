@@ -1,11 +1,12 @@
 // Seite „Kinderfilme“: gute Filme mit passender Altersfreigabe.
 // Es zählt vor allem Bewertung und Beliebtheit – Kinder haben ihren eigenen Geschmack.
-import { KIDS as K } from './config.js?v=1.3.2';
-import * as store from './store.js?v=1.3.2';
-import * as tmdb from './tmdb.js?v=1.3.2';
-import { esc, toast } from './ui.js?v=1.3.2';
-import { trailerBtn } from './trailer.js?v=1.3.2';
-import { ageOk } from './age.js?v=1.3.2';
+import { KIDS as K } from './config.js?v=1.4.0';
+import * as store from './store.js?v=1.4.0';
+import * as tmdb from './tmdb.js?v=1.4.0';
+import { esc, toast } from './ui.js?v=1.4.0';
+import { runtimeSlot } from './runtime.js?v=1.4.0';
+import { trailerBtn } from './trailer.js?v=1.4.0';
+import { ageOk } from './age.js?v=1.4.0';
 
 const FEEDBACK = [
   ['want', '+', 'Merken'],
@@ -138,7 +139,7 @@ function card(x) {
       <div class="film-info">
         <h3 class="film-title">${esc(m.title)}${y ? ` <span class="year">${y}</span>` : ''}</h3>
         ${hint ? `<p class="reason">${hint}</p>` : ''}
-        <p class="rating muted small">TMDB-Note ${(m.vote_average || 0).toFixed(1).replace('.', ',')}</p>
+        <p class="rating muted small">TMDB-Note ${(m.vote_average || 0).toFixed(1).replace('.', ',')}${runtimeSlot(m.id)}</p>
         <div class="film-extra">${overview}${trailerBtn(m.id, m.title)}</div>
         <div class="marks marks-5" role="group" aria-label="Rückmeldung zu ${esc(m.title)}">
           ${FEEDBACK.map(([key, icon, label]) => `<button type="button" class="mark mark-${key}" data-kfb="${key}" aria-pressed="${pressed(s, key)}"><span aria-hidden="true">${icon}</span> ${label}</button>`).join('')}

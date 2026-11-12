@@ -114,6 +114,7 @@ Die Nutzerin kann nicht programmieren. Antworte auf Deutsch, knapp und ohne Fach
   - Vorher sprang das Wischen durch den Browser-Verlauf (Zurück/Vor), nicht durch die Tabs. Jetzt: nach links wischen = nächster Tab, nach rechts = vorheriger (Vorschläge → Überrasch mich → Geschmack → Merkliste → Profil). Die 28 px am Rand bleiben dem Browser.
   - Tab-Wechsel ersetzen den Verlaufseintrag, statt neue anzulegen.
 - [x] **Aufgeräumt** (12.11.2026, Version 1.3.2): Wischen wieder entfernt (Wunsch: nur Reiter antippen). „Überrasch mich“ gibt es nur noch als eigenen Reiter, oben auf „Vorschläge“ stehen Gruppenabend, Kinderfilme, Lieblingsfilm.
+- [x] **Laufzeit überall** (12.11.2026, Version 1.4.0): Vorschläge, Geschmack und Kinderfilme zeigen jetzt die Laufzeit („· 112 Min.“). Sie wird erst geladen, wenn die Karte fast sichtbar ist (`runtime.js`, eine Detail-Abfrage pro Film, dieselbe wie bei der Merkliste).
 - [ ] **Noch von dir am echten Handy:** iPhone (Home-Bildschirm-Hinweis, Umzug Safari → Home-Bildschirm-App, Teilen-Menü beim Sichern) und ein Android-Handy, alles ohne Zoomen.
 
 ## Hinweise

@@ -1,11 +1,12 @@
 // Seite „Vorschläge“: Liste mit Begründung, fünf Rückmeldungen, Rückgängig, „Mehr“.
-import * as store from './store.js?v=1.3.2';
-import * as tmdb from './tmdb.js?v=1.3.2';
-import { esc, toast } from './ui.js?v=1.3.2';
-import { trailerBtn } from './trailer.js?v=1.3.2';
-import { compute, computeFiltered, visible, hasSources, ERAS, eraById } from './recommend.js?v=1.3.2';
-import { THEMES, themeById } from './themes.js?v=1.3.2';
-import { RECOMMEND } from './config.js?v=1.3.2';
+import * as store from './store.js?v=1.4.0';
+import * as tmdb from './tmdb.js?v=1.4.0';
+import { esc, toast } from './ui.js?v=1.4.0';
+import { runtimeSlot } from './runtime.js?v=1.4.0';
+import { trailerBtn } from './trailer.js?v=1.4.0';
+import { compute, computeFiltered, visible, hasSources, ERAS, eraById } from './recommend.js?v=1.4.0';
+import { THEMES, themeById } from './themes.js?v=1.4.0';
+import { RECOMMEND } from './config.js?v=1.4.0';
 
 const FEEDBACK = [
   ['want', '+', 'Merken'],
@@ -119,7 +120,7 @@ function card(x) {
       <div class="film-info">
         <h3 class="film-title">${esc(m.title)}${y ? ` <span class="year">${y}</span>` : ''}</h3>
         <p class="reason">${esc(x.text)}</p>
-        <p class="rating muted small">TMDB-Note ${m.vote_average.toFixed(1).replace('.', ',')}</p>
+        <p class="rating muted small">TMDB-Note ${m.vote_average.toFixed(1).replace('.', ',')}${runtimeSlot(m.id)}</p>
         <div class="film-extra">${overview}${trailerBtn(m.id, m.title)}</div>
         <div class="marks marks-5" role="group" aria-label="Rückmeldung zu ${esc(m.title)}">
           ${FEEDBACK.map(([key, icon, label]) => `<button type="button" class="mark mark-${key}" data-fb="${key}"><span aria-hidden="true">${icon}</span> ${label}</button>`).join('')}

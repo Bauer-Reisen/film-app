@@ -1,7 +1,7 @@
 // Trailer: Knopf auf den Filmkarten, Fenster mit eingebettetem YouTube-Video.
 // YouTube wird erst geladen, wenn man auf „Trailer“ tippt (datensparsame Variante youtube-nocookie).
-import * as tmdb from './tmdb.js?v=1.3.2';
-import { esc, toast } from './ui.js?v=1.3.2';
+import * as tmdb from './tmdb.js?v=1.4.0';
+import { esc, toast } from './ui.js?v=1.4.0';
 
 export const trailerBtn = (id, title, big = false) =>
   `<button type="button" class="btn ${big ? 'btn-big' : 'btn-small'} trailer-btn" data-trailer="${id}" data-title="${esc(title)}"><span aria-hidden="true">▶</span> Trailer</button>`;

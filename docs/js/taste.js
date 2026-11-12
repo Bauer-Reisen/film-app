@@ -1,9 +1,10 @@
 // Seite „Geschmack“: Personen, Studios und Themen in Stufen wählen, Filme markieren, Suche.
-import * as store from './store.js?v=1.3.2';
-import * as tmdb from './tmdb.js?v=1.3.2';
-import { esc, toast } from './ui.js?v=1.3.2';
-import { SEED_MOVIES, SEED_PEOPLE, SEED_STUDIOS } from './seeds.js?v=1.3.2';
-import { THEMES, themeById } from './themes.js?v=1.3.2';
+import * as store from './store.js?v=1.4.0';
+import * as tmdb from './tmdb.js?v=1.4.0';
+import { esc, toast } from './ui.js?v=1.4.0';
+import { runtimeSlot } from './runtime.js?v=1.4.0';
+import { SEED_MOVIES, SEED_PEOPLE, SEED_STUDIOS } from './seeds.js?v=1.4.0';
+import { THEMES, themeById } from './themes.js?v=1.4.0';
 
 const STEP = 20;
 const MARKS = [
@@ -57,7 +58,7 @@ function filmCard(f) {
         <span class="poster-star" aria-hidden="true">${s === 'loved' ? '★' : '☆'}</span>
       </button>
       <div class="film-info">
-        <h3 class="film-title">${esc(f.title)}${f.y ? ` <span class="year">${f.y}</span>` : ''}</h3>
+        <h3 class="film-title">${esc(f.title)}${f.y ? ` <span class="year">${f.y}${runtimeSlot(f.id)}</span>` : ` <span class="year">${runtimeSlot(f.id)}</span>`}</h3>
         ${f.why ? `<p class="film-why">Von deinen Lieblingen: ${esc(f.why)}</p>` : ''}
         <p class="film-state">${s ? esc(STATE_LABEL[s]) : ''}</p>
         <div class="marks" role="group" aria-label="${esc(f.title)} markieren">
