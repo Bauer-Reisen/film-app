@@ -1,19 +1,19 @@
 // Oberfläche: Seitenwechsel über die Adresse (#/vorschlaege usw.)
-import { VERSION, LANGUAGES } from './config.js?v=1.6.0';
-import * as store from './store.js?v=1.6.0';
-import { saveBackup, readBackup, findSameName, importAsNew, mergeInto } from './backup.js?v=1.6.0';
-import { esc, dialog, toast, formatDate } from './ui.js?v=1.6.0';
-import * as platform from './platform.js?v=1.6.0';
-import * as taste from './taste.js?v=1.6.0';
-import * as suggest from './suggest.js?v=1.6.0';
-import * as watchlist from './watchlist.js?v=1.6.0';
-import * as sneak from './sneak.js?v=1.6.0';
-import * as group from './group.js?v=1.6.0';
-import * as kids from './kids.js?v=1.6.0';
-import * as rewatch from './rewatch.js?v=1.6.0';
-import * as trailer from './trailer.js?v=1.6.0';
-import { initRuntimes } from './runtime.js?v=1.6.0';
-import { mediaOf } from './media.js?v=1.6.0';
+import { VERSION, LANGUAGES } from './config.js?v=1.7.0';
+import * as store from './store.js?v=1.7.0';
+import { saveBackup, readBackup, findSameName, importAsNew, mergeInto } from './backup.js?v=1.7.0';
+import { esc, dialog, toast, formatDate } from './ui.js?v=1.7.0';
+import * as platform from './platform.js?v=1.7.0';
+import * as taste from './taste.js?v=1.7.0';
+import * as suggest from './suggest.js?v=1.7.0';
+import * as watchlist from './watchlist.js?v=1.7.0';
+import * as sneak from './sneak.js?v=1.7.0';
+import * as group from './group.js?v=1.7.0';
+import * as kids from './kids.js?v=1.7.0';
+import * as rewatch from './rewatch.js?v=1.7.0';
+import * as trailer from './trailer.js?v=1.7.0';
+import { initRuntimes } from './runtime.js?v=1.7.0';
+import { mediaOf } from './media.js?v=1.7.0';
 
 const view = document.getElementById('view');
 const APP_URL = 'https://bauer-reisen.github.io/film-app/';
@@ -115,7 +115,6 @@ const pages = {
   },
   vorschlaege: {
     title: 'Vorschläge',
-    tvReady: true,
     render: () => installTipCard() + suggest.render(current()),
     mount: () => suggest.mount(current()),
   },
@@ -132,31 +131,30 @@ const pages = {
   },
   kinder: {
     title: 'Kinderfilme',
+    titleTv: 'Kinderserien',
     tab: 'vorschlaege',
     render: () => kids.render(current()),
     mount: () => kids.mount(current()),
   },
   liebling: {
     title: 'Lieblingsfilm',
+    titleTv: 'Lieblingsserie',
     tab: 'vorschlaege',
     render: () => rewatch.render(current()),
     mount: () => rewatch.mount(current()),
   },
   geschmack: {
     title: 'Geschmack',
-    tvReady: true,
     render: () => taste.render(current()),
     mount: () => taste.mount(view, current()),
   },
   merkliste: {
     title: 'Merkliste',
-    tvReady: true,
     render: () => watchlist.render(current()),
     mount: () => watchlist.mount(current()),
   },
   profil: {
     title: 'Profil',
-    tvReady: true,
     render: () => {
       const p = current();
       const showHome = platform.isIOS && !platform.isStandalone;
@@ -395,14 +393,6 @@ mediaSwitch.addEventListener('click', (e) => {
   show();
 });
 
-// Seiten, die es für Serien noch nicht gibt
-const tvSoon = () => `
-  <div class="card placeholder">
-    <p><strong>Diese Seite gibt es für Serien in Kürze.</strong></p>
-    <p class="muted">Unter „Geschmack“ kannst du schon Serien markieren, Sender und Personen wählen – dann sind die Vorschläge gleich startklar.</p>
-    <p><a class="btn btn-primary btn-big" href="#/geschmack">Zum Geschmack</a></p>
-  </div>`;
-
 // ---------- Tabs: Wechsel ohne Browser-Verlauf ----------
 // Tab-Wechsel ersetzen den Eintrag im Verlauf. Sonst blättert die Wisch-Geste
 // des Browsers (vom Rand aus) durch alte Seiten statt durch die Tabs.
@@ -428,12 +418,11 @@ function show() {
   const p = current();
   const media = p ? mediaOf(p) : 'movie';
   document.body.dataset.media = media;
-  const soon = media === 'tv' && !page.tvReady && !page.noProfile;
-  view.innerHTML = soon ? `<h1>${page.title}</h1>${tvSoon()}` : page.render();
-  if (!soon) page.mount?.();
+  view.innerHTML = page.render();
+  page.mount?.();
   mediaSwitch.hidden = !p || !!page.noTabs;
   mediaSwitch.querySelectorAll('[data-media]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.media === media)));
-  document.title = `${page.title} · Was schaue ich?`;
+  document.title = `${(media === 'tv' && page.titleTv) || page.title} · Was schaue ich?`;
   tabs.forEach((a) => {
     if (a.dataset.tab === activeTab) a.setAttribute('aria-current', 'page');
     else a.removeAttribute('aria-current');

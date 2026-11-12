@@ -1,12 +1,13 @@
-// Seite „Gruppenabend“: ein Film, der zu dir passt und in eine Runde passt.
+// Seite „Gruppenabend“: ein Film (oder eine Serie), der zu dir passt und in eine Runde passt.
 // Jedes Handy rechnet für sich – man zeigt sich die Vorschläge und stimmt ab.
-import { GROUP as G } from './config.js?v=1.6.0';
-import * as store from './store.js?v=1.6.0';
-import * as tmdb from './tmdb.js?v=1.6.0';
-import { esc, toast } from './ui.js?v=1.6.0';
-import { trailerBtn } from './trailer.js?v=1.6.0';
-import { compute, hasSources, genreTilt } from './recommend.js?v=1.6.0';
-import { ageOk, discoverAge } from './age.js?v=1.6.0';
+import { GROUP, GROUP_TV } from './config.js?v=1.7.0';
+import * as store from './store.js?v=1.7.0';
+import * as tmdb from './tmdb.js?v=1.7.0';
+import { esc, toast } from './ui.js?v=1.7.0';
+import { trailerBtn } from './trailer.js?v=1.7.0';
+import { compute, hasSources, genreTilt } from './recommend.js?v=1.7.0';
+import { ageOk, discoverAge } from './age.js?v=1.7.0';
+import { MEDIA, mediaOf, marksOf, tvLength, episodeMinutes } from './media.js?v=1.7.0';
 
 const COMEDY = 35;
 const LIKED = new Set(['liked', 'loved']);
@@ -20,11 +21,16 @@ let skipped = new Set(); // heute Abend übersprungen
 let skippedFor = null;
 let phase = 'pick';     // 'pick' | 'watching'
 let run = 0;
+let md = 'movie';
+let G = GROUP;
+const W = () => MEDIA[md].w;
+const marks = () => marksOf(profile, md);
+const optKey = () => (md === 'tv' ? 'groupTv' : 'group');
 
 const box = () => document.getElementById('group');
-const opts = () => ({ horror: false, war: false, age: 0, ...(profile.settings || {}).group });
+const opts = () => ({ horror: false, war: false, age: 0, ...(profile.settings || {})[optKey()] });
 function setOpts(change) {
-  const settings = { ...(profile.settings || {}), group: { ...opts(), ...change } };
+  const settings = { ...(profile.settings || {}), [optKey()]: { ...opts(), ...change } };
   store.updateProfile(profile.id, { settings });
   profile = store.getProfile(profile.id);
 }
@@ -33,10 +39,11 @@ function setOpts(change) {
 function genresOk(genres) {
   const o = opts();
   const easy = new Set(G.easyGenres);
-  if (o.horror) easy.add(G.optionalGenres.horror);
+  const horror = G.optionalGenres.horror;
+  if (o.horror && horror) easy.add(horror);
   if (o.war) easy.add(G.optionalGenres.krieg);
   if (!genres.some((g) => easy.has(g))) return false;
-  if (!o.horror && genres.includes(G.optionalGenres.horror)) return false;
+  if (!o.horror && horror && genres.includes(horror)) return false;
   if (!o.war && genres.includes(G.optionalGenres.krieg)) return false;
   if (G.onlyWithComedy.some((g) => genres.includes(g)) && !genres.includes(COMEDY)) return false;
   return true;
@@ -44,14 +51,16 @@ function genresOk(genres) {
 const popular = (m) => (m.vote_average || 0) >= G.minVote && (m.vote_count || 0) >= G.minVotes;
 const bonus = (genres) => Object.entries(G.bonus).reduce((sum, [g, b]) => sum + (genres.includes(Number(g)) ? b : 0), 0);
 // Ausgeschlossen: Mag ich nicht, Kein Interesse, Gesehen ohne Mag ich
-const allowed = (id) => { const s = profile.movies[id]?.s; return !s || s === 'want' || LIKED.has(s); };
+// (bei Serien: „Will ich weiterschauen“ geht, „Hat mich verloren“ nicht)
+const allowed = (id) => { const s = marks()[id]?.s; return !s || s === 'want' || s === 'paused' || LIKED.has(s); };
 
 // ---------- Kandidaten sammeln ----------
 async function candidates() {
   const lang = profile.language;
   const o = opts();
   const today = new Date().toISOString().slice(0, 10);
-  const tilt = genreTilt(profile);
+  const tilt = genreTilt(profile, md);
+  const c = MEDIA[md];
   const out = new Map();
   const put = (m, score, why, known, source = 'pop') => {
     const g = m.genre_ids || (m.genres || []).map((x) => x.id);
@@ -64,23 +73,23 @@ async function candidates() {
 
   // 1. die normalen Vorschläge
   const jobs = [];
-  if (hasSources(profile)) {
-    jobs.push(compute(profile, 1).then((recs) => recs.forEach((r) => put(r.movie, r.score, r.text, false, r.source))).catch(() => {}));
+  if (hasSources(profile, md)) {
+    jobs.push(compute(profile, 1, md).then((recs) => recs.forEach((r) => put(r.movie, r.score, r.text, false, r.source))).catch(() => {}));
   }
   // 2. beliebte Filme mit lockeren Genres
-  const easy = [...G.easyGenres, ...(o.horror ? [G.optionalGenres.horror] : []), ...(o.war ? [G.optionalGenres.krieg] : [])];
+  const easy = [...G.easyGenres, ...(o.horror && G.optionalGenres.horror ? [G.optionalGenres.horror] : []), ...(o.war ? [G.optionalGenres.krieg] : [])];
   for (let page = 1; page <= 3; page++) {
-    jobs.push(tmdb.get('discover/movie', {
-      language: lang, sort_by: 'vote_count.desc', with_genres: easy.join('|'), without_genres: 10770,
+    jobs.push(tmdb.get(c.discover, {
+      language: lang, sort_by: 'vote_count.desc', with_genres: easy.join('|'), without_genres: md === 'tv' ? `${c.without},10762` : c.without,
       'vote_average.gte': G.minVote, 'vote_count.gte': G.minVotes, 'with_runtime.lte': G.maxRuntime, page, ...discoverAge(o.age),
     }).then((d) => (d.results || []).forEach((m) => put(m, tilt(m.genre_ids) + (m.vote_average - 6.5), 'Beliebt in Runden', false))).catch(() => {}));
   }
   await Promise.all(jobs);
 
   // 3. Filme, die du schon gesehen und gemocht hast (ohne Abfrage: Liste aus dem Profil)
-  const known = Object.entries(profile.movies).filter(([, m]) => LIKED.has(m.s)).sort((a, b) => (b[1].s === 'loved') - (a[1].s === 'loved') || b[1].t - a[1].t).slice(0, 40);
+  const known = Object.entries(marks()).filter(([, m]) => LIKED.has(m.s)).sort((a, b) => (b[1].s === 'loved') - (a[1].s === 'loved') || b[1].t - a[1].t).slice(0, 40);
 
-  const fresh = [...out.values()].filter((x) => !LIKED.has(profile.movies[x.movie.id]?.s));
+  const fresh = [...out.values()].filter((x) => !LIKED.has(marks()[x.movie.id]?.s));
   fresh.sort((a, b) => b.score - a.score || (b.movie.vote_count || 0) - (a.movie.vote_count || 0));
   // Abwechslung: jeder weitere Film aus derselben Quelle verliert etwas
   const seenSrc = {};
@@ -106,12 +115,14 @@ async function nextValid(mine) {
     const item = list[pos++];
     const id = item.movie.id;
     if (skipped.has(id) || !allowed(id)) continue;
-    if (!item.known && profile.movies[id] && profile.movies[id].s !== 'want') continue;
+    const s = marks()[id]?.s;
+    if (!item.known && s && s !== 'want' && s !== 'paused') continue;
     let d;
-    try { d = await tmdb.get(`movie/${id}`, { language: profile.language, append_to_response: 'release_dates' }); } catch { continue; }
+    try { d = await tmdb.get(`${MEDIA[md].path}/${id}`, { language: profile.language, append_to_response: md === 'tv' ? 'content_ratings' : 'release_dates' }); } catch { continue; }
     if (mine !== run) return null;
     const g = (d.genres || []).map((x) => x.id);
-    if (!d.poster_path || !d.runtime || d.runtime > G.maxRuntime) continue;
+    const minutes = md === 'tv' ? episodeMinutes(d) : d.runtime; // bei Serien: eine Folge
+    if (!d.poster_path || !minutes || minutes > G.maxRuntime) continue;
     if (!genresOk(g) || !popular(d) || !ageOk(d, o.age || null)) continue;
     return { item, details: d };
   }
@@ -119,9 +130,15 @@ async function nextValid(mine) {
 }
 
 // ---------- Anzeige ----------
+function setMedia(p) {
+  md = mediaOf(p);
+  G = md === 'tv' ? GROUP_TV : GROUP;
+}
+
 export function render(p) {
   profile = p;
-  if (skippedFor !== p.id) { skipped = new Set(); skippedFor = p.id; cur = null; phase = 'pick'; }
+  setMedia(p);
+  if (skippedFor !== `${p.id}:${md}`) { skipped = new Set(); skippedFor = `${p.id}:${md}`; cur = null; phase = 'pick'; }
   return `
     <p class="back"><a href="#/vorschlaege">← Vorschläge</a></p>
     <h1>Gruppenabend</h1>
@@ -140,14 +157,15 @@ function paintOpts() {
         ${AGES.map(([a, label]) => `<button type="button" class="seg" data-gr-age="${a}" aria-pressed="${o.age === a}">${a ? label : 'Alter: egal'}</button>`).join('')}
       </div>
       <div class="row">
-        <button type="button" class="btn toggle" data-gr-opt="horror" aria-pressed="${o.horror}">+ Horror</button>
-        <button type="button" class="btn toggle" data-gr-opt="war" aria-pressed="${o.war}">+ Krieg</button>
+        ${G.optionalGenres.horror ? `<button type="button" class="btn toggle" data-gr-opt="horror" aria-pressed="${o.horror}">+ Horror</button>` : ''}
+        <button type="button" class="btn toggle" data-gr-opt="war" aria-pressed="${o.war}">${md === 'tv' ? '+ Krieg & Politik' : '+ Krieg'}</button>
       </div>
     </div>`;
 }
 
 export async function mount(p) {
   profile = p;
+  setMedia(p);
   paintOpts();
   if (cur) { paint(); return; }
   await start();
@@ -156,7 +174,7 @@ export async function mount(p) {
 async function start() {
   const mine = ++run;
   cur = null; phase = 'pick';
-  if (box()) box().innerHTML = '<p class="muted center">Suche einen Film für die Runde …</p>';
+  if (box()) box().innerHTML = `<p class="muted center">Suche ${W().a} für die Runde …</p>`;
   list = await candidates();
   if (mine !== run) return;
   pos = 0;
@@ -164,7 +182,7 @@ async function start() {
 }
 
 async function next(mine = ++run) {
-  if (box()) box().innerHTML = '<p class="muted center">Suche einen Film für die Runde …</p>';
+  if (box()) box().innerHTML = `<p class="muted center">Suche ${W().a} für die Runde …</p>`;
   cur = await nextValid(mine);
   if (mine !== run) return;
   paint();
@@ -176,16 +194,16 @@ function paint() {
   const el = box();
   if (!el) return;
   if (!cur) {
-    el.innerHTML = `<div class="card placeholder"><p><strong>Gerade findet sich kein weiterer passender Film.</strong></p>
-      <p class="muted">Probier „+ Horror“ oder „+ Krieg“, eine andere Altersgrenze – oder fang von vorn an.</p>
+    el.innerHTML = `<div class="card placeholder"><p><strong>Gerade findet sich ${md === 'tv' ? 'keine weitere passende Serie' : 'kein weiterer passender Film'}.</strong></p>
+      <p class="muted">Probier ${md === 'tv' ? '„+ Krieg & Politik“' : '„+ Horror“ oder „+ Krieg“'}, eine andere Altersgrenze – oder fang von vorn an.</p>
       <p><button class="btn btn-primary" type="button" data-gr="restart">Von vorn</button></p></div>`;
     return;
   }
   const m = cur.details;
   const y = tmdb.year(m.release_date);
-  const s = profile.movies[m.id]?.s || null;
+  const s = marks()[m.id]?.s || null;
   const genres = (m.genres || []).map((g) => g.name).slice(0, 3).join(', ');
-  const knownHint = LIKED.has(s) ? '<p class="known">Kennst du schon – hat dir gefallen</p>' : '';
+  const knownHint = LIKED.has(s) ? '<p class="known">Kennst du schon – hat dir gefallen</p>' : s === 'paused' ? '<p class="known">⏸ Angefangen – die wolltest du weiterschauen</p>' : '';
   const why = !LIKED.has(s) && cur.item.why ? `<p class="reason">${esc(cur.item.why)}</p>` : '';
   const actions = phase === 'watching'
     ? `<div class="card hint"><p><strong>Viel Spaß! Wie war's?</strong></p>
@@ -193,7 +211,7 @@ function paint() {
         <button class="btn" type="button" data-gr="rate-disliked">✕ Mag ich nicht</button>
         <button class="btn" type="button" data-gr="rate-later">Später</button></div></div>`
     : `<div class="group-actions">
-        <button class="btn btn-primary btn-big" type="button" data-gr="watch">Den schauen wir</button>
+        <button class="btn btn-primary btn-big" type="button" data-gr="watch">${md === 'tv' ? 'Die schauen wir' : 'Den schauen wir'}</button>
         <button class="btn btn-big" type="button" data-gr="seen">Schon gesehen</button>
         <button class="btn btn-big" type="button" data-gr="other">Anderer Vorschlag</button>
       </div>`;
@@ -202,10 +220,10 @@ function paint() {
       <img class="group-poster" src="${tmdb.img(m.poster_path, 'w500')}" srcset="${tmdb.img(m.poster_path, 'w342')} 342w, ${tmdb.img(m.poster_path, 'w500')} 500w, ${tmdb.img(m.poster_path, 'w780')} 780w" sizes="(min-width: 768px) 340px, 90vw" alt="Plakat: ${esc(m.title)}">
       <div class="group-info">
         <h2 class="group-title">${esc(m.title)}</h2>
-        <p class="group-meta">${esc([genres, y, `${m.runtime} Min.`].filter(Boolean).join(' · '))}</p>
+        <p class="group-meta">${esc([genres, y, md === 'tv' ? tvLength(m) : `${m.runtime} Min.`].filter(Boolean).join(' · '))}</p>
         ${knownHint}${why}
         <p>${m.overview ? esc(firstSentence(m.overview)) : ''}</p>
-        <p>${trailerBtn(m.id, m.title)}</p>
+        <p>${trailerBtn(m.id, m.title, false, md)}</p>
         ${actions}
       </div>
     </article>`;
@@ -223,27 +241,29 @@ export function handleClick(e) {
   const m = cur?.details;
   if (act === 'restart') { skipped = new Set(); start(); return true; }
   if (!m) return true;
-  const s = profile.movies[m.id]?.s || null;
+  const s = marks()[m.id]?.s || null;
   if (act === 'other') { skipped.add(m.id); next(); return true; }
   if (act === 'seen') {
     skipped.add(m.id);
     // Schon gemocht? Dann bleibt „Mag ich“ – nur für heute übersprungen
     if (!LIKED.has(s)) {
-      const old = store.setMovie(profile.id, m.id, 'seen', meta(m));
-      toast(`Gesehen: ${m.title}`, { label: 'Rückgängig', run: () => store.restoreMovie(profile.id, m.id, old) });
+      const mine = md;
+      const old = store.setMark(profile.id, mine, m.id, 'seen', meta(m));
+      toast(`Gesehen: ${m.title}`, { label: 'Rückgängig', run: () => store.restoreMark(profile.id, mine, m.id, old) });
     }
     next();
     return true;
   }
   if (act === 'watch') {
-    if (!s || s === 'want') store.setMovie(profile.id, m.id, 'seen', meta(m));
+    // Eine Serie schaut man nicht an einem Abend – sie bleibt, wie sie ist
+    if (md === 'movie' && (!s || s === 'want')) store.setMark(profile.id, md, m.id, 'seen', meta(m));
     phase = 'watching';
     paint();
     return true;
   }
   if (act === 'rate-liked' || act === 'rate-disliked') {
     const status = act === 'rate-liked' ? (s === 'loved' ? 'loved' : 'liked') : 'disliked';
-    store.setMovie(profile.id, m.id, status, meta(m));
+    store.setMark(profile.id, md, m.id, status, meta(m));
     toast(status === 'disliked' ? `Mag ich nicht: ${m.title}` : `Mag ich: ${m.title}`);
     phase = 'pick'; skipped.add(m.id); cur = null;
     location.hash = '#/vorschlaege';

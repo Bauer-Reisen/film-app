@@ -130,6 +130,14 @@ Die Nutzerin kann nicht programmieren. Antworte auf Deutsch, knapp und ohne Fach
   - „Heute Lust auf“ und „Aus welcher Zeit“ auch für Serien (Klassiker bei Serien: vor 1990). Kinderserien erscheinen in den normalen Vorschlägen nur, wenn man selbst welche mag.
   - Titel in fremder Schrift (z. B. Koreanisch) werden durch den englischen ersetzt.
   - Geprüft: Profil nur mit Filmen (Fargo, Arrival ★) bekommt die Serie „Fargo“ und Serien mit Buscemi/McDormand. Profil nur mit Serien (Breaking Bad, Dark ★) bekommt „El Camino“, Filme von Baran bo Odar, Pulp Fiction, Zodiac. Serien-Vorschläge: Better Call Saul, The Penguin, FROM … Keine markierten Titel, „Mehr“ ohne doppelte, Angefangen + Rückgängig, Filter Zeitreise + 2010er. 375 und 1280 px, keine Konsolenfehler. Testprofile gelöscht.
+- [x] **Serien S3 – Überrasch mich, Gruppenabend, Kinderserien, Lieblingsserie** (12.11.2026, Version 1.7.0):
+  - Alle Seiten gibt es jetzt auch für Serien, der Hinweis „in Kürze“ ist weg. Seitentitel wechseln mit (Kinderfilme/Kinderserien, Lieblingsfilm/Lieblingsserie).
+  - **Überrasch mich:** verdeckt mit Genre · Jahrzehnt · Staffelzahl, eigene Merkliste der schon gezeigten (`surpriseShownTv`), Grenzen in `SURPRISE_TV`.
+  - **Gruppenabend:** eigene Regeln `GROUP_TV` (leichte Genres, Krimi nur mit Komödie, Folge höchstens 60 Min., Note ab 7,3). Statt „+ Horror/+ Krieg“ gibt es „+ Krieg & Politik“. Einstellungen getrennt von den Filmen (`settings.groupTv`). „Die schauen wir“ hakt die Serie nicht als gesehen ab. „Hat mich verloren“ kommt nicht, „Weiterschauen“ schon.
+  - **Kinderserien:** `KIDS_TV`, deutsche Freigabe, sonst US-TV-Freigabe (TV-Y … TV-14); jede Serie wird einzeln geprüft. Lieblingssender bekommen kleinen Vorrang.
+  - **Lieblingsserie:** zieht aus den ★-Serien (`rewatchShownTv`).
+  - Geprüft (375 und 1280 px): 20× Überrasch mich = 20 verschiedene Serien; Angefangen → Weiterschauen gespeichert; Gruppenabend ab 12 nur Serien bis 12, Folgen ≤ 60 Min.; Kinderserien ab 0 und ab 6 ohne zu hohe Freigabe; Lieblingsserie wechselt zwischen den ★-Serien. Filmseiten danach unverändert. Keine Konsolenfehler. Testprofil gelöscht.
+  - Bekannt: Die Folgenlänge kommt bei manchen Serien von der letzten Folge und kann abweichen (z. B. Friends „ca. 48 Min.“ wegen Doppelfolge zum Schluss).
 - [ ] **Noch von dir am echten Handy:** iPhone (Home-Bildschirm-Hinweis, Umzug Safari → Home-Bildschirm-App, Teilen-Menü beim Sichern) und ein Android-Handy, alles ohne Zoomen.
 
 ## Hinweise

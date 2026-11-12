@@ -1,7 +1,7 @@
 // ALLE Einstellungen und Grenzwerte an einer Stelle.
 // Wer etwas nachjustieren will (z. B. Mindestbewertung), ändert es nur hier.
 
-export const VERSION = '1.6.0';
+export const VERSION = '1.7.0';
 
 // Adresse des Cloudflare Workers (nicht geheim – der Schlüssel liegt nur dort).
 export const WORKER_URL = 'https://film-app-tmdb.film-app.workers.dev';
@@ -79,4 +79,25 @@ export const KIDS = {
 
 export const BACKUP = {
   remindAfterMarks: 20, remindEveryDays: 7,
+};
+
+// ---------- Serien (seit 1.7.0) ----------
+export const SURPRISE_TV = {
+  minVote: 7.5, minVotes: 200, relaxedMinVotes: 100,
+};
+
+export const GROUP_TV = {
+  easyGenres: [35, 16, 10751, 10759, 10765, 9648], // Komödie, Animation, Familie, Action & Abenteuer, Sci-Fi & Fantasy, Mystery
+  optionalGenres: { krieg: 10768 }, // Krieg & Politik; Horror gibt es bei TMDB-Serien nicht als Genre
+  onlyWithComedy: [80], // Krimi
+  maxRuntime: 60, // Länge einer Folge
+  minVote: 7.3, minVotes: 500,
+  bonus: { 35: 2, 16: 1, 10751: 1 },
+};
+
+export const KIDS_TV = {
+  genres: [10762, 16, 10751],
+  without: '80,10768',
+  minVote: 7.0, minVotes: 100,
+  usFallback: { 0: ['TV-Y', 'TV-G'], 6: ['TV-Y', 'TV-Y7', 'TV-G', 'TV-PG'], 12: ['TV-Y', 'TV-Y7', 'TV-G', 'TV-PG', 'TV-14'] },
 };
