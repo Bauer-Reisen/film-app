@@ -110,6 +110,9 @@ Die Nutzerin kann nicht programmieren. Antworte auf Deutsch, knapp und ohne Fach
 - [x] **Lieblingsfilm** (12.11.2026, Version 1.3.0):
   - Vierter Knopf „★ Lieblingsfilm“ oben auf „Vorschläge“, Seite `#/liebling` (`rewatch.js`). Zeigt einen deiner ★-Filme groß mit Trailer; „Anderer Lieblingsfilm“ und „Den schaue ich“.
   - Filme, die dort am längsten nicht kamen, zuerst (Feld `rewatchShown` im Profil, wird beim Laden einer Sicherung zusammengeführt). Ohne ★-Filme nimmt sie ♥-Filme.
+- [x] **Wischen zwischen Tabs** (12.11.2026, Version 1.3.1):
+  - Vorher sprang das Wischen durch den Browser-Verlauf (Zurück/Vor), nicht durch die Tabs. Jetzt: nach links wischen = nächster Tab, nach rechts = vorheriger (Vorschläge → Überrasch mich → Geschmack → Merkliste → Profil). Die 28 px am Rand bleiben dem Browser.
+  - Tab-Wechsel ersetzen den Verlaufseintrag, statt neue anzulegen.
 - [ ] **Noch von dir am echten Handy:** iPhone (Home-Bildschirm-Hinweis, Umzug Safari → Home-Bildschirm-App, Teilen-Menü beim Sichern) und ein Android-Handy, alles ohne Zoomen.
 
 ## Hinweise
