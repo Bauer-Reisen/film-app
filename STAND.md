@@ -107,6 +107,9 @@ Die Nutzerin kann nicht programmieren. Antworte auf Deutsch, knapp und ohne Fach
 - [x] **„Aus welcher Zeit?“** (12.11.2026, Version 1.2.0):
   - Zweite Auswahl bei Vorschlägen: Ganz neu (12 Monate), Letzte 3 Jahre, 2020er … 1970er, Klassiker vor 1970. Kombinierbar mit dem Thema.
   - Eigene TMDB-Abfragen im Zeitraum (`computeFiltered` in recommend.js, ersetzt `computeTheme`): Lieblingsgenres bzw. Thema, Filmlisten der Lieblingspersonen (nur echte Regie / Hauptrolle), Lieblingsstudios, eigene Vorschläge aus dem Zeitraum. Bei „neu“ reichen 30 Stimmen, sortiert nach Beliebtheit.
+- [x] **Lieblingsfilm** (12.11.2026, Version 1.3.0):
+  - Vierter Knopf „★ Lieblingsfilm“ oben auf „Vorschläge“, Seite `#/liebling` (`rewatch.js`). Zeigt einen deiner ★-Filme groß mit Trailer; „Anderer Lieblingsfilm“ und „Den schaue ich“.
+  - Filme, die dort am längsten nicht kamen, zuerst (Feld `rewatchShown` im Profil, wird beim Laden einer Sicherung zusammengeführt). Ohne ★-Filme nimmt sie ♥-Filme.
 - [ ] **Noch von dir am echten Handy:** iPhone (Home-Bildschirm-Hinweis, Umzug Safari → Home-Bildschirm-App, Teilen-Menü beim Sichern) und ein Android-Handy, alles ohne Zoomen.
 
 ## Hinweise

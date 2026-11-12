@@ -1,6 +1,6 @@
 // Profil sichern (als Datei) und wieder laden – so zieht man auf ein
 // anderes Gerät oder in die Home-Bildschirm-App um.
-import { newProfile, getProfile, updateProfile, addProfile, profiles } from './store.js?v=1.2.0';
+import { newProfile, getProfile, updateProfile, addProfile, profiles } from './store.js?v=1.3.0';
 
 const FORMAT = 'filmapp-profil';
 
@@ -90,5 +90,6 @@ export function mergeInto(targetId, incoming) {
     surpriseShown: byId(t.surpriseShown, incoming.surpriseShown),
     surpriseLastGenre: lastGenre,
     passed: [...new Set([...(t.passed || []), ...(incoming.passed || [])])],
+    rewatchShown: { ...(t.rewatchShown || {}), ...(incoming.rewatchShown || {}) },
   });
 }
