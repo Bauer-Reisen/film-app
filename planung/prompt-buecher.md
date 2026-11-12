@@ -16,6 +16,17 @@ Ich habe eine fertige Web-App „Was schaue ich als Nächstes?“ für Filme und
 - Vorschläge mit Begründung, „Heute Lust auf …“, „Aus welcher Zeit“, Lieblingsbuch, Überrasch mich. Statt Laufzeit: Seitenzahl.
 - Buchtitel und Beschreibung möglichst auf Deutsch, wenn das Profil Deutsch ist.
 
+## Bücher schnell erfassen: Scannen (sehr wichtig)
+Bei Büchern ist es schwer, aus einer Liste zu erkennen, was man gelesen hat: Cover sind je nach Verlag anders, Titel verschwimmen. Deshalb:
+- **ISBN-Strichcode mit der Handykamera scannen** (der Strichcode hinten auf dem Buch). Ein Knopf „📷 Bücher scannen“ im Reiter Geschmack bei Büchern.
+- **Am Stück scannen:** Kamera bleibt offen, ich halte ein Buch nach dem anderen davor – zack, zack, zack. Jedes erkannte Buch erscheint sofort mit Cover und Titel in einer Liste darunter, mit kurzem Ton oder Vibration als Bestätigung. Doppelt gescannte werden ignoriert.
+- Vor dem Start wählen, als was die Bücher gelten: **„Gelesen“** (Standard), „Mag ich“ oder „Steht im Regal, noch nicht gelesen“ (= Leseliste). In der Liste kann ich einzelne danach noch umstellen oder entfernen. „Fertig“ speichert alle.
+- Wird eine ISBN nicht gefunden: kurz melden und weiterscannen; die Nummer zum späteren Nachschauen in der Liste behalten.
+- **Ohne Kamera:** ISBN von Hand eintippen.
+- **Achtung iPhone:** Safari kann Strichcodes nicht von sich aus erkennen. Eine kleine, frei nutzbare Bibliothek dafür (z. B. ZXing) als Datei in `docs/` mitliefern, nicht von fremden Servern laden. Die Kamera geht nur über https (bei GitHub Pages gegeben). Datenschutz: Bilder bleiben auf dem Handy, gesendet wird nur die ISBN.
+- Auf dem echten iPhone testen lassen, das kann der Browser am Rechner nicht ersetzen. Zum Ausprobieren am Rechner: Testbilder mit Strichcodes.
+- Optional, nur als Idee prüfen: ein Foto vom ganzen Regal (Buchrücken) – ehrlich sagen, ob das ohne KI zuverlässig machbar ist. Vermutlich nicht.
+
 ## Die Brücke zu Filmen und Serien (das Wichtigste)
 Ich möchte, dass sich die Bereiche gegenseitig helfen. Beispiel: Wer „Forrest Gump“ liebt, bekommt „Der Hundertjährige, der aus dem Fenster stieg und verschwand“ vorgeschlagen.
 1. **Gemeinsame Themen:** Jedes Thema in `themes.js` bekommt zusätzlich passende Buch-Schlagwörter (z. B. Zeitreise, Kochen, Underdog, schwarzer Humor, Lebensreise). Was im Film-Geschmack zählt, zählt auch bei Büchern und umgekehrt.
@@ -32,7 +43,7 @@ Ich möchte, dass sich die Bereiche gegenseitig helfen. Beispiel: Wer „Forrest
 - Am iPhone ohne Zoomen bedienbar (375 px), kein Login, keine Kauf-Links.
 
 ## Wie wir vorgehen
-1. Prüfskript laufen lassen, Ergebnis erklären. Dann `PLAN.md` um einen Abschnitt „Bücher“ erweitern (Datenquelle, Datenmodell, Brücke, Punkte, Seiten, Bauschritte) und mir eine kurze Zusammenfassung zeigen. **Auf mein OK warten.**
+1. Prüfskript laufen lassen (auch: wie gut findet die Quelle Bücher per ISBN, gerade deutsche?), Ergebnis erklären. Dann `PLAN.md` um einen Abschnitt „Bücher“ erweitern (Datenquelle, Datenmodell, Brücke, Punkte, Seiten, Bauschritte) und mir eine kurze Zusammenfassung zeigen. **Auf mein OK warten.**
 2. Danach alle Bauschritte am Stück durchbauen, ohne zwischendurch zu fragen. Nach jedem Schritt selbst im Browser prüfen (375 px und Laptop), Testprofile danach löschen, `STAND.md` aktualisieren, hochladen und live prüfen.
 3. Am Ende: was ich am echten Handy testen soll.
 
