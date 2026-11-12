@@ -1,11 +1,11 @@
 // Vorschläge berechnen – nachvollziehbar, ohne „Lernen“:
 // Ausgangspunkte holen → Kandidaten sammeln → Punkte vergeben → Vielfalt → Begründung.
 // Alle Zahlen stehen in config.js (RECOMMEND).
-import { RECOMMEND as R } from './config.js?v=1.1.0';
-import * as tmdb from './tmdb.js?v=1.1.0';
-import { SEED_MOVIES, SEED_STUDIOS } from './seeds.js?v=1.1.0';
-import { tierOf } from './store.js?v=1.1.0';
-import { themeById } from './themes.js?v=1.1.0';
+import { RECOMMEND as R } from './config.js?v=1.2.0';
+import * as tmdb from './tmdb.js?v=1.2.0';
+import { SEED_MOVIES, SEED_STUDIOS } from './seeds.js?v=1.2.0';
+import { tierOf } from './store.js?v=1.2.0';
+import { themeById } from './themes.js?v=1.2.0';
 
 const seedById = new Map(SEED_MOVIES.map((m) => [m.id, m]));
 const studioName = new Map(SEED_STUDIOS.map((s) => [s.id, s.n]));
@@ -192,36 +192,93 @@ function diversify(list) {
 // Endfilter bei jeder Ausgabe: nichts, was schon markiert ist
 export const visible = (profile, list) => list.filter((x) => !profile.movies[x.movie.id]);
 
-// „Heute Lust auf …“: Filme zu einem Thema, sortiert nach deinem Geschmack.
-// Filme, die auch in deinen normalen Vorschlägen stehen, kommen zuerst.
-export async function computeTheme(profile, themeId, page = 1) {
-  const th = themeById.get(themeId);
-  if (!th) return [];
+// ---------- „Heute Lust auf …“ und „Aus welcher Zeit?“ ----------
+const isoDaysAgo = (days) => new Date(Date.now() - days * 864e5).toISOString().slice(0, 10);
+export const ERAS = [
+  { id: 'neu', n: 'Ganz neu (letzte 12 Monate)', short: 'Neu', from: () => isoDaysAgo(365), recent: true },
+  { id: '3j', n: 'Letzte 3 Jahre', short: 'Aus den letzten 3 Jahren', from: () => isoDaysAgo(3 * 365), recent: true },
+  ...[2020, 2010, 2000, 1990, 1980, 1970].map((d) => ({ id: String(d), n: `${d}er`, short: `${d}er`, from: () => `${d}-01-01`, to: () => `${d + 9}-12-31` })),
+  { id: 'alt', n: 'Klassiker vor 1970', short: 'Klassiker', to: () => '1969-12-31' },
+];
+export const eraById = new Map(ERAS.map((e) => [e.id, e]));
+
+// Lieblingsgenres: die häufigsten in gemochten Filmen
+function topGenres(profile, n) {
+  const c = {};
+  Object.values(profile.movies).filter((m) => LIKED.has(m.s)).forEach((m) => (m.g || []).forEach((g) => { c[g] = (c[g] || 0) + 1; }));
+  return Object.entries(c).sort((a, b) => b[1] - a[1]).slice(0, n).map(([g]) => Number(g));
+}
+
+/**
+ * Vorschläge mit Filter: Thema (Stichwörter) und/oder Zeitraum.
+ * Zieht dafür eigene Abfragen bei TMDB – so kommen auch neue Filme mit noch wenigen Stimmen.
+ */
+export async function computeFiltered(profile, { theme = '', era = '' } = {}, page = 1) {
+  const th = theme ? themeById.get(theme) : null;
+  const er = era ? eraById.get(era) : null;
   const lang = profile.language;
   const today = new Date().toISOString().slice(0, 10);
+  const from = er?.from?.() || '';
+  const to = er?.to?.() && er.to() < today ? er.to() : today;
+  const range = { ...(from ? { 'primary_release_date.gte': from } : {}), 'primary_release_date.lte': to };
+  const recent = !!er?.recent;
+  const minVotes = recent ? R.recentMinVotes : th ? R.themeMinVotes : R.filterMinVotes;
+  const minVote = recent ? R.recentMinVote : th ? R.themeMinVote : R.filterMinVote;
+  const sort = recent ? 'popularity.desc' : 'vote_count.desc';
+  const base = { language: lang, without_genres: 10770, 'vote_count.gte': minVotes, 'vote_average.gte': minVote, sort_by: sort, ...range };
+  const kw = th ? { with_keywords: th.k.join('|') } : {};
+
   const own = new Map((await compute(profile, 1).catch(() => [])).map((x) => [x.movie.id, x]));
   const tilt = genreTilt(profile);
+  const src = sourcesOf(profile);
   const jobs = [];
-  for (let p = (page - 1) * 3 + 1; p <= page * 3; p++) {
-    jobs.push(tmdb.get('discover/movie', {
-      language: lang, with_keywords: th.k.join('|'), sort_by: 'vote_count.desc', without_genres: 10770,
-      'vote_count.gte': R.themeMinVotes, 'vote_average.gte': R.themeMinVote, page: p,
-    }));
+  const add = (kind, ref, params) => jobs.push(tmdb.get('discover/movie', { ...base, ...kw, ...params }).then((d) => ({ kind, ref, movies: d.results || [] })));
+
+  // breite Suche: Thema bzw. Lieblingsgenres im Zeitraum
+  const genres = th ? [] : topGenres(profile, 3);
+  for (let p = (page - 1) * 2 + 1; p <= page * 2; p++) add('wide', null, { page: p, ...(genres.length ? { with_genres: genres.join('|') } : {}) });
+  // gezielt: Lieblingspersonen und -studios im Zeitraum
+  // (über die Filmliste der Person – so zählt nur echte Regie bzw. eine Hauptrolle)
+  if (page === 1 && !th) { // mit Thema zählen Lieblingspersonen über die eigenen Vorschläge
+    for (const person of src.people.slice(0, 8)) {
+      const dir = person.role === 'director';
+      jobs.push(tmdb.get(`person/${person.id}/movie_credits`, { language: lang }).then((d) => ({
+        kind: dir ? 'director' : 'actor',
+        ref: person,
+        movies: (dir ? (d.crew || []).filter((m) => m.job === 'Director') : (d.cast || []).filter((m) => m.order != null && m.order <= 4))
+          .filter((m) => (m.vote_count || 0) >= Math.min(minVotes, R.favMinVotes) && (m.vote_average || 0) >= minVote)
+      })));
+    }
   }
+  for (const c of src.companies.slice(0, 4)) add('company', c, { with_companies: [c.id, ...(c.also || [])].join('|'), page });
+
   const settled = await Promise.allSettled(jobs);
   const ok = settled.filter((r) => r.status === 'fulfilled').map((r) => r.value);
   if (!ok.length) throw settled[0].reason;
-  const seen = new Set();
+
+  const inRange = (m) => m.release_date && m.release_date <= to && (!from || m.release_date >= from);
+  const cands = new Map();
+  const put = (m, kind, ref) => {
+    if (m.adult || !m.poster_path || !inRange(m) || profile.movies[m.id]) return;
+    if (!cands.has(m.id)) cands.set(m.id, { movie: m, reasons: [] });
+    if (ref) cands.get(m.id).reasons.push({ kind, ref });
+  };
+  ok.forEach(({ kind, ref, movies }) => movies.forEach((m) => put(m, kind, ref)));
+  // eigene Vorschläge aus dem Zeitraum (ohne Thema; mit Thema zählen sie nur als Bonus)
+  if (!th) own.forEach((x) => { if (inRange(x.movie)) put(x.movie, null, null); });
+
+  const label = [th?.n, er?.short].filter(Boolean).join(' · ');
   const list = [];
-  for (const m of ok.flatMap((d) => d.results || [])) {
-    if (seen.has(m.id)) continue;
-    seen.add(m.id);
-    if (m.adult || !m.poster_path || !m.release_date || m.release_date > today || profile.movies[m.id]) continue;
+  for (const c of cands.values()) {
+    const m = c.movie;
     const mine = own.get(m.id);
     const t = tilt(m.genre_ids);
-    const score = (mine ? mine.score + 3 : 0) + t * 1.5 + (m.vote_average - 6.5) + Math.log10(Math.max(m.vote_count, 1)) * 0.3;
-    const text = mine ? `${th.n} · ${mine.text}` : t > 0.5 ? `${th.n} · passt zu deinen Lieblingsgenres` : `${th.n} · beliebt zu diesem Thema`;
-    list.push({ movie: m, score, reasons: mine?.reasons || [], source: `mood:${themeId}`, text });
+    const favPts = c.reasons.reduce((sum, r) => sum + pts(r), 0);
+    const score = (mine ? mine.score + 3 : 0) + favPts + t * 1.5 + ((m.vote_average || 0) - 6.5)
+      + Math.log10(Math.max(m.vote_count || 1, 1)) * 0.3 + (recent ? Math.log10(Math.max(m.popularity || 1, 1)) * 0.5 : 0);
+    const why = mine ? mine.text : c.reasons.length ? reasonText(profile, c.reasons) : t > 0.5 ? 'passt zu deinen Lieblingsgenres' : recent ? 'gerade beliebt' : 'beliebt';
+    list.push({ movie: m, score, reasons: c.reasons, source: c.reasons[0] ? `${c.reasons[0].kind}:${c.reasons[0].ref.id}` : 'wide', strong: false, text: label ? `${label} · ${why}` : why });
   }
-  return list.sort((a, b) => b.score - a.score);
+  list.sort((a, b) => b.score - a.score);
+  return diversify(list);
 }

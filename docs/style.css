@@ -413,6 +413,7 @@ h2 { font-size: 20px; margin: 24px 0 8px; }
 .trailer-foot { margin: 0; padding: 10px 12px; }
 
 /* Vorschläge: Heute Lust auf … */
-.mood { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin: 0 0 12px; font-weight: 700; }
+.mood { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin: 0 0 10px; font-weight: 700; }
+.mood span { min-width: 9.5em; }
 .mood select { flex: 1 1 220px; max-width: 420px; min-height: 48px; padding: 0 12px; font-size: 17px; border-radius: var(--radius);
   background: var(--surface-2); color: inherit; border: 1px solid var(--line); }

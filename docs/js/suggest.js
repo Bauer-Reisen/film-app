@@ -1,11 +1,11 @@
 // Seite „Vorschläge“: Liste mit Begründung, fünf Rückmeldungen, Rückgängig, „Mehr“.
-import * as store from './store.js?v=1.1.0';
-import * as tmdb from './tmdb.js?v=1.1.0';
-import { esc, toast } from './ui.js?v=1.1.0';
-import { trailerBtn } from './trailer.js?v=1.1.0';
-import { compute, computeTheme, visible, hasSources } from './recommend.js?v=1.1.0';
-import { THEMES, themeById } from './themes.js?v=1.1.0';
-import { RECOMMEND } from './config.js?v=1.1.0';
+import * as store from './store.js?v=1.2.0';
+import * as tmdb from './tmdb.js?v=1.2.0';
+import { esc, toast } from './ui.js?v=1.2.0';
+import { trailerBtn } from './trailer.js?v=1.2.0';
+import { compute, computeFiltered, visible, hasSources, ERAS, eraById } from './recommend.js?v=1.2.0';
+import { THEMES, themeById } from './themes.js?v=1.2.0';
+import { RECOMMEND } from './config.js?v=1.2.0';
 
 const FEEDBACK = [
   ['want', '+', 'Merken'],
@@ -23,7 +23,8 @@ let page = 1;
 let run = 0;
 const byId = new Map();
 let mood = ''; // „Heute Lust auf …“ – gilt, solange die App offen ist
-const calc = () => (mood ? computeTheme(profile, mood, page) : compute(profile, page));
+let era = '';  // „Aus welcher Zeit?“
+const calc = () => (mood || era ? computeFiltered(profile, { theme: mood, era }, page) : compute(profile, page));
 
 function moodPicker() {
   const favs = (profile.themes || []).filter((t) => themeById.has(t.id)).map((t) => themeById.get(t.id));
@@ -35,6 +36,12 @@ function moodPicker() {
         <option value="">alles, was zu mir passt</option>
         ${favs.length ? `<optgroup label="Deine Lieblingsthemen">${favs.map(opt).join('')}</optgroup>` : ''}
         <optgroup label="${favs.length ? 'Weitere Themen' : 'Themen'}">${rest.map(opt).join('')}</optgroup>
+      </select>
+    </label>
+    <label class="mood"><span>Aus welcher Zeit</span>
+      <select id="era">
+        <option value="">egal</option>
+        ${ERAS.map((e) => `<option value="${e.id}" ${e.id === era ? 'selected' : ''}>${esc(e.n)}</option>`).join('')}
       </select>
     </label>`;
 }
@@ -59,12 +66,14 @@ export async function mount(p) {
   const mine = ++run;
   shown = []; page = 1;
   const sel = document.getElementById('mood');
-  if (sel) sel.onchange = () => {
+  const selEra = document.getElementById('era');
+  if (sel && selEra) sel.onchange = selEra.onchange = () => {
     mood = sel.value;
+    era = selEra.value;
     box().innerHTML = '<p class="muted center">Suche passende Filme …</p>';
     mount(profile);
   };
-  if (!hasSources(p) && !mood) {
+  if (!hasSources(p) && !mood && !era) {
     box().innerHTML = `
       <div class="card placeholder">
         <p><strong>Noch keine Vorschläge – die App kennt deinen Geschmack noch nicht.</strong></p>
@@ -89,7 +98,7 @@ export async function mount(p) {
     return;
   }
   box().innerHTML = `
-    <p class="muted small">${mood ? `Thema „${esc(themeById.get(mood).n)}“, sortiert nach deinem Geschmack.` : 'Passend zu dem, was du magst.'} Tipp aufs Poster = ★ Lieblingsfilm.</p>
+    <p class="muted small">${mood || era ? `${[mood && `Thema „${esc(themeById.get(mood).n)}“`, era && esc(eraById.get(era).n)].filter(Boolean).join(', ')} – sortiert nach deinem Geschmack.` : 'Passend zu dem, was du magst.'} Tipp aufs Poster = ★ Lieblingsfilm.</p>
     <div class="suggestions">${first.map(card).join('')}</div>
     <div class="row center-row"><button class="btn btn-primary" type="button" data-sg="more">Mehr Vorschläge</button></div>`;
 }

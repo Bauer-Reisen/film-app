@@ -104,6 +104,9 @@ Die Nutzerin kann nicht programmieren. Antworte auf Deutsch, knapp und ohne Fach
 - [x] **Trailer und „Heute Lust auf …“** (12.11.2026, Version 1.1.0):
   - Knopf „▶ Trailer“ auf allen Filmkarten (Vorschläge, Merkliste, Überrasch mich, Gruppenabend, Kinderfilme). Öffnet ein Fenster mit eingebettetem YouTube-Trailer (youtube-nocookie, erst beim Tippen geladen), Profilsprache vor Englisch. Ohne Trailer kommt eine kurze Meldung. Neu: `trailer.js`. Über-Seite nennt YouTube.
   - Vorschläge: Auswahl „Heute Lust auf …“ mit allen 39 Themen (Lieblingsthemen oben). Liefert Filme zum Thema, sortiert nach Geschmack; Filme aus den eigenen Vorschlägen zuerst. Gilt, solange die App offen ist.
+- [x] **„Aus welcher Zeit?“** (12.11.2026, Version 1.2.0):
+  - Zweite Auswahl bei Vorschlägen: Ganz neu (12 Monate), Letzte 3 Jahre, 2020er … 1970er, Klassiker vor 1970. Kombinierbar mit dem Thema.
+  - Eigene TMDB-Abfragen im Zeitraum (`computeFiltered` in recommend.js, ersetzt `computeTheme`): Lieblingsgenres bzw. Thema, Filmlisten der Lieblingspersonen (nur echte Regie / Hauptrolle), Lieblingsstudios, eigene Vorschläge aus dem Zeitraum. Bei „neu“ reichen 30 Stimmen, sortiert nach Beliebtheit.
 - [ ] **Noch von dir am echten Handy:** iPhone (Home-Bildschirm-Hinweis, Umzug Safari → Home-Bildschirm-App, Teilen-Menü beim Sichern) und ein Android-Handy, alles ohne Zoomen.
 
 ## Hinweise

@@ -1,7 +1,7 @@
 // ALLE Einstellungen und Grenzwerte an einer Stelle.
 // Wer etwas nachjustieren will (z. B. Mindestbewertung), ändert es nur hier.
 
-export const VERSION = '1.1.0';
+export const VERSION = '1.2.0';
 
 // Adresse des Cloudflare Workers (nicht geheim – der Schlüssel liegt nur dort).
 export const WORKER_URL = 'https://film-app-tmdb.film-app.workers.dev';
@@ -30,6 +30,8 @@ export const RECOMMEND = {
     loved: 4, lovedMax: 10, liked: 2.5, likedMax: 7.5, want: 1.5, wantMax: 3, themeMax: 8, genreMax: 2,
   },
   themeMinVotes: 150, themeMinVote: 6.0, // „Heute Lust auf …“
+  filterMinVotes: 150, filterMinVote: 6.3, // „Aus welcher Zeit?“
+  recentMinVotes: 30, recentMinVote: 6.0, // ganz neue Filme haben noch wenige Stimmen
   perSourceInBlock: 4, perStrongSourceInBlock: 6, // ★ Liebe darf öfter vorkommen
   blockSize: 20,
 };
