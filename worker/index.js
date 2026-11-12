@@ -15,7 +15,14 @@ const ROUTES = [
   [/^\/3\/company\/\d+$/, 7 * DAY],
   [/^\/3\/search\/(movie|person|company|keyword)$/, 3600],
   [/^\/3\/movie\/\d+\/keywords$/, 7 * DAY],
-  [/^\/3\/genre\/movie\/list$/, 7 * DAY],
+  [/^\/3\/genre\/(movie|tv)\/list$/, 7 * DAY],
+  // Serien
+  [/^\/3\/discover\/tv$/, DAY],
+  [/^\/3\/tv\/\d+$/, 7 * DAY],
+  [/^\/3\/tv\/\d+\/(recommendations|keywords|aggregate_credits|content_ratings)$/, 7 * DAY],
+  [/^\/3\/person\/\d+\/tv_credits$/, 7 * DAY],
+  [/^\/3\/search\/tv$/, 3600],
+  [/^\/3\/network\/\d+$/, 7 * DAY],
   [/^\/3\/configuration$/, 7 * DAY],
 ];
 

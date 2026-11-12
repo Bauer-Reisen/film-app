@@ -1,10 +1,10 @@
 // Seite „Überrasch mich“: Vorhang → Aufdecken → Rückmeldung oder anderer Film.
-import * as store from './store.js?v=1.4.0';
-import * as tmdb from './tmdb.js?v=1.4.0';
-import { esc, toast } from './ui.js?v=1.4.0';
-import { trailerBtn } from './trailer.js?v=1.4.0';
-import { draw, genreName } from './surprise.js?v=1.4.0';
-import { currentIds } from './suggest.js?v=1.4.0';
+import * as store from './store.js?v=1.5.0';
+import * as tmdb from './tmdb.js?v=1.5.0';
+import { esc, toast } from './ui.js?v=1.5.0';
+import { trailerBtn } from './trailer.js?v=1.5.0';
+import { draw, genreName } from './surprise.js?v=1.5.0';
+import { currentIds } from './suggest.js?v=1.5.0';
 
 const FEEDBACK = [
   ['want', '+', 'Merken'],

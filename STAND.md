@@ -115,6 +115,15 @@ Die Nutzerin kann nicht programmieren. Antworte auf Deutsch, knapp und ohne Fach
   - Tab-Wechsel ersetzen den Verlaufseintrag, statt neue anzulegen.
 - [x] **Aufgeräumt** (12.11.2026, Version 1.3.2): Wischen wieder entfernt (Wunsch: nur Reiter antippen). „Überrasch mich“ gibt es nur noch als eigenen Reiter, oben auf „Vorschläge“ stehen Gruppenabend, Kinderfilme, Lieblingsfilm.
 - [x] **Laufzeit überall** (12.11.2026, Version 1.4.0): Vorschläge, Geschmack und Kinderfilme zeigen jetzt die Laufzeit („· 112 Min.“). Sie wird erst geladen, wenn die Karte fast sichtbar ist (`runtime.js`, eine Detail-Abfrage pro Film, dieselbe wie bei der Merkliste).
+- [x] **Serien S1 – Grundlage, Geschmack, Merkliste** (12.11.2026, Version 1.5.0), Plan in PLAN.md Abschnitt 7:
+  - Umschalter **Filme · Serien** oben, pro Profil gemerkt (`settings.media`). Seiten, die es für Serien noch nicht gibt, zeigen „in Kürze“.
+  - Worker kennt jetzt die Serien-Adressen (discover/tv, tv/{id} mit Empfehlungen, Stichwörtern, Besetzung, Freigaben, person/{id}/tv_credits, search/tv, network/{id}).
+  - Neu: `media.js` (Unterschiede Film/Serie), `seeds-tv.js` (212 Serien, 55 Serien-Personen, 48 Sender; neu bauen mit `node scripts/make-seeds-tv.js`, Zwischenstand in `.seed-cache-tv.json`). `tmdb.js` ergänzt bei Serien Titel und Datum, damit der vorhandene Code sie anzeigt.
+  - Profil bekommt `shows`, `networks`, `passedTv`, `surpriseShownTv`, `surpriseLastGenreTv`, `rewatchShownTv`. Alte Profile werden beim Laden ergänzt, Sicherungen führen die neuen Felder mit zusammen.
+  - Geschmack bei Serien: Personen · Sender · Themen · Serien. Knopf **⏸ Angefangen** mit Auswahl „Will ich weiterschauen“ (`paused`) oder „Hat mich verloren“ (`dropped`). Länge „3 Staffeln · ca. 50 Min.“, Trailer, Suche in beiden Sprachen.
+  - Merkliste bei Serien: oben „Weiterschauen“, darunter „Gemerkt“.
+  - Geprüft: altes Profil ohne Serien-Felder lädt und behält seine Filme; alte Sicherung laden und mit Serien zusammenführen; „Haus des Geldes“ und „Money Heist“ finden dieselbe Serie; Sender bewerten; Trailer zu „Dark“; Filmvorschläge unverändert. 360, 375, 800 und 1280 px ohne Querscrollen, keine Konsolenfehler. Testprofile gelöscht.
+  - Bei 768–1099 px stehen oben nur noch Symbol, Umschalter und Tab-Namen ohne Bildchen, sonst passt die Zeile nicht.
 - [ ] **Noch von dir am echten Handy:** iPhone (Home-Bildschirm-Hinweis, Umzug Safari → Home-Bildschirm-App, Teilen-Menü beim Sichern) und ein Android-Handy, alles ohne Zoomen.
 
 ## Hinweise

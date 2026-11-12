@@ -1,22 +1,26 @@
-// Laufzeit nachladen: TMDB-Listen enthalten sie nicht, nur die Filmdetails.
+// Laufzeit nachladen: TMDB-Listen enthalten sie nicht, nur die Details.
+// Filme: „· 112 Min.“, Serien: „· 3 Staffeln · ca. 50 Min.“
 // Geladen wird erst, wenn eine Karte (fast) auf dem Bildschirm ist – so bleiben es wenige Abfragen.
-import * as tmdb from './tmdb.js?v=1.4.0';
+import * as tmdb from './tmdb.js?v=1.5.0';
+import { tvLength } from './media.js?v=1.5.0';
 
-const known = new Map(); // id → Minuten (0 = unbekannt)
+const known = new Map(); // 'movie:id' / 'tv:id' → Text ('' = unbekannt)
 
 // Platzhalter, den die Seiten in ihre Karten schreiben
-export const runtimeSlot = (id) => `<span class="runtime" data-runtime="${id}"></span>`;
+export const runtimeSlot = (id, media = 'movie') => `<span class="runtime" data-runtime="${id}" data-rtmedia="${media}"></span>`;
 
-const show = (el, min) => { el.dataset.done = '1'; el.textContent = min ? ` · ${min} Min.` : ''; };
+const keyOf = (el) => `${el.dataset.rtmedia || 'movie'}:${el.dataset.runtime}`;
+const show = (el, text) => { el.dataset.done = '1'; el.textContent = text ? ` · ${text}` : ''; };
 
 async function fill(el, language) {
-  const id = Number(el.dataset.runtime);
-  if (known.has(id)) { show(el, known.get(id)); return; }
+  const key = keyOf(el);
+  if (known.has(key)) { show(el, known.get(key)); return; }
+  const [media, id] = key.split(':');
   try {
-    const d = await tmdb.get(`movie/${id}`, { language }); // dieselbe Abfrage wie bei der Merkliste
-    known.set(id, d.runtime || 0);
+    const d = await tmdb.get(`${media}/${id}`, { language }); // dieselbe Abfrage wie bei der Merkliste
+    known.set(key, media === 'tv' ? tvLength(d) : d.runtime ? `${d.runtime} Min.` : '');
   } catch { return; }
-  document.querySelectorAll(`[data-runtime="${id}"]`).forEach((x) => show(x, known.get(id)));
+  document.querySelectorAll(`[data-runtime="${id}"][data-rtmedia="${media}"]`).forEach((x) => show(x, known.get(key)));
 }
 
 // Einmal beim Start: beobachtet die Seite und füllt neue Platzhalter, sobald sie sichtbar werden
@@ -30,8 +34,7 @@ export function initRuntimes(root, language) {
     }
   }, { rootMargin: '400px 0px' });
   const scan = () => root.querySelectorAll('[data-runtime]:not([data-done]):not([data-watched])').forEach((el) => {
-    const id = Number(el.dataset.runtime);
-    if (known.has(id)) { show(el, known.get(id)); return; }
+    if (known.has(keyOf(el))) { show(el, known.get(keyOf(el))); return; }
     el.dataset.watched = '1';
     seen.observe(el.closest('article') || el); // die ganze Karte beobachten (der Platzhalter selbst ist anfangs leer)
   });

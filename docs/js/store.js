@@ -10,7 +10,7 @@ const empty = () => ({
   device: { homeHintShown: 0, homeHintLast: 0, installTipShown: false },
 });
 
-let state = load();
+let state; // wird unten geladen, wenn newProfile bekannt ist
 const listeners = new Set();
 
 function load() {
@@ -19,6 +19,7 @@ function load() {
     if (!raw) return empty();
     const data = JSON.parse(raw);
     if (!data || !Array.isArray(data.profiles)) return empty();
+    data.profiles.forEach(migrate);
     return { ...empty(), ...data, device: { ...empty().device, ...(data.device || {}) } };
   } catch {
     return empty();
@@ -60,8 +61,28 @@ export const newProfile = (name, language = 'de-DE') => ({
   surpriseLastGenre: {},
   themes: [], // Lieblingsthemen [{ id: 'zeit', w, t }]
   passed: [], // in „Geschmack“ übersprungene Filme (nicht markiert, aber schon durchgesehen)
-  settings: { groupHorror: false, groupWar: false, groupAge: null, kidsAge: 6 },
+  // Serien (seit 1.5.0): eigene Markierungen und Listen, Personen/Themen/Studios gelten für beides
+  shows: {},
+  networks: [], // Lieblingssender [{ id, n, logo, w, t }]
+  passedTv: [],
+  surpriseShownTv: [],
+  surpriseLastGenreTv: {},
+  rewatchShownTv: {},
+  settings: { groupHorror: false, groupWar: false, groupAge: null, kidsAge: 6, media: 'movie' },
 });
+
+// Ältere Profile (vor den Serien) um die neuen Felder ergänzen – nichts wird umgebaut
+export function migrate(p) {
+  const base = newProfile(p.name || 'Profil', p.language);
+  for (const k of ['movies', 'people', 'companies', 'themes', 'passed', 'surpriseShown', 'surpriseLastGenre',
+    'shows', 'networks', 'passedTv', 'surpriseShownTv', 'surpriseLastGenreTv', 'rewatchShownTv']) {
+    if (p[k] == null) p[k] = base[k];
+  }
+  p.settings = { ...base.settings, ...(p.settings || {}) };
+  return p;
+}
+
+state = load();
 
 // ---------- Profile ----------
 export const profiles = () => state.profiles;
@@ -78,7 +99,7 @@ export function createProfile(name, language) {
 }
 
 export function addProfile(p) {
-  state.profiles.push(p);
+  state.profiles.push(migrate(p));
   save();
   return p;
 }
@@ -108,26 +129,32 @@ export function profilesForPicker() {
 
 // ---------- Markierungen (für spätere Schritte) ----------
 // status: 'loved' (Lieblingsfilm) | 'seen' | 'liked' | 'disliked' | 'want' | 'noInterest' | null (= löschen)
-export function setMovie(profileId, movieId, status, meta = {}) {
+// media: 'movie' (Feld movies) oder 'tv' (Feld shows). Bei Serien zusätzlich 'paused' | 'dropped'.
+const MARKS = { movie: 'movies', tv: 'shows' };
+export function setMark(profileId, media, movieId, status, meta = {}) {
   const p = getProfile(profileId);
   if (!p) return null;
-  const old = p.movies[movieId] || null;
+  const list = (p[MARKS[media]] ||= {});
+  const old = list[movieId] || null;
   if (status) {
-    p.movies[movieId] = { s: status, t: Date.now(), g: meta.g ?? old?.g ?? [], l: meta.l ?? old?.l ?? '', y: meta.y ?? old?.y ?? null, n: meta.n ?? old?.n ?? '' }; // n = Titel (für Begründungen)
+    list[movieId] = { s: status, t: Date.now(), g: meta.g ?? old?.g ?? [], l: meta.l ?? old?.l ?? '', y: meta.y ?? old?.y ?? null, n: meta.n ?? old?.n ?? '' }; // n = Titel (für Begründungen)
     p.marksSinceBackup = (p.marksSinceBackup || 0) + 1;
   } else {
-    delete p.movies[movieId];
+    delete list[movieId];
   }
   save();
   return old;
 }
+export const setMovie = (profileId, movieId, status, meta) => setMark(profileId, 'movie', movieId, status, meta);
 
-export function restoreMovie(profileId, movieId, old) {
+export function restoreMark(profileId, media, movieId, old) {
   const p = getProfile(profileId);
   if (!p) return;
-  if (old) p.movies[movieId] = old; else delete p.movies[movieId];
+  const list = (p[MARKS[media]] ||= {});
+  if (old) list[movieId] = old; else delete list[movieId];
   save();
 }
+export const restoreMovie = (profileId, movieId, old) => restoreMark(profileId, 'movie', movieId, old);
 
 // Personen, Studios und Themen in Stufen: w = 2 (★ Liebe), 1 (♥ Gern), 0 = egal (Eintrag weg).
 // entry enthält id und Anzeige-Angaben (Name n, Bild p/logo, bei Personen role)
@@ -144,15 +171,16 @@ export function setTier(listName, profileId, entry, w) {
 }
 
 // Übersprungene Filme merken, damit sie beim nächsten Öffnen nicht wieder oben stehen
-export function addPassed(profileId, ids) {
+export function addPassed(profileId, ids, media = 'movie') {
   const p = getProfile(profileId);
   if (!p || !ids.length) return;
-  p.passed = [...new Set([...(p.passed || []), ...ids])].slice(-3000);
+  const key = media === 'tv' ? 'passedTv' : 'passed';
+  p[key] = [...new Set([...(p[key] || []), ...ids])].slice(-3000);
   save();
 }
-export function clearPassed(profileId) { updateProfile(profileId, { passed: [] }); }
 
-export const markCount = (p) => Object.keys(p.movies).length + p.people.length + p.companies.length + (p.themes || []).length;
+export const markCount = (p) => Object.keys(p.movies).length + Object.keys(p.shows || {}).length + p.people.length
+  + p.companies.length + (p.themes || []).length + (p.networks || []).length;
 
 // ---------- Geräte-Einstellungen (Hinweise) ----------
 export const device = () => state.device;

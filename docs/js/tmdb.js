@@ -1,7 +1,7 @@
 // Abfragen an TMDB – immer über den Worker, nie direkt (dort liegt der Schlüssel).
 // Merkt sich Antworten für die Dauer der Sitzung und stellt höchstens
 // TMDB.maxParallel Anfragen gleichzeitig.
-import { WORKER_URL, IMAGE_BASE, TMDB } from './config.js?v=1.4.0';
+import { WORKER_URL, IMAGE_BASE, TMDB } from './config.js?v=1.5.0';
 
 const memo = new Map();
 let running = 0;
@@ -35,12 +35,30 @@ async function load(url) {
   }
 }
 
+// Serien sehen bei TMDB etwas anders aus als Filme (name statt title, first_air_date statt release_date).
+// Wir ergänzen die Film-Felder, damit alle Seiten Serien genauso anzeigen können.
+function asFilm(x) {
+  if (x && typeof x === 'object' && 'first_air_date' in x && !('title' in x)) {
+    x.title = x.name;
+    x.original_title = x.original_name;
+    x.release_date = x.first_air_date;
+    x.media = 'tv';
+  }
+  return x;
+}
+function normalize(data) {
+  asFilm(data);
+  for (const key of ['results', 'cast', 'crew']) if (Array.isArray(data?.[key])) data[key].forEach(asFilm);
+  for (const key of ['recommendations', 'similar']) if (Array.isArray(data?.[key]?.results)) data[key].results.forEach(asFilm);
+  return data;
+}
+
 // get('discover/movie', { language: 'de-DE', page: 2 })
 export function get(path, params = {}) {
   const clean = Object.fromEntries(Object.entries(params).filter(([, v]) => v !== undefined && v !== null && v !== ''));
   const url = `${WORKER_URL}/3/${path}?${new URLSearchParams(clean)}`;
   if (!memo.has(url)) {
-    const p = load(url);
+    const p = load(url).then(normalize);
     memo.set(url, p);
     p.catch(() => memo.delete(url)); // Fehler nicht merken, damit „Nochmal“ klappt
   }

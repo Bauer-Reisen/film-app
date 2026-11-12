@@ -1,6 +1,6 @@
 // Profil sichern (als Datei) und wieder laden – so zieht man auf ein
 // anderes Gerät oder in die Home-Bildschirm-App um.
-import { newProfile, getProfile, updateProfile, addProfile, profiles } from './store.js?v=1.4.0';
+import { newProfile, getProfile, updateProfile, addProfile, profiles } from './store.js?v=1.5.0';
 
 const FORMAT = 'filmapp-profil';
 
@@ -71,18 +71,31 @@ export function importAsNew(p) {
 // Zusammenführen: Bei Markierungen gewinnt die neuere.
 export function mergeInto(targetId, incoming) {
   const t = getProfile(targetId);
-  const movies = { ...t.movies };
-  for (const [id, m] of Object.entries(incoming.movies || {})) {
-    if (!movies[id] || (m.t || 0) > (movies[id].t || 0)) movies[id] = m;
-  }
+  const newer = (mine, theirs) => {
+    const out = { ...(mine || {}) };
+    for (const [id, m] of Object.entries(theirs || {})) if (!out[id] || (m.t || 0) > (out[id].t || 0)) out[id] = m;
+    return out;
+  };
+  const movies = newer(t.movies, incoming.movies);
+  const shows = newer(t.shows, incoming.shows);
   const byId = (a, b) => {
     const map = new Map(a.map((x) => [x.id, x]));
     for (const x of b || []) if (!map.has(x.id) || (x.t || 0) > (map.get(x.id).t || 0)) map.set(x.id, x);
     return [...map.values()];
   };
-  const lastGenre = { ...t.surpriseLastGenre };
-  for (const [g, ts] of Object.entries(incoming.surpriseLastGenre || {})) lastGenre[g] = Math.max(lastGenre[g] || 0, ts);
+  const latest = (a, b) => {
+    const out = { ...(a || {}) };
+    for (const [k, ts] of Object.entries(b || {})) out[k] = Math.max(out[k] || 0, ts);
+    return out;
+  };
+  const lastGenre = latest(t.surpriseLastGenre, incoming.surpriseLastGenre);
   updateProfile(targetId, {
+    shows,
+    networks: byId(t.networks || [], incoming.networks),
+    passedTv: [...new Set([...(t.passedTv || []), ...(incoming.passedTv || [])])],
+    surpriseShownTv: byId(t.surpriseShownTv || [], incoming.surpriseShownTv),
+    surpriseLastGenreTv: latest(t.surpriseLastGenreTv, incoming.surpriseLastGenreTv),
+    rewatchShownTv: latest(t.rewatchShownTv, incoming.rewatchShownTv),
     movies,
     people: byId(t.people, incoming.people),
     companies: byId(t.companies, incoming.companies),

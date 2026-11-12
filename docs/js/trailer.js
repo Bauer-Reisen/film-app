@@ -1,10 +1,10 @@
 // Trailer: Knopf auf den Filmkarten, Fenster mit eingebettetem YouTube-Video.
 // YouTube wird erst geladen, wenn man auf „Trailer“ tippt (datensparsame Variante youtube-nocookie).
-import * as tmdb from './tmdb.js?v=1.4.0';
-import { esc, toast } from './ui.js?v=1.4.0';
+import * as tmdb from './tmdb.js?v=1.5.0';
+import { esc, toast } from './ui.js?v=1.5.0';
 
-export const trailerBtn = (id, title, big = false) =>
-  `<button type="button" class="btn ${big ? 'btn-big' : 'btn-small'} trailer-btn" data-trailer="${id}" data-title="${esc(title)}"><span aria-hidden="true">▶</span> Trailer</button>`;
+export const trailerBtn = (id, title, big = false, media = 'movie') =>
+  `<button type="button" class="btn ${big ? 'btn-big' : 'btn-small'} trailer-btn" data-trailer="${id}" data-tmedia="${media}" data-title="${esc(title)}"><span aria-hidden="true">▶</span> Trailer</button>`;
 
 // Bester Trailer: Sprache des Profils vor Englisch, offizieller Trailer vor Teaser
 export function pickVideo(videos, language) {
@@ -15,10 +15,10 @@ export function pickVideo(videos, language) {
   return yt.filter((v) => ['Trailer', 'Teaser', 'Clip'].includes(v.type)).sort((a, b) => rank(a) - rank(b))[0] || null;
 }
 
-async function open(id, title, language) {
+async function open(id, title, language, media = 'movie') {
   let video = null;
   try {
-    const d = await tmdb.get(`movie/${id}`, { language, append_to_response: 'videos', include_video_language: `${language.slice(0, 2)},en,null` });
+    const d = await tmdb.get(`${media}/${id}`, { language, append_to_response: 'videos', include_video_language: `${language.slice(0, 2)},en,null` });
     video = pickVideo(d.videos?.results, language);
   } catch (err) {
     toast(err.message);
@@ -55,6 +55,6 @@ async function open(id, title, language) {
 export function handleClick(e, language) {
   const b = e.target.closest('[data-trailer]');
   if (!b) return false;
-  open(Number(b.dataset.trailer), b.dataset.title || '', language);
+  open(Number(b.dataset.trailer), b.dataset.title || '', language, b.dataset.tmedia || 'movie');
   return true;
 }

@@ -1,23 +1,25 @@
 // Oberfläche: Seitenwechsel über die Adresse (#/vorschlaege usw.)
-import { VERSION, LANGUAGES } from './config.js?v=1.4.0';
-import * as store from './store.js?v=1.4.0';
-import { saveBackup, readBackup, findSameName, importAsNew, mergeInto } from './backup.js?v=1.4.0';
-import { esc, dialog, toast, formatDate } from './ui.js?v=1.4.0';
-import * as platform from './platform.js?v=1.4.0';
-import * as taste from './taste.js?v=1.4.0';
-import * as suggest from './suggest.js?v=1.4.0';
-import * as watchlist from './watchlist.js?v=1.4.0';
-import * as sneak from './sneak.js?v=1.4.0';
-import * as group from './group.js?v=1.4.0';
-import * as kids from './kids.js?v=1.4.0';
-import * as rewatch from './rewatch.js?v=1.4.0';
-import * as trailer from './trailer.js?v=1.4.0';
-import { initRuntimes } from './runtime.js?v=1.4.0';
+import { VERSION, LANGUAGES } from './config.js?v=1.5.0';
+import * as store from './store.js?v=1.5.0';
+import { saveBackup, readBackup, findSameName, importAsNew, mergeInto } from './backup.js?v=1.5.0';
+import { esc, dialog, toast, formatDate } from './ui.js?v=1.5.0';
+import * as platform from './platform.js?v=1.5.0';
+import * as taste from './taste.js?v=1.5.0';
+import * as suggest from './suggest.js?v=1.5.0';
+import * as watchlist from './watchlist.js?v=1.5.0';
+import * as sneak from './sneak.js?v=1.5.0';
+import * as group from './group.js?v=1.5.0';
+import * as kids from './kids.js?v=1.5.0';
+import * as rewatch from './rewatch.js?v=1.5.0';
+import * as trailer from './trailer.js?v=1.5.0';
+import { initRuntimes } from './runtime.js?v=1.5.0';
+import { mediaOf } from './media.js?v=1.5.0';
 
 const view = document.getElementById('view');
 const APP_URL = 'https://bauer-reisen.github.io/film-app/';
 const tabs = document.querySelectorAll('.tabs a[data-tab]');
 const whoBtn = document.getElementById('who');
+const mediaSwitch = document.querySelector('.media-switch');
 
 // ---------- aktuelles Profil (gilt für diese Sitzung) ----------
 const SESSION_KEY = 'filmapp.current';
@@ -141,16 +143,19 @@ const pages = {
   },
   geschmack: {
     title: 'Geschmack',
+    tvReady: true,
     render: () => taste.render(current()),
     mount: () => taste.mount(view, current()),
   },
   merkliste: {
     title: 'Merkliste',
+    tvReady: true,
     render: () => watchlist.render(current()),
     mount: () => watchlist.mount(current()),
   },
   profil: {
     title: 'Profil',
+    tvReady: true,
     render: () => {
       const p = current();
       const showHome = platform.isIOS && !platform.isStandalone;
@@ -158,7 +163,7 @@ const pages = {
         <h1>${esc(p.name)}</h1>
 
         <section class="card stack">
-          <h2 id="lang-h">Filme schauen auf</h2>
+          <h2 id="lang-h">Filme und Serien schauen auf</h2>
           <div class="segmented" role="group" aria-labelledby="lang-h">
             ${Object.entries(LANGUAGES).map(([code, label]) => `
               <button type="button" class="seg" data-lang="${code}" aria-pressed="${p.language === code}">${label}</button>`).join('')}
@@ -264,7 +269,7 @@ async function createProfileDialog() {
         <input name="name" type="text" maxlength="30" autocomplete="off" autocapitalize="words" required>
       </label>
       <fieldset class="field">
-        <legend>Filme schauen auf</legend>
+        <legend>Filme und Serien schauen auf</legend>
         <label class="radio"><input type="radio" name="language" value="de-DE" checked> Deutsch</label>
         <label class="radio"><input type="radio" name="language" value="en-US"> Englisch</label>
       </fieldset>
@@ -359,7 +364,7 @@ view.addEventListener('click', async (e) => {
   const lang = e.target.closest('[data-lang]');
   if (lang) {
     store.updateProfile(currentId, { language: lang.dataset.lang });
-    toast(`Filme jetzt auf ${LANGUAGES[lang.dataset.lang]}.`);
+    toast(`Filme und Serien jetzt auf ${LANGUAGES[lang.dataset.lang]}.`);
     return show();
   }
 
@@ -379,6 +384,23 @@ view.addEventListener('click', async (e) => {
 });
 
 whoBtn.addEventListener('click', () => leaveProfile());
+
+// Umschalter Filme · Serien – jedes Profil merkt sich die letzte Wahl
+mediaSwitch.addEventListener('click', (e) => {
+  const b = e.target.closest('[data-media]');
+  const p = current();
+  if (!b || !p || mediaOf(p) === b.dataset.media) return;
+  store.updateProfile(p.id, { settings: { ...(p.settings || {}), media: b.dataset.media } });
+  show();
+});
+
+// Seiten, die es für Serien noch nicht gibt
+const tvSoon = () => `
+  <div class="card placeholder">
+    <p><strong>Diese Seite gibt es für Serien in Kürze.</strong></p>
+    <p class="muted">Unter „Geschmack“ kannst du schon Serien markieren, Sender und Personen wählen – dann sind die Vorschläge gleich startklar.</p>
+    <p><a class="btn btn-primary btn-big" href="#/geschmack">Zum Geschmack</a></p>
+  </div>`;
 
 // ---------- Tabs: Wechsel ohne Browser-Verlauf ----------
 // Tab-Wechsel ersetzen den Eintrag im Verlauf. Sonst blättert die Wisch-Geste
@@ -402,14 +424,19 @@ function show() {
 
   document.body.classList.toggle('no-tabs', !!page.noTabs);
   currentKey = key;
-  view.innerHTML = page.render();
-  page.mount?.();
+  const p = current();
+  const media = p ? mediaOf(p) : 'movie';
+  document.body.dataset.media = media;
+  const soon = media === 'tv' && !page.tvReady && !page.noProfile;
+  view.innerHTML = soon ? `<h1>${page.title}</h1>${tvSoon()}` : page.render();
+  if (!soon) page.mount?.();
+  mediaSwitch.hidden = !p || !!page.noTabs;
+  mediaSwitch.querySelectorAll('[data-media]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.media === media)));
   document.title = `${page.title} · Was schaue ich?`;
   tabs.forEach((a) => {
     if (a.dataset.tab === activeTab) a.setAttribute('aria-current', 'page');
     else a.removeAttribute('aria-current');
   });
-  const p = current();
   whoBtn.textContent = p ? p.name : 'Wer schaut?';
   whoBtn.setAttribute('aria-label', p ? `Profil ${p.name} – Profil wechseln` : 'Profil wählen');
   window.scrollTo(0, 0);

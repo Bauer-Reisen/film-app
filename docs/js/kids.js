@@ -1,12 +1,12 @@
 // Seite „Kinderfilme“: gute Filme mit passender Altersfreigabe.
 // Es zählt vor allem Bewertung und Beliebtheit – Kinder haben ihren eigenen Geschmack.
-import { KIDS as K } from './config.js?v=1.4.0';
-import * as store from './store.js?v=1.4.0';
-import * as tmdb from './tmdb.js?v=1.4.0';
-import { esc, toast } from './ui.js?v=1.4.0';
-import { runtimeSlot } from './runtime.js?v=1.4.0';
-import { trailerBtn } from './trailer.js?v=1.4.0';
-import { ageOk } from './age.js?v=1.4.0';
+import { KIDS as K } from './config.js?v=1.5.0';
+import * as store from './store.js?v=1.5.0';
+import * as tmdb from './tmdb.js?v=1.5.0';
+import { esc, toast } from './ui.js?v=1.5.0';
+import { runtimeSlot } from './runtime.js?v=1.5.0';
+import { trailerBtn } from './trailer.js?v=1.5.0';
+import { ageOk } from './age.js?v=1.5.0';
 
 const FEEDBACK = [
   ['want', '+', 'Merken'],

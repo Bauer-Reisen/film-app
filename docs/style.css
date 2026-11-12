@@ -57,6 +57,22 @@ input, select, textarea, button { font: inherit; color: inherit; }
 .brand { display: flex; align-items: center; gap: 8px; color: var(--text); text-decoration: none; font-weight: 700; font-size: 18px; margin-right: auto; }
 .brand-icon { width: 26px; height: 26px; color: var(--accent); }
 
+/* Umschalter Filme · Serien */
+.media-switch { display: inline-flex; flex: none; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
+.media-switch[hidden] { display: none; }
+.ms { min-height: 44px; padding: 0 14px; border: 0; background: var(--surface-2); color: var(--text); font-size: 15px; cursor: pointer; }
+.ms + .ms { border-left: 1px solid var(--line); }
+.ms[aria-pressed="true"] { background: var(--accent); color: var(--accent-text); font-weight: 700; }
+/* Am Handy ist oben wenig Platz: dann nur das Symbol statt des Namens */
+@media (max-width: 479px) { .topbar:has(.media-switch:not([hidden])) .brand span { display: none; } }
+/* Kleine Laptops/Tablets quer: Tabs und Umschalter oben – Namen weglassen, Tabs enger */
+@media (min-width: 768px) and (max-width: 1099px) {
+  .topbar:has(.media-switch:not([hidden])) .brand span { display: none; }
+  .tabs a { padding: 0 8px; }
+  .topbar:has(.media-switch:not([hidden])) .tabs svg { display: none; }
+  .media-switch { margin-right: 4px; }
+}
+
 .who {
   min-height: 44px; min-width: 44px; max-width: 40vw;
   padding: 0 14px; border-radius: 999px;
@@ -308,6 +324,9 @@ h2 { font-size: 20px; margin: 24px 0 8px; }
 .overview summary { cursor: pointer; color: var(--muted); min-height: 32px; display: flex; align-items: center; }
 .overview p { margin: 4px 0 0; }
 .marks-5 .mark-noInterest { grid-column: 1 / -1; }
+/* Ungerade Zahl an Knöpfen: der letzte geht über die ganze Breite */
+.marks-5 > .mark:last-child:nth-child(odd) { grid-column: 1 / -1; }
+.mark-started[aria-pressed="true"] { background: #a1a1aa; border-color: #a1a1aa; }
 .sg[hidden] { display: none; }
 @media (min-width: 768px) {
   .suggestions { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 18px; }

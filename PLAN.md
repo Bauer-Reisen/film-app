@@ -363,3 +363,99 @@ Nach jedem Schritt prüfe ich die App selbst im Browser im Handy-Format (iPhone 
 - Jede Person nutzt die App auf dem eigenen Handy. Neben dem iPhone wird auch Android unterstützt. Ein gemeinsames Gerät im Clubraum ist nicht vorgesehen, würde aber trotzdem funktionieren.
 - Statt „Daten überleben einen Neustart" gilt: Die Profile überleben das Schließen des Browsers und Neustarts des Geräts.
 - Sie liegen **pro Gerät** und werden **nicht automatisch zwischen Geräten abgeglichen**. Umziehen geht über die Sicherungsdatei.
+
+---
+
+## 7. Serien (Plan vom 12.11.2026)
+
+Serien kommen **in dieselbe App**, nicht in eine zweite. Grundlage: [planung/prompt-serien.md](planung/prompt-serien.md).
+
+### Bedienung
+- **Umschalter oben** in der Kopfzeile: **Filme · Serien**. Jedes Profil merkt sich die letzte Wahl (`settings.media`). Beim Umschalten bleibt man auf derselben Seite.
+- Die **Reiter unten bleiben gleich**: Vorschläge · Überrasch mich · Geschmack · Merkliste · Profil. Sie zeigen je nach Umschalter Filme oder Serien.
+- Wörter passen sich an: Lieblingsfilm → **Lieblingsserie**, Kinderfilme → **Kinderserien**, „Den schaue ich“ → „Die schaue ich“.
+- **Geschmack** bei Serien hat die Unterreiter **Personen · Sender · Themen · Serien**. „Sender“ ist eine eigene Liste: HBO, Netflix, AMC, BBC, Apple TV+, ZDF, ARD, Arte, Canal+ usw. Lieblingsstudios aus den Filmen zählen bei Serien trotzdem mit, z. B. A24.
+- **Markieren** wie bei Filmen: ✓ Gesehen · ♥ Mag ich · ✕ Mag ich nicht · + Merken, ★ per Tipp aufs Poster. Neu nur bei Serien: der Knopf **⏸ Angefangen** (Wunsch vom 12.11.2026). Ein Tipp darauf öffnet eine kleine Auswahl mit zwei Möglichkeiten:
+  - **„Will ich weiterschauen“** (Status `paused`): Die Serie ist irgendwie liegen geblieben, gefällt dir aber. Sie zählt **leicht positiv**, etwa wie „Merken“, und steht auf der Merkliste ganz oben unter **„Weiterschauen“**.
+  - **„Hat mich verloren“** (Status `dropped`): Die Serie hast du abgebrochen, weil sie dir nicht mehr gefallen hat. Sie zählt **leicht negativ**, halb so stark wie „Mag ich nicht“.
+  - Auf der Karte steht danach „⏸ Weiterschauen“ bzw. „⏹ Abgebrochen“. Ein zweiter Tipp nimmt die Markierung zurück.
+- **Länge** auf jeder Serienkarte: „3 Staffeln · ca. 50 Min.“ (Folgenlänge). Sie wird erst geladen, wenn die Karte sichtbar wird.
+- Trailer, „Heute Lust auf …“, „Aus welcher Zeit“, Merkliste, Rückgängig und „Mehr“ funktionieren wie bei Filmen.
+
+### Datenmodell (nur erweitern, nichts umbauen)
+Neue Felder im Profil. Fehlen sie, setzt die App sie beim Laden selbst ein. So funktionieren alte Profile und alte Sicherungen weiter.
+```json
+"shows":    { "1396": { "s": "loved", "t": 1762870100000, "g": [18, 80], "l": "en", "y": 2008, "n": "Breaking Bad" } },
+"networks": [ { "id": 49, "n": "HBO", "logo": "/…png", "w": 2, "t": 1762870200000 } ],
+"passedTv": [], "surpriseShownTv": [], "surpriseLastGenreTv": {}, "rewatchShownTv": {},
+"settings": { "media": "tv", "groupTv": { "war": false, "age": 0 } }
+```
+- **Gemeinsam für beides:** `people`, `themes`, `companies`, Sprache und Kinder-Alter.
+- **Status bei Serien:** wie bei Filmen, dazu **`paused`** (angefangen, will weiterschauen) und **`dropped`** (abgebrochen, hat mich verloren).
+- **Sicherung:** gleiches Format. Beim Zusammenführen werden auch `shows`, `networks` und die neuen Listen zusammengeführt, die neuere Markierung gewinnt.
+
+### Technik
+- **Worker:** neue erlaubte Adressen `discover/tv`, `tv/{id}`, `tv/{id}/recommendations`, `tv/{id}/keywords`, `tv/{id}/aggregate_credits`, `tv/{id}/content_ratings`, `person/{id}/tv_credits`, `search/tv`, `network/{id}`, `genre/tv/list`. Danach neu hochladen. Der Schlüssel bleibt im Dashboard.
+- **Neue Datei `media.js`:** kennt für „Film“ und „Serie“ jeweils die TMDB-Adressen, Genres, Wörter und das Profilfeld. Die bestehenden Seiten fragen dort nach, statt alles doppelt zu bauen.
+- `tmdb.js` gleicht Serien-Antworten an Filme an: `name` → Titel, `first_air_date` → Datum. So kann der vorhandene Code sie anzeigen.
+- **Startliste:** `scripts/make-seeds-tv.js` erzeugt `docs/js/seeds-tv.js`:
+  - ca. 150 bekannte Serien quer durch Länder (USA, Großbritannien, Deutschland, Skandinavien, Frankreich, Spanien, Korea, Japan, Israel …) und Jahrzehnte (1960er bis heute), mit Titel und Poster auf Deutsch und Englisch
+  - ca. 30 Sender. Nummern und Logos kommen direkt aus den Seriendaten, damit sie stimmen.
+  - ca. 25 Serien-Personen, z. B. Bryan Cranston, Phoebe Waller-Bridge, Vince Gilligan. Sie erscheinen bei „Personen“ zusätzlich, wenn Serien gewählt sind.
+- **Serien-Genres bei TMDB sind anders:** Action & Abenteuer, Sci-Fi & Fantasy, Krieg & Politik. Nachrichten, Reality, Talkshows und Seifenopern werden immer ausgeschlossen.
+- **Altersfreigabe bei Serien:** deutsche Freigabe, sonst US-Freigabe (TV-Y/TV-G = ab 0, TV-Y7/TV-PG = ab 6, TV-14 = ab 12, TV-MA = ab 16).
+
+### Vorschläge für Serien: Punkte
+Die Punkte funktionieren wie bei Filmen (Abschnitt 3). Unterschiede:
+
+| Grund | Punkte (★ / ♥) |
+|---|---|
+| Lieblingsschauspieler in einer tragenden Rolle (ab 4 Folgen) | **+9** / +5 |
+| Lieblingsregie oder Serienidee („Creator“) | **+9** / +5 |
+| Lieblingssender | +4 / +2 |
+| Lieblingsstudio (aus den Filmen) | +3 / +1,5 |
+| Lieblingsthema, ähnliche Serie zu ★/♥/Merken | wie bei Filmen |
+| ähnliche Serie zu einer Serie mit „Will ich weiterschauen“ | +1,5 je Serie (höchstens +3), wie Merken |
+| Genre-Neigung: „Weiterschauen“ zählt halb so stark positiv wie „Mag ich“, „Hat mich verloren“ halb so stark negativ wie „Mag ich nicht“ | höchstens ±2 |
+| **Brücke:** gleicher Stoff / gleicher Titel wie ein ★- oder ♥-Film (z. B. Film und Serie „Fargo“) | **+6** |
+| **Brücke:** gleiche Themen und Genres wie ein ★-Film / ♥-Film | +3 / +2 je Film (höchstens +6) |
+| **Brücke:** eine Person aus deinen ★/♥-Filmen spielt mit oder führt Regie | +4 (höchstens +6) |
+
+- **Mindestqualität bei Serien:** Note ab 7,0 und ab 100 Stimmen. Mit Lieblingsperson reichen 6,3 und 40 Stimmen. Serien haben weniger Stimmen als Filme.
+- **Ausgeschlossen:** alles Markierte, also auch beide Arten von „Angefangen“.
+
+### Brücke Film ↔ Serie
+- Sie wirkt in **beide Richtungen**. Wer Filme mag, bekommt passende Serien, und gemochte Serien bringen passende Filme. Ausgangspunkte sind bis zu 6 deiner ★- und ♥-Titel der jeweils anderen Seite, ★ zuerst.
+- Pro Ausgangspunkt fragt die App:
+  1. **Gleicher Titel oder Stoff:** Suche nach dem Titel. Es zählen nur genaue Treffer, z. B. „Fargo“ oder „Dune: Prophecy“.
+  2. **Gleiche Themen:** die 3 wichtigsten Stichwörter des Titels, ohne nichtssagende wie „nach einem Roman“. Dazu zählen die passenden Genres.
+  3. **Gleiche Personen:** Regie und die drei Hauptrollen aus allen Ausgangspunkten. Die bis zu 5 häufigsten werden auf der anderen Seite gesucht.
+- **Begründung**, zum Beispiel:
+  - „Weil du den Film „Fargo“ liebst“
+  - „Weil du die Serie „Dark“ mochtest“
+  - „Mit Cillian Murphy aus „Oppenheimer““
+- Zusätzlich gelten Lieblingspersonen und Lieblingsthemen ohnehin für beides.
+- **Aufwand:** höchstens etwa 30 zusätzliche Abfragen beim ersten Öffnen, danach aus dem Zwischenspeicher.
+
+### Seiten bei Serien
+- **Überrasch mich:** gleicher Ablauf mit Vorhang. Der Hinweis lautet z. B. „Krimi · 1990er · 5 Staffeln“. Note ab 7,5 und ab 200 Stimmen, Jahrzehnte ab den 1960ern.
+- **Gruppenabend** (man schaut gemeinsam eine Folge):
+  - lockere Genres: Komödie, Animation, Familie, Action & Abenteuer, Sci-Fi & Fantasy, Mystery
+  - Folgen höchstens 60 Minuten
+  - Note ab 7,3 und ab 500 Stimmen
+  - Krimi nur mit Komödie, „+ Krieg & Politik“ per Schalter
+  - Alter wie bei Filmen. Einen Horror-Schalter gibt es bei Serien nicht, weil TMDB dafür kein Seriengenre hat.
+- **Kinderserien:** Genres Kinder, Animation und Familie, ab 0 · ab 6 · ab 12. Jede Serie wird einzeln auf die Freigabe geprüft. Note ab 7,0 und ab 100 Stimmen.
+- **Lieblingsserie:** eine deiner ★-Serien zum Wiederschauen, die am längsten nicht gezeigte zuerst.
+- **Merkliste:** oben **„Weiterschauen“** mit allen Serien, die du weiterschauen willst. Darunter die gemerkten Serien. Knöpfe: Gesehen · Mag ich · Mag ich nicht · Angefangen · Entfernen.
+- **Gruppenabend und Kinderserien:** „Hat mich verloren“ fällt raus wie „Mag ich nicht“. „Weiterschauen“ bleibt erlaubt.
+
+### Bauschritte Serien
+Nach jedem Schritt prüfe ich selbst im Browser, bei 375 px und am Laptop, mit Testprofilen, die ich danach lösche. Danach aktualisiere ich STAND.md, setze die Version, lade hoch und prüfe live.
+
+| # | Schritt | Fertig, wenn |
+|---|---|---|
+| S1 | **Grundlage, Geschmack, Merkliste** (1.5.0): Worker-Adressen, `media.js`, Datenmodell, Umschalter oben, Startliste, Geschmack mit Serien und Sendern, Angefangen (Weiterschauen / Hat mich verloren), Länge, Trailer, Merkliste mit „Weiterschauen“ | Umschalten klappt und wird pro Profil gemerkt. Serien lassen sich markieren, Sender bewerten, Suche findet „Haus des Geldes“ und „Money Heist“. Ein altes Profil und eine alte Sicherung laden ohne Fehler. |
+| S2 | **Vorschläge mit Brücke** (1.6.0): Serienvorschläge mit Begründung, Heute Lust auf, Aus welcher Zeit, Brücke in beide Richtungen | Ein Profil nur mit Filmen bekommt passende Serien mit „Weil du den Film … liebst“. Ein Profil nur mit Serien bekommt passende Filme. Kein markierter Titel erscheint. |
+| S3 | **Überrasch mich, Gruppenabend, Kinderserien, Lieblingsserie** (1.7.0) | 20 Klicks auf „Überrasch mich“ bringen 20 verschiedene Serien. Der Gruppenabend hält seine Regeln ein, Kinderserien haben die passende Freigabe. |
+| S4 | **Abschluss** (1.8.0): Über-Seite, README, STAND, Gesamtprüfung | Filme funktionieren unverändert, Serien live. Am Ende steht die Liste, was du am echten Handy testest. |
