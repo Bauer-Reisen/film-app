@@ -1,7 +1,7 @@
 // ALLE Einstellungen und Grenzwerte an einer Stelle.
 // Wer etwas nachjustieren will (z. B. Mindestbewertung), ändert es nur hier.
 
-export const VERSION = '1.9.2';
+export const VERSION = '1.10.0';
 
 // Adresse des Cloudflare Workers (nicht geheim – der Schlüssel liegt nur dort).
 export const WORKER_URL = 'https://film-app-tmdb.film-app.workers.dev';
@@ -76,6 +76,9 @@ export const KIDS = {
   studioBonus: 0.4, // kleiner Vorrang für eigene Lieblingsstudios
   usFallback: { 0: ['G'], 6: ['G', 'PG'], 12: ['G', 'PG', 'PG-13'] },
 };
+
+// Ab so vielen Markierungen (je Filme bzw. Serien) schlägt „Geschmack“ vor, bei den Vorschlägen weiterzumachen
+export const TASTE_HINT_AFTER = 40;
 
 export const BACKUP = {
   remindAfterMarks: 20, remindEveryDays: 7,

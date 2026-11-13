@@ -1,19 +1,20 @@
 // Oberfläche: Seitenwechsel über die Adresse (#/vorschlaege usw.)
-import { VERSION, LANGUAGES } from './config.js?v=1.9.2';
-import * as store from './store.js?v=1.9.2';
-import { saveBackup, readBackup, findSameName, importAsNew, mergeInto } from './backup.js?v=1.9.2';
-import { esc, dialog, toast, formatDate } from './ui.js?v=1.9.2';
-import * as platform from './platform.js?v=1.9.2';
-import * as taste from './taste.js?v=1.9.2';
-import * as suggest from './suggest.js?v=1.9.2';
-import * as watchlist from './watchlist.js?v=1.9.2';
-import * as sneak from './sneak.js?v=1.9.2';
-import * as group from './group.js?v=1.9.2';
-import * as kids from './kids.js?v=1.9.2';
-import * as rewatch from './rewatch.js?v=1.9.2';
-import * as trailer from './trailer.js?v=1.9.2';
-import { initRuntimes } from './runtime.js?v=1.9.2';
-import { mediaOf } from './media.js?v=1.9.2';
+import { VERSION, LANGUAGES } from './config.js?v=1.10.0';
+import * as store from './store.js?v=1.10.0';
+import { saveBackup, readBackup, findSameName, importAsNew, mergeInto } from './backup.js?v=1.10.0';
+import { esc, dialog, toast, formatDate } from './ui.js?v=1.10.0';
+import * as platform from './platform.js?v=1.10.0';
+import * as taste from './taste.js?v=1.10.0';
+import * as suggest from './suggest.js?v=1.10.0';
+import * as watchlist from './watchlist.js?v=1.10.0';
+import * as sneak from './sneak.js?v=1.10.0';
+import * as group from './group.js?v=1.10.0';
+import * as kids from './kids.js?v=1.10.0';
+import * as rewatch from './rewatch.js?v=1.10.0';
+import * as trailer from './trailer.js?v=1.10.0';
+import { initRuntimes } from './runtime.js?v=1.10.0';
+import { mediaOf } from './media.js?v=1.10.0';
+import { runTour } from './tour.js?v=1.10.0';
 
 const view = document.getElementById('view');
 const APP_URL = 'https://bauer-reisen.github.io/film-app/';
@@ -202,7 +203,7 @@ const pages = {
           </div>
         </section>
 
-        <p class="row"><a class="btn" href="#/ueber">Über diese App</a></p>
+        <p class="row"><button class="btn" type="button" data-act="tour">Rundgang ansehen</button> <a class="btn" href="#/ueber">Über diese App</a></p>
         <p class="muted small">Version ${VERSION}</p>`;
     },
   },
@@ -282,6 +283,15 @@ async function createProfileDialog() {
   store.askPersist();
   selectProfile(p.id, '#/geschmack');
   toast(`Profil „${p.name}“ angelegt.`);
+  if (!p.settings?.tourDone) await tour();
+}
+
+// Rundgang zeigen und als gesehen merken
+async function tour() {
+  const p = current();
+  if (!p) return;
+  await runTour(p.name);
+  store.updateProfile(p.id, { settings: { ...(p.settings || {}), tourDone: true } });
 }
 
 async function renameDialog() {
@@ -379,6 +389,7 @@ view.addEventListener('click', async (e) => {
     case 'home-later': platform.dismissHomeHint(); return show();
     case 'install-later': platform.dismissInstallTip(); return show();
     case 'share-app': return shareApp();
+    case 'tour': return tour();
     case 'install': await platform.install(); platform.dismissInstallTip(); return show();
   }
 });
@@ -400,8 +411,21 @@ mediaSwitch.addEventListener('click', (e) => {
 tabs.forEach((a) => a.addEventListener('click', (e) => {
   if (e.metaKey || e.ctrlKey || e.shiftKey) return;
   e.preventDefault();
+  // Nochmal auf den aktiven Reiter tippen = nach oben (wie in vielen Apps)
+  if (a.getAttribute('aria-current') === 'page' && location.hash === a.getAttribute('href')) { toTop(); return; }
   location.replace(a.getAttribute('href'));
 }));
+
+// ---------- Nach oben ----------
+const topBtn = document.getElementById('to-top');
+const toTop = () => window.scrollTo({ top: 0, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+topBtn.addEventListener('click', toTop);
+let topTick = false;
+window.addEventListener('scroll', () => {
+  if (topTick) return;
+  topTick = true;
+  requestAnimationFrame(() => { topBtn.hidden = window.scrollY < 1200; topTick = false; });
+}, { passive: true });
 
 window.addEventListener('installable', () => show());
 

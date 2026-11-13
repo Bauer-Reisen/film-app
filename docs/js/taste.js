@@ -1,12 +1,13 @@
 // Seite „Geschmack“: Personen, Studios/Sender und Themen in Stufen wählen, Filme oder Serien markieren, Suche.
-import * as store from './store.js?v=1.9.2';
-import * as tmdb from './tmdb.js?v=1.9.2';
-import { esc, toast } from './ui.js?v=1.9.2';
-import { runtimeSlot, titleText } from './runtime.js?v=1.9.2';
-import { SEED_MOVIES, SEED_PEOPLE, SEED_STUDIOS } from './seeds.js?v=1.9.2';
-import { SEED_SHOWS, SEED_TV_PEOPLE, SEED_NETWORKS } from './seeds-tv.js?v=1.9.2';
-import { THEMES, themeById, themeQuery } from './themes.js?v=1.9.2';
-import { MEDIA, mediaOf, marksOf, excludedGenre, askStarted, stateLabel, STARTED, creditsOf } from './media.js?v=1.9.2';
+import * as store from './store.js?v=1.10.0';
+import * as tmdb from './tmdb.js?v=1.10.0';
+import { esc, toast } from './ui.js?v=1.10.0';
+import { runtimeSlot, titleText } from './runtime.js?v=1.10.0';
+import { SEED_MOVIES, SEED_PEOPLE, SEED_STUDIOS } from './seeds.js?v=1.10.0';
+import { SEED_SHOWS, SEED_TV_PEOPLE, SEED_NETWORKS } from './seeds-tv.js?v=1.10.0';
+import { THEMES, themeById, themeQuery } from './themes.js?v=1.10.0';
+import { MEDIA, mediaOf, marksOf, excludedGenre, askStarted, stateLabel, STARTED, creditsOf } from './media.js?v=1.10.0';
+import { TASTE_HINT_AFTER } from './config.js?v=1.10.0';
 
 const STEP = 20;
 const MARKS = [
@@ -293,6 +294,19 @@ const tip = () => `<div class="card hint"><p><strong>Tipp:</strong> Wähl zuerst
   <button class="link-btn" type="button" data-sub="themen">Themen</button>, was du magst.
   Dann zeigt dir diese Liste zuerst deren ${cfg().w.many}.</p></div>`;
 
+// Ab genug Markierungen: Hinweis, bei den Vorschlägen weiterzumachen (einmal wegtippen = weg)
+function suggestHint() {
+  const md = media();
+  const n = Object.keys(marks()).length;
+  if (n < TASTE_HINT_AFTER || profile.settings?.hintDone?.[md]) return '';
+  const w = cfg().w;
+  return `<div class="card hint" data-hint="suggest">
+    <p><strong>Die App kennt deinen Geschmack jetzt gut.</strong></p>
+    <p>Mach am besten bei den Vorschlägen weiter: Dort kommen nur noch ${w.many}, die zu dir passen – und du kannst sie genauso als Gesehen, Mag ich usw. markieren.</p>
+    <div class="row"><a class="btn btn-primary" href="#/vorschlaege">Zu den Vorschlägen</a>
+    <button class="btn" type="button" data-taste="hint-hide">Ausblenden</button></div></div>`;
+}
+
 async function fillFilms() {
   const el = body();
   const md = media();
@@ -312,7 +326,7 @@ async function fillFilms() {
   const started = md === 'tv' ? ' „Angefangen“ = du hast sie nicht zu Ende geschaut.' : '';
   el.innerHTML = `
     <p class="muted small">Tipp an, was du kennst. Unbekannte ${w.many} einfach überscrollen. Nochmal tippen nimmt die Markierung zurück.${started} <strong>Aufs Poster tippen = ★ ${w.fav}.</strong></p>
-    ${nothingRated() ? tip() : ''}
+    ${nothingRated() ? tip() : suggestHint()}
     ${doneInfo}
     <div class="films">${candidates().slice(0, L().shown).map(filmCard).join('')}</div>
     <div class="row center-row">
@@ -502,6 +516,12 @@ async function mark(card, status) {
   else now = status;
   store.setMark(profile.id, md, id, now, { g: f.g, l: f.l, y: f.y, n: f.title });
   document.querySelectorAll(`[data-film="${id}"]`).forEach((c) => updateFilmCard(c, id));
+  // Grenze gerade erreicht? Dann den Hinweis oben einblenden
+  const grid = body()?.querySelector('.films');
+  if (grid && !body().querySelector('[data-hint]')) {
+    const hint = suggestHint();
+    if (hint) { body().insertAdjacentHTML('afterbegin', hint); toast('Tipp: Ab jetzt geht es bei den Vorschlägen am schnellsten weiter – Hinweis ganz oben.'); }
+  }
 }
 
 export function handleClick(e) {
@@ -536,6 +556,12 @@ export function handleClick(e) {
   if (sf) { ui.studioFilter = sf.dataset.sfilter; fillStudios(); return true; }
   const act = e.target.closest('[data-taste]')?.dataset.taste;
   if (act === 'more') { loadMore(e.target.closest('[data-taste]')); return true; }
+  if (act === 'hint-hide') {
+    const md = media();
+    store.updateProfile(profile.id, { settings: { ...profile.settings, hintDone: { ...(profile.settings?.hintDone || {}), [md]: true } } });
+    body()?.querySelector('[data-hint]')?.remove();
+    return true;
+  }
   if (act === 'toggle-all') { L().showAll = !L().showAll; snapshotDone(); fillFilms(); return true; }
   if (act === 'search') { runSearch(); return true; }
   return false;

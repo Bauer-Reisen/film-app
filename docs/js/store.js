@@ -68,7 +68,8 @@ export const newProfile = (name, language = 'de-DE') => ({
   surpriseShownTv: [],
   surpriseLastGenreTv: {},
   rewatchShownTv: {},
-  settings: { groupHorror: false, groupWar: false, groupAge: null, kidsAge: 6, media: 'movie' },
+  // tourDone: kurzer Rundgang schon gesehen; hintDone: Hinweis „bei Vorschlägen weitermachen“ weggetippt (je movie/tv)
+  settings: { groupHorror: false, groupWar: false, groupAge: null, kidsAge: 6, media: 'movie', tourDone: false, hintDone: {} },
 });
 
 // Ältere Profile (vor den Serien) um die neuen Felder ergänzen – nichts wird umgebaut
@@ -78,7 +79,9 @@ export function migrate(p) {
     'shows', 'networks', 'passedTv', 'surpriseShownTv', 'surpriseLastGenreTv', 'rewatchShownTv']) {
     if (p[k] == null) p[k] = base[k];
   }
+  const known = p.settings && 'tourDone' in p.settings;
   p.settings = { ...base.settings, ...(p.settings || {}) };
+  if (!known) p.settings.tourDone = true; // bestehende Profile bekommen den Rundgang nicht
   return p;
 }
 

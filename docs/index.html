@@ -13,7 +13,7 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-  <link rel="stylesheet" href="style.css?v=1.9.2">
+  <link rel="stylesheet" href="style.css?v=1.10.0">
 </head>
 <body>
   <a class="skip" href="#view">Zum Inhalt springen</a>
@@ -54,8 +54,12 @@
 
   <main id="view" tabindex="-1"></main>
 
+  <button type="button" id="to-top" class="to-top" aria-label="Nach oben" hidden>
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </button>
+
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-  <script type="module" src="js/app.js?v=1.9.2"></script>
+  <script type="module" src="js/app.js?v=1.10.0"></script>
 </body>
 </html>

@@ -158,6 +158,31 @@ h2 { font-size: 20px; margin: 24px 0 8px; }
 .toast.show { display: flex; align-items: center; gap: 12px; }
 @media (min-width: 768px) { .toast { bottom: 24px; } }
 
+/* ---------- Knopf „Nach oben“ (erscheint nach etwas Scrollen) ---------- */
+.to-top {
+  position: fixed; z-index: 35;
+  right: calc(var(--gutter) + env(safe-area-inset-right));
+  bottom: calc(var(--tab-h) + env(safe-area-inset-bottom) + 12px);
+  width: 48px; height: 48px; border-radius: 50%;
+  display: grid; place-items: center; padding: 0; cursor: pointer;
+  background: var(--surface-2); color: var(--text); border: 1px solid var(--line);
+  box-shadow: 0 4px 14px rgb(0 0 0 / 0.45);
+}
+.to-top[hidden] { display: none; }
+.to-top svg { width: 24px; height: 24px; }
+.to-top:active { background: var(--line); }
+body:has(.toast.show) .to-top, .no-tabs .to-top { display: none; } /* nicht mit einer Meldung überlappen */
+@media (min-width: 768px) { .to-top { bottom: 24px; } }
+
+/* ---------- Rundgang für neue Profile ---------- */
+.tour { text-align: center; }
+.tour-icon { font-size: 40px; line-height: 1; margin: 4px 0 12px; color: var(--accent); }
+.tour h3 { margin: 0 0 8px; }
+.tour p { text-align: left; }
+.tour-dots { display: flex; justify-content: center; gap: 8px; margin: 14px 0 0 !important; }
+.tour-dots span { width: 8px; height: 8px; border-radius: 50%; background: var(--line); }
+.tour-dots span.on { background: var(--accent); }
+
 /* ---------- Seiten ohne Tab-Leiste („Wer schaut?") ---------- */
 .no-tabs .tabs { display: none; }
 .no-tabs main { padding-bottom: calc(env(safe-area-inset-bottom) + 32px); }
