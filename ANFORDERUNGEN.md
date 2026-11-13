@@ -64,7 +64,7 @@ nicht kenne.
   ein; er darf nicht im Code oder im Repository landen. TMDB-Logo und den von TMDB
   geforderten Hinweistext in einem "Über"-Bereich einbauen.
 - Daten der Profile müssen einen Neustart überleben.
-- Kein Login, keine Bezahlfunktion, keine Streaming-Verfügbarkeit.
+- Kein Login, keine Bezahlfunktion. Seit 1.16.0 nur Links: Leseliste → „Bei Amazon ansehen“, Merkliste → „Wo kann ich das schauen?“ (JustWatch). Kein Partnerprogramm, es wird nichts gesendet.
 
 ## Fertig ist es, wenn
 - die App mit einem einzigen Befehl startet und eine README erklärt, wie,

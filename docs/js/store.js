@@ -145,7 +145,7 @@ export function profilesForPicker() {
 // media: 'movie' (Feld movies), 'tv' (Feld shows) oder 'book' (Feld books). Bei Serien zusätzlich 'paused' | 'dropped',
 // bei Büchern 'dropped' (abgebrochen); 'seen' heißt bei Büchern „Gelesen“.
 const MARKS = { movie: 'movies', tv: 'shows', book: 'books' };
-const BOOK_META = ['a', 'ak', 'c', 'pg']; // Autor·in, Autor-Nummer, Cover, Seiten
+const BOOK_META = ['a', 'ak', 'c', 'pg', 'r']; // Autor·in, Autor-Nummer, Cover, Seiten, r = in der Bewertungsrunde schon gefragt (seit 1.16.0)
 export function setMark(profileId, media, movieId, status, meta = {}) {
   const p = getProfile(profileId);
   if (!p) return null;

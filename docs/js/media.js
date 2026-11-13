@@ -1,6 +1,6 @@
 // Filme oder Serien: alles, was sich zwischen beiden unterscheidet, steht hier.
 // Die Seiten fragen hier nach (Adressen, Wörter, Profilfelder), statt alles doppelt zu bauen.
-import { dialog, esc } from './ui.js?v=1.15.0';
+import { dialog, esc } from './ui.js?v=1.16.0';
 
 // Serien-Genres, die nie vorgeschlagen werden: Nachrichten, Reality, Seifenoper, Talkshow
 export const TV_EXCLUDE = [10763, 10764, 10766, 10767];
@@ -41,6 +41,12 @@ export const MEDIA = {
 
 export const other = (media) => (media === 'tv' ? 'movie' : 'tv');
 // Filme, Serien oder Bücher – wie oben im Umschalter gewählt
+// Wo bekomme ich es? Nur Links zu den Seiten (Suche dort), nichts wird gesendet, kein Partnerprogramm (seit 1.16.0)
+const enc = encodeURIComponent;
+export const amazonBookUrl = (title, author, language) => `https://www.amazon.${language === 'en-US' ? 'com' : 'de'}/s?i=stripbooks&k=${enc([title, author].filter(Boolean).join(' '))}`;
+export const justWatchUrl = (title, language) => (language === 'en-US' ? `https://www.justwatch.com/us/search?q=${enc(title)}` : `https://www.justwatch.com/de/Suche?q=${enc(title)}`);
+export const shopLink = (href, label) => `<a class="btn btn-small" href="${href}" target="_blank" rel="noopener noreferrer">${label}</a>`;
+
 export const mediaOf = (profile) => (['tv', 'book'].includes(profile?.settings?.media) ? profile.settings.media : 'movie');
 export const M = (profile) => MEDIA[mediaOf(profile)];
 // Markierungen des Profils für Filme oder Serien

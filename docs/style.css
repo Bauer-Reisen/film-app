@@ -509,3 +509,15 @@ ul.plain { list-style: none; padding: 0; margin: 0; display: flex; flex-directio
 /* Lieblingsbuch: Cover groß */
 .group-cover .poster { width: min(220px, 60vw); height: auto; aspect-ratio: 2 / 3; object-fit: cover; border-radius: 8px; display: block; margin: 0 auto; }
 .group-cover .poster.noimg { display: grid; place-items: center; }
+
+/* Bücher: Bewertungsrunde nach dem Scannen, Autor·innen zum Abhaken (seit 1.16.0) */
+.rate-card { display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; }
+.rate-choices { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; max-width: 480px; margin-top: 8px; }
+.rate-choices .btn { width: 100%; min-width: 0; padding-left: 8px; padding-right: 8px; }
+.author-chips { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 8px 0 12px; }
+.chip { min-height: 44px; padding: 6px 14px; border-radius: 999px; border: 2px solid var(--line); background: var(--surface); color: inherit; font: inherit; cursor: pointer; max-width: 100%; overflow-wrap: anywhere; }
+.chip:hover, .chip:focus-visible { border-color: var(--accent); }
+.tile .link-btn.small { font-size: 13px; min-height: 32px; }
+.scan-first .btn { margin-top: 4px; }
+.rate-card .group-cover .poster { width: min(150px, 40vw); }
+.shop-links { display: flex; flex-wrap: wrap; gap: 8px; margin: 6px 0; }

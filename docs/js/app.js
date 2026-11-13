@@ -1,27 +1,28 @@
 // Oberfläche: Seitenwechsel über die Adresse (#/vorschlaege usw.)
-import { VERSION, LANGUAGES } from './config.js?v=1.15.0';
-import * as store from './store.js?v=1.15.0';
-import { saveBackup, readBackup, findSameName, importAsNew, mergeInto } from './backup.js?v=1.15.0';
-import { esc, dialog, toast, formatDate } from './ui.js?v=1.15.0';
-import * as platform from './platform.js?v=1.15.0';
-import * as taste from './taste.js?v=1.15.0';
-import * as suggest from './suggest.js?v=1.15.0';
-import * as watchlist from './watchlist.js?v=1.15.0';
-import * as sneak from './sneak.js?v=1.15.0';
-import * as group from './group.js?v=1.15.0';
-import * as kids from './kids.js?v=1.15.0';
-import * as rewatch from './rewatch.js?v=1.15.0';
-import * as trailer from './trailer.js?v=1.15.0';
-import { initRuntimes } from './runtime.js?v=1.15.0';
-import { mediaOf } from './media.js?v=1.15.0';
-import { runTour } from './tour.js?v=1.15.0';
-import * as bookTaste from './book-taste.js?v=1.15.0';
-import * as bookList from './book-list.js?v=1.15.0';
-import * as scan from './scan.js?v=1.15.0';
-import * as bookSuggest from './book-suggest.js?v=1.15.0';
-import * as bookSneak from './book-sneak.js?v=1.15.0';
-import * as bookRewatch from './book-rewatch.js?v=1.15.0';
-import { initBookExtras } from './book-extra.js?v=1.15.0';
+import { VERSION, LANGUAGES } from './config.js?v=1.16.0';
+import * as store from './store.js?v=1.16.0';
+import { saveBackup, readBackup, findSameName, importAsNew, mergeInto } from './backup.js?v=1.16.0';
+import { esc, dialog, toast, formatDate } from './ui.js?v=1.16.0';
+import * as platform from './platform.js?v=1.16.0';
+import * as taste from './taste.js?v=1.16.0';
+import * as suggest from './suggest.js?v=1.16.0';
+import * as watchlist from './watchlist.js?v=1.16.0';
+import * as sneak from './sneak.js?v=1.16.0';
+import * as group from './group.js?v=1.16.0';
+import * as kids from './kids.js?v=1.16.0';
+import * as rewatch from './rewatch.js?v=1.16.0';
+import * as trailer from './trailer.js?v=1.16.0';
+import { initRuntimes } from './runtime.js?v=1.16.0';
+import { mediaOf } from './media.js?v=1.16.0';
+import { runTour } from './tour.js?v=1.16.0';
+import * as bookTaste from './book-taste.js?v=1.16.0';
+import * as bookList from './book-list.js?v=1.16.0';
+import * as scan from './scan.js?v=1.16.0';
+import * as bookRate from './book-rate.js?v=1.16.0';
+import * as bookSuggest from './book-suggest.js?v=1.16.0';
+import * as bookSneak from './book-sneak.js?v=1.16.0';
+import * as bookRewatch from './book-rewatch.js?v=1.16.0';
+import { initBookExtras } from './book-extra.js?v=1.16.0';
 
 const view = document.getElementById('view');
 const APP_URL = 'https://bauer-reisen.github.io/film-app/';
@@ -248,6 +249,14 @@ const pages = {
     click: scan.handleClick,
     leave: scan.leave,
   },
+  bewerten: {
+    title: 'Wie fandst du sie?',
+    tab: 'geschmack',
+    render: () => bookRate.render(current()),
+    mount: () => bookRate.mount(current()),
+    click: bookRate.handleClick,
+    leave: bookRate.leave,
+  },
   ueber: {
     title: 'Über diese App',
     tab: 'profil',
@@ -287,7 +296,7 @@ const pages = {
         <p>Es gibt keine Anmeldung und kein Konto. Deine Profile liegen nur auf diesem Gerät.</p>
         <p class="muted">Für Filmdaten fragt die App über einen kleinen Zwischenhändler (Cloudflare) bei TMDB an, für Bücher bei Open Library. Dabei werden keine Namen oder Markierungen übertragen, nur die Suche selbst.</p>
         <p class="muted">Trailer kommen von YouTube. YouTube wird erst geladen, wenn du auf „Trailer“ tippst, in der datensparsamen Variante ohne Werbe-Cookies.</p>
-        <p class="muted">Streaming-Angebote zeigt die App bewusst nicht an.</p>
+        <p class="muted">Wo ein Film oder eine Serie läuft, zeigt die App nicht selbst an. Auf der Merkliste führt „Wo kann ich das schauen?“ zu JustWatch, auf der Leseliste „Bei Amazon ansehen“ zu Amazon – nur Links, die App sendet dabei nichts und verdient nichts daran.</p>
       </div>
       <p class="muted small center">Version ${VERSION}</p>`,
     mount: () => {

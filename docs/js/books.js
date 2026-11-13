@@ -1,9 +1,9 @@
 // Buchdaten von Open Library (frei, ohne Schlüssel).
 // Erst über unseren Worker (/ol/…). Kennt der Worker die Adressen noch nicht, direkt bei Open Library
 // (die Seite erlaubt das ausdrücklich). Merkt sich Antworten für die Sitzung, höchstens 4 Anfragen gleichzeitig.
-import { WORKER_URL } from './config.js?v=1.15.0';
-import { SEED_BOOKS } from './seeds-books.js?v=1.15.0';
-import { genresOf } from './book-genres.js?v=1.15.0';
+import { WORKER_URL } from './config.js?v=1.16.0';
+import { SEED_BOOKS } from './seeds-books.js?v=1.16.0';
+import { genresOf } from './book-genres.js?v=1.16.0';
 
 const OL = 'https://openlibrary.org';
 const COVERS = 'https://covers.openlibrary.org';
@@ -161,5 +161,8 @@ export async function searchAuthors(q, limit = 8) {
 
 // Angaben, die beim Markieren gespeichert werden (für Begründungen und die Leseliste ohne Netz)
 export const markMeta = (b) => ({ g: b.g || [], y: b.y || null, n: b.title || '', a: b.a || '', ak: b.ak || null, c: b.cover || null, pg: b.pg || null });
+
+// Sammelbände, Gesamtausgaben, Studienhilfen – die schlagen wir nicht vor
+export const BUNDLE = /( \/ |\b(complete|collected|omnibus|box(ed)? set|boxset|collection|trilogy set|novels of|works of|study guide|sparknotes|cliffs ?notes)\b)/i;
 
 export const pagesText = (pg) => (pg ? `${pg} Seiten` : '');

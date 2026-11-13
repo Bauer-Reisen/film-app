@@ -2,11 +2,12 @@
 // Erkennung: eingebaute Strichcode-Erkennung des Browsers (Android/Chrome) oder die freie Bibliothek ZXing
 // (docs/vendor/zxing.min.js, Apache-Lizenz, wird erst hier geladen – iPhone/Safari kann es nicht von sich aus).
 // Das Kamerabild bleibt auf dem Gerät, gesendet wird nur die erkannte ISBN.
-import * as store from './store.js?v=1.15.0';
-import * as books from './books.js?v=1.15.0';
-import { esc, toast, dialog } from './ui.js?v=1.15.0';
-import { coverImg, bookMeta } from './book-taste.js?v=1.15.0';
-import { stateLabel } from './media.js?v=1.15.0';
+import * as store from './store.js?v=1.16.0';
+import * as books from './books.js?v=1.16.0';
+import { esc, toast, dialog } from './ui.js?v=1.16.0';
+import { coverImg, bookMeta } from './book-taste.js?v=1.16.0';
+import { stateLabel } from './media.js?v=1.16.0';
+import { startRating } from './book-rate.js?v=1.16.0';
 
 const MODES = [['seen', 'Gelesen'], ['liked', 'Mag ich'], ['want', 'Im Regal']];
 const MODE_HELP = { seen: 'gelten als gelesen', liked: 'gelten als gelesen und gemocht', want: 'stehen im Regal, noch nicht gelesen – sie kommen auf die Leseliste' };
@@ -315,12 +316,14 @@ function paintList() {
 function finish() {
   stopCamera();
   let saved = 0; let kept = 0;
+  const toRate = []; // als „Gelesen“ gespeichert → danach kurz fragen: Wie fandst du es?
   for (const x of items.filter((i) => i.status === 'found')) {
     const old = profile.books?.[x.book.id]?.s;
     // „Gelesen“ macht ein schon gemochtes Buch nicht schwächer
     if (old && x.s === 'seen' && STRONG.has(old)) { kept++; continue; }
     if (old === 'loved' && x.s === 'liked') { kept++; continue; }
     store.setMark(profile.id, 'book', x.book.id, x.s, books.markMeta(x.book));
+    if (x.s === 'seen') toRate.push(x.book.id);
     saved++;
   }
   const missing = items.filter((i) => i.status === 'missing').map((i) => ({ isbn: i.isbn, t: Date.now() }));
@@ -329,8 +332,9 @@ function finish() {
     store.updateProfile(profile.id, { scanMissing: [...new Map([...(p.scanMissing || []), ...missing].map((x) => [x.isbn, x])).values()] });
   }
   items = [];
+  if (toRate.length) startRating(toRate.reverse()); // in der Reihenfolge des Scannens
   toast(`${saved} ${saved === 1 ? 'Buch' : 'Bücher'} gespeichert${kept ? `, ${kept} ${kept === 1 ? 'war' : 'waren'} schon gemocht` : ''}${missing.length ? `, ${missing.length} nicht gefunden (gemerkt)` : ''}.`);
-  location.hash = '#/geschmack';
+  location.hash = toRate.length ? '#/bewerten' : '#/geschmack';
 }
 
 export function handleClick(e) {

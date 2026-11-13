@@ -1,13 +1,13 @@
 // Buch-Vorschläge berechnen – nachvollziehbar wie bei Filmen:
 // Ausgangspunkte → Kandidaten (Open Library) → Punkte → Vielfalt → Begründung.
 // Brücke: Romanvorlagen gemochter Filme und Serien, feste Paare (seeds-books.js), Autor·innen aus Filmen.
-import * as books from './books.js?v=1.15.0';
-import { tierOf } from './store.js?v=1.15.0';
-import { themeById } from './themes.js?v=1.15.0';
-import { BOOK_GENRES, bookGenreById } from './book-genres.js?v=1.15.0';
-import { PAIRS } from './seeds-books.js?v=1.15.0';
-import { likedTitles, novelOf, authorsFromFilms } from './bridge-books.js?v=1.15.0';
-import { markedTitle } from './recommend.js?v=1.15.0';
+import * as books from './books.js?v=1.16.0';
+import { tierOf } from './store.js?v=1.16.0';
+import { themeById } from './themes.js?v=1.16.0';
+import { BOOK_GENRES, bookGenreById } from './book-genres.js?v=1.16.0';
+import { PAIRS } from './seeds-books.js?v=1.16.0';
+import { likedTitles, novelOf, authorsFromFilms } from './bridge-books.js?v=1.16.0';
+import { markedTitle } from './recommend.js?v=1.16.0';
 
 // Punkte je Grund (Stufe 2 = ★ Liebe, 1 = ♥ Gern) und Obergrenzen
 export const BOOK_POINTS = {

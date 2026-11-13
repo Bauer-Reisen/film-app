@@ -1,13 +1,14 @@
 // Seite „Geschmack“ bei Büchern: Autor·innen, Themen und Genres in Stufen, Bücher markieren, Suche (auch ISBN), Scannen.
-import * as store from './store.js?v=1.15.0';
-import * as books from './books.js?v=1.15.0';
-import { esc, toast } from './ui.js?v=1.15.0';
-import { SEED_BOOKS, SEED_AUTHORS } from './seeds-books.js?v=1.15.0';
-import { THEMES, themeById } from './themes.js?v=1.15.0';
-import { BOOK_GENRES, bookGenreById } from './book-genres.js?v=1.15.0';
-import { MEDIA, stateLabel, pressed } from './media.js?v=1.15.0';
-import { TASTE_HINT_AFTER } from './config.js?v=1.15.0';
-import { authorsFromFilms } from './bridge-books.js?v=1.15.0';
+import * as store from './store.js?v=1.16.0';
+import * as books from './books.js?v=1.16.0';
+import { esc, toast } from './ui.js?v=1.16.0';
+import { SEED_BOOKS, SEED_AUTHORS } from './seeds-books.js?v=1.16.0';
+import { THEMES, themeById } from './themes.js?v=1.16.0';
+import { BOOK_GENRES, bookGenreById } from './book-genres.js?v=1.16.0';
+import { MEDIA, stateLabel, pressed } from './media.js?v=1.16.0';
+import { TASTE_HINT_AFTER } from './config.js?v=1.16.0';
+import { authorsFromFilms } from './bridge-books.js?v=1.16.0';
+import { unrated } from './book-rate.js?v=1.16.0';
 
 const STEP = 20;
 const SCAN = true; // Knopf „Bücher scannen“
@@ -20,7 +21,8 @@ export const BOOK_MARKS = [
 ];
 const W = MEDIA.book.w;
 
-const ui = { sub: null, query: '' };
+const ui = { sub: null, query: '', author: null }; // author = { id, n }: Ansicht „Bücher von …“ zum Abhaken
+export function openSub(sub) { ui.sub = sub; ui.query = ''; ui.author = null; }
 const L = { showAll: false, done: null, personal: [], personalKey: '', shown: STEP, extra: [], extraKey: '', page: 0 };
 const known = new Map(); // id → Buch (für die Angaben beim Markieren)
 const authorsSeen = new Map();
@@ -52,7 +54,7 @@ function bookCard(b) {
       <div class="film-info">
         <h3 class="film-title">${esc(b.title)}</h3>
         <p class="book-meta muted small">${esc(bookMeta(b))}</p>
-        ${b.why ? `<p class="film-why">Von deinen Lieblingen: ${esc(b.why)}</p>` : ''}
+        ${b.why ? `<p class="film-why">${esc(b.why)}</p>` : ''}
         <p class="film-state">${s ? esc(stateLabel('book', s)) : ''}</p>
         <div class="marks marks-5" role="group" aria-label="${esc(b.title)} markieren">
           ${BOOK_MARKS.map(([key, icon, label]) => `
@@ -90,6 +92,7 @@ function authorCard(x) {
       <span class="tile-name">${esc(x.n)}</span>
       <span class="tile-sub">Autor·in${sub ? ` · ${esc(sub)}` : ''}</span>
       ${tierButtons(x.n, w)}
+      <button type="button" class="link-btn small" data-bauthorview="${x.id}" data-bauthorname="${esc(x.n)}">Bücher abhaken</button>
     </div>`;
 }
 
@@ -129,6 +132,20 @@ function photoFallback(e) {
   img.replaceWith(Object.assign(document.createElement('span'), { className: 'face noimg', textContent: img.dataset.initial, ariaHidden: 'true' }));
 }
 
+// Oben: Scannen vorschlagen, solange noch wenige Bücher markiert sind; danach offene Bewertungen
+function scanBox() {
+  const n = Object.keys(marks()).length;
+  const open = unrated(profile).length;
+  const btn = '<a class="btn btn-primary btn-big" href="#/scannen"><span aria-hidden="true">📷</span> Bücher scannen</a>';
+  const rate = open ? `<div class="card hint"><p><strong>${open} ${open === 1 ? 'Buch ist' : 'Bücher sind'} nur als „Gelesen“ markiert.</strong> Wie fandst du ${open === 1 ? 'es' : 'sie'}? Geht schnell: ein Tipp pro Buch.</p>
+    <p><a class="btn btn-primary" href="#/bewerten">Jetzt bewerten</a></p></div>` : '';
+  if (n >= 10) return `<p class="row scan-row">${btn}</p>${rate}`;
+  return `<div class="card hint scan-first">
+    <p><strong>Am besten fängst du mit deinem Bücherregal an.</strong></p>
+    <p>Scanne die Bücher, die du zu Hause hast: Strichcode hinten auf dem Buch, eins nach dem anderen – die Kamera bleibt an. Danach fragt die App kurz, wie du sie fandst, und zeigt dir hier zuerst weitere Bücher deiner Autor·innen und Reihen.</p>
+    <p>${btn}</p></div>${rate}`;
+}
+
 // ---------- Seite ----------
 export function render(p) {
   profile = p;
@@ -138,7 +155,7 @@ export function render(p) {
   const tab = (k, label) => `<button type="button" class="seg" data-bsub="${k}" aria-pressed="${ui.sub === k}">${label}</button>`;
   return `
     <h1>Geschmack</h1>
-    ${SCAN ? '<p class="row scan-row"><a class="btn btn-primary btn-big" href="#/scannen"><span aria-hidden="true">📷</span> Bücher scannen</a></p>' : ''}
+    ${SCAN ? scanBox() : ''}
     <label class="search">
       <span class="sr-only">Suche</span>
       <input id="taste-search" type="search" inputmode="search" enterkeyhint="search" autocomplete="off"
@@ -170,8 +187,9 @@ const searching = () => ui.query.trim().length >= 2;
 function fillBody() {
   const el = body();
   if (!el) return;
-  document.querySelector('.sub-tabs')?.toggleAttribute('hidden', searching());
+  document.querySelector('.sub-tabs')?.toggleAttribute('hidden', searching() || !!ui.author);
   if (searching()) return runSearch();
+  if (ui.author) return fillAuthorView();
   if (ui.sub === 'buecher') return fillBooks();
   if (ui.sub === 'themen') return fillThemes();
   if (ui.sub === 'genres') return fillGenres();
@@ -190,32 +208,84 @@ function snapshotDone() {
   L.shown = STEP;
 }
 
-// Bücher der gewählten Autor·innen, Genres und Themen zuerst
+// Autor·innen deiner markierten Bücher (gescannt oder angetippt), ★ und ♥ zählen mehr, nicht gemochte gar nicht
+function ownAuthors() {
+  const found = new Map();
+  const W8 = { loved: 3, liked: 2, seen: 1.5, want: 1 };
+  for (const [id, m] of Object.entries(marks())) {
+    if (!W8[m.s] || !m.ak) continue;
+    const e = found.get(m.ak) || { id: m.ak, n: m.a || 'Unbekannt', score: 0, title: m.n, ids: [] };
+    e.score += W8[m.s]; e.ids.push(id);
+    if (m.s === 'loved' || m.s === 'liked') e.title = m.n;
+    found.set(m.ak, e);
+  }
+  // Wer insgesamt nicht gemocht wird, kommt nicht
+  for (const m of Object.values(marks())) if (m.s === 'disliked' && found.has(m.ak)) found.get(m.ak).score -= 2;
+  return [...found.values()].filter((e) => e.score > 0).sort((a, b) => b.score - a.score);
+}
+
+// Zuerst: weitere Bücher deiner Autor·innen (auch Reihen), dann die der gewählten Autor·innen, Genres und Themen
 async function loadPersonal() {
+  const favIds = new Set((profile.authors || []).map((x) => x.id));
+  const own = ownAuthors().filter((x) => !favIds.has(x.id)).slice(0, 10);
   const auths = [...(profile.authors || [])].sort(byTier).slice(0, 12);
   const genres = [...(profile.bookGenres || [])].sort(byTier).filter((x) => bookGenreById.has(x.id)).slice(0, 6);
   const themes = [...(profile.themes || [])].sort(byTier).filter((x) => themeById.get(x.id)?.b?.length).slice(0, 6);
-  const key = JSON.stringify([lang(), auths.map((x) => [x.id, x.w]), genres.map((x) => [x.id, x.w]), themes.map((x) => [x.id, x.w])]);
+  const key = JSON.stringify([lang(), own.map((x) => [x.id, x.score]), auths.map((x) => [x.id, x.w]), genres.map((x) => [x.id, x.w]), themes.map((x) => [x.id, x.w])]);
   if (key === L.personalKey) return;
   const subj = (list) => list.map((s) => `subject_key:${s}`).join(' OR ');
+  const byAuthor = (id) => books.search({ q: `author_key:${id.replace('/authors/', '')}`, sort: 'readinglog' }, lang(), 30);
   const jobs = [
-    ...auths.map((x) => books.search({ q: `author_key:${x.id.replace('/authors/', '')}`, sort: 'readinglog' }, lang(), 30).then((list) => ({ w: store.tierOf(x), why: x.n, list }))),
-    ...genres.map((x) => books.search({ q: subj(bookGenreById.get(x.id).q), sort: 'readinglog' }, lang(), 30).then((list) => ({ w: store.tierOf(x), why: bookGenreById.get(x.id).n, list }))),
-    ...themes.map((x) => books.search({ q: subj(themeById.get(x.id).b), sort: 'readinglog' }, lang(), 30).then((list) => ({ w: store.tierOf(x), why: themeById.get(x.id).n, list }))),
+    ...own.map((x) => byAuthor(x.id).then((list) => ({ w: 2 + Math.min(x.score, 4) / 2, why: `Mehr von ${x.n} – du hast „${x.title}“`, list }))),
+    ...auths.map((x) => byAuthor(x.id).then((list) => ({ w: store.tierOf(x) * 1.5, why: `Lieblingsautor·in: ${x.n}`, list }))),
+    ...genres.map((x) => books.search({ q: subj(bookGenreById.get(x.id).q), sort: 'readinglog' }, lang(), 30).then((list) => ({ w: store.tierOf(x), why: `Lieblingsgenre: ${bookGenreById.get(x.id).n}`, list }))),
+    ...themes.map((x) => books.search({ q: subj(themeById.get(x.id).b), sort: 'readinglog' }, lang(), 30).then((list) => ({ w: store.tierOf(x), why: `Thema: ${themeById.get(x.id).n}`, list }))),
   ];
   const results = (await Promise.allSettled(jobs)).filter((r) => r.status === 'fulfilled').map((r) => r.value);
   const map = new Map();
   for (const { w, why, list } of results) {
     for (const b of list) {
-      if (!b.cover || b.r < 20) continue;
+      if (!b.cover || b.r < 5 || books.BUNDLE.test(b.title)) continue;
       const e = map.get(b.id) || { b, score: 0, why: [] };
       e.score += w;
       if (!e.why.includes(why)) e.why.push(why);
       map.set(b.id, e);
     }
   }
-  L.personal = [...map.values()].sort((a, b) => b.score - a.score || b.b.r - a.b.r).slice(0, 300).map((e) => ({ ...e.b, why: e.why.slice(0, 2).join(', ') }));
+  L.personal = [...map.values()].sort((a, b) => b.score - a.score || b.b.r - a.b.r).slice(0, 300).map((e) => ({ ...e.b, why: e.why.slice(0, 2).join(' · ') }));
   L.personalKey = key;
+}
+
+// ----- Ansicht „Bücher von …“: alle bekannten Bücher einer Autor·in zum Abhaken -----
+async function fillAuthorView() {
+  const el = body();
+  const a = ui.author;
+  el.innerHTML = `
+    <p><button class="btn btn-small" type="button" data-bauthorview="">← Zurück</button></p>
+    <h2>Bücher von ${esc(a.n)}</h2>
+    <p class="muted small">Tipp an, was du gelesen hast – auch die, die du nicht im Regal hast. Die bekanntesten stehen oben.</p>
+    <div id="author-books"><p class="muted center">Lädt …</p></div>`;
+  window.scrollTo({ top: 0 });
+  let list = [];
+  try { list = await books.search({ q: `author_key:${a.id.replace('/authors/', '')}`, sort: 'readinglog' }, lang(), 100); } catch (err) {
+    if (ui.author === a && body()) document.getElementById('author-books').innerHTML = `<p class="muted center">${esc(err.message)}</p>`;
+    return;
+  }
+  if (ui.author !== a || !document.getElementById('author-books')) return;
+  const norm = (t) => (t || '').toLowerCase().replace(/[^a-z0-9äöüß]/g, '');
+  const seen = new Set();
+  const shown = remember(list.filter((b) => (b.cover || b.r >= 5 || marks()[b.id]) && !books.BUNDLE.test(b.title) && !seen.has(norm(b.title)) && seen.add(norm(b.title))));
+  document.getElementById('author-books').innerHTML = shown.length
+    ? `<div class="films">${shown.map(bookCard).join('')}</div>`
+    : '<p class="muted center">Keine Bücher gefunden.</p>';
+}
+
+// Kleine Leiste über der Bücherliste: deine Autor·innen zum Abhaken
+function authorChips() {
+  const list = ownAuthors().slice(0, 8);
+  if (!list.length) return '';
+  return `<div class="author-chips"><span class="muted small">Alle Bücher abhaken von:</span>
+    ${list.map((x) => `<button type="button" class="chip" data-bauthorview="${esc(x.id)}" data-bauthorname="${esc(x.n)}">${esc(x.n)}</button>`).join('')}</div>`;
 }
 
 // Nach der Startliste: weitere beliebte Bücher von Open Library (meistgelesene zuerst)
@@ -249,7 +319,7 @@ async function fillBooks() {
   if (!L.done) snapshotDone();
   const marked = Object.keys(marks()).length;
   const passed = (profile.passedBook || []).length;
-  if (!nothingRated() && !L.personal.length) el.innerHTML = '<p class="muted center">Suche Bücher deiner Lieblinge …</p>';
+  if ((!nothingRated() || Object.keys(marks()).length) && !L.personal.length) el.innerHTML = '<p class="muted center">Suche Bücher deiner Lieblinge …</p>';
   try { await loadPersonal(); } catch { /* dann eben ohne */ }
   try { await ensure(L.shown); } catch (err) { toast(err.message); }
   if (body() !== el || ui.sub !== 'buecher' || searching()) return;
@@ -260,7 +330,8 @@ async function fillBooks() {
       : '';
   el.innerHTML = `
     <p class="muted small">Tipp an, was du gelesen hast. Unbekannte einfach überscrollen. Nochmal tippen nimmt die Markierung zurück. „Abgebrochen“ = nicht zu Ende gelesen. <strong>Aufs Cover tippen = ★ ${W.fav}.</strong></p>
-    ${nothingRated() ? tip() : suggestHint()}
+    ${authorChips()}
+    ${nothingRated() && !Object.keys(marks()).length ? tip() : suggestHint()}
     ${doneInfo}
     <div class="films">${candidates().slice(0, L.shown).map(bookCard).join('')}</div>
     <div class="row center-row"><button class="btn btn-primary" type="button" data-btaste="more">Weitere laden</button></div>`;
@@ -410,9 +481,17 @@ export function handleClick(e) {
     document.querySelectorAll(sel).forEach((t) => updateTile(t, w));
     return true;
   }
+  const av = e.target.closest('[data-bauthorview]');
+  if (av) {
+    ui.author = av.dataset.bauthorview ? { id: av.dataset.bauthorview, n: av.dataset.bauthorname || '' } : null;
+    if (!ui.author) { L.done = null; window.scrollTo({ top: 0 }); }
+    fillBody();
+    return true;
+  }
   const sub = e.target.closest('[data-bsub]');
   if (sub) {
     ui.sub = sub.dataset.bsub;
+    ui.author = null;
     document.querySelectorAll('.sub-tabs [data-bsub]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.bsub === ui.sub)));
     fillBody();
     return true;
