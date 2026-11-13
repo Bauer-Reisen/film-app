@@ -1,6 +1,6 @@
 // Filme oder Serien: alles, was sich zwischen beiden unterscheidet, steht hier.
 // Die Seiten fragen hier nach (Adressen, Wörter, Profilfelder), statt alles doppelt zu bauen.
-import { dialog, esc } from './ui.js?v=1.16.0';
+import { dialog, esc } from './ui.js?v=1.17.0';
 
 // Serien-Genres, die nie vorgeschlagen werden: Nachrichten, Reality, Seifenoper, Talkshow
 export const TV_EXCLUDE = [10763, 10764, 10766, 10767];
@@ -110,6 +110,6 @@ export function stateLabel(media, s) {
   const w = MEDIA[media].w;
   return {
     loved: `★ ${w.fav}`, seen: media === 'book' ? '✓ Gelesen' : '✓ Gesehen', liked: '♥ Mag ich', disliked: '✕ Mag ich nicht', want: '+ Gemerkt',
-    noInterest: 'Kein Interesse', paused: '⏸ Weiterschauen', dropped: '⏹ Abgebrochen',
+    noInterest: 'Kein Interesse', paused: media === 'book' ? '⏸ Weiterlesen' : '⏸ Weiterschauen', dropped: '⏹ Abgebrochen',
   }[s] || '';
 }

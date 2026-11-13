@@ -2,20 +2,16 @@
 // Erkennung: eingebaute Strichcode-Erkennung des Browsers (Android/Chrome) oder die freie Bibliothek ZXing
 // (docs/vendor/zxing.min.js, Apache-Lizenz, wird erst hier geladen – iPhone/Safari kann es nicht von sich aus).
 // Das Kamerabild bleibt auf dem Gerät, gesendet wird nur die erkannte ISBN.
-import * as store from './store.js?v=1.16.0';
-import * as books from './books.js?v=1.16.0';
-import { esc, toast, dialog } from './ui.js?v=1.16.0';
-import { coverImg, bookMeta } from './book-taste.js?v=1.16.0';
-import { stateLabel } from './media.js?v=1.16.0';
-import { startRating } from './book-rate.js?v=1.16.0';
+import * as store from './store.js?v=1.17.0';
+import * as books from './books.js?v=1.17.0';
+import { esc, toast, dialog } from './ui.js?v=1.17.0';
+import { coverImg, bookMeta } from './book-taste.js?v=1.17.0';
+import { stateLabel } from './media.js?v=1.17.0';
+import { startRating } from './book-rate.js?v=1.17.0';
 
-const MODES = [['seen', 'Gelesen'], ['liked', 'Mag ich'], ['want', 'Im Regal']];
-const MODE_HELP = { seen: 'gelten als gelesen', liked: 'gelten als gelesen und gemocht', want: 'stehen im Regal, noch nicht gelesen – sie kommen auf die Leseliste' };
-const STRONG = new Set(['liked', 'loved', 'disliked']);
 
 let profile = null;
-let mode = 'seen';
-let items = []; // { isbn, status: 'loading' | 'found' | 'missing', book, s }
+let items = []; // { isbn, status: 'loading' | 'found' | 'missing', book }
 let stream = null;
 let loopTimer = null;
 let detector = null; // BarcodeDetector oder ZXing
@@ -30,13 +26,7 @@ export function render(p) {
     <p class="back"><a href="#/geschmack" data-scan="back">← Geschmack</a></p>
     <h1>Bücher scannen</h1>
     <div id="scan">
-      <section class="card stack">
-        <h2 id="scan-mode-h">Die gescannten Bücher …</h2>
-        <div class="segmented" role="group" aria-labelledby="scan-mode-h">
-          ${MODES.map(([k, l]) => `<button type="button" class="seg" data-scanmode="${k}" aria-pressed="${mode === k}">${l}</button>`).join('')}
-        </div>
-        <p class="muted small" id="scan-mode-help">… ${MODE_HELP[mode]}. Einzelne kannst du in der Liste unten noch umstellen.</p>
-      </section>
+      <p class="muted">Scanne einfach alle Bücher, die du hast – gelesene, ungelesene, abgebrochene. Du musst vorher nichts auswählen: Danach fragt die App bei jedem Buch kurz, wie es war.</p>
       <div class="scan-cam" id="scan-cam" hidden>
         <video id="scan-video" playsinline muted autoplay></video>
         <div class="scan-frame" aria-hidden="true"></div>
@@ -264,7 +254,7 @@ async function add(isbn) {
     if (status) status.textContent = 'Schon in der Liste.';
     return;
   }
-  const item = { isbn, status: 'loading', book: null, s: mode };
+  const item = { isbn, status: 'loading', book: null };
   items.unshift(item);
   paintList();
   let book = null;
@@ -287,9 +277,6 @@ async function add(isbn) {
 
 function itemRow(x) {
   const old = x.book ? profile.books?.[x.book.id]?.s : null;
-  const select = x.book ? `
-    <label class="sr-only" for="sel-${x.isbn}">Gilt als</label>
-    <select id="sel-${x.isbn}" data-scansel="${x.isbn}">${MODES.map(([k, l]) => `<option value="${k}" ${x.s === k ? 'selected' : ''}>${l}</option>`).join('')}</select>` : '';
   const body = x.status === 'loading'
     ? `<span class="muted">ISBN ${esc(x.isbn)} – suche …</span>`
     : x.status === 'missing'
@@ -299,7 +286,7 @@ function itemRow(x) {
     <li class="scan-item ${x.status}" data-scanitem="${x.isbn}">
       <span class="scan-cover">${x.book ? coverImg(x.book.cover) : '<div class="poster noimg" aria-hidden="true">?</div>'}</span>
       <span class="scan-text">${body}</span>
-      <span class="scan-actions">${select}<button class="btn btn-small" type="button" data-scandel="${x.isbn}" aria-label="Aus der Liste nehmen">✕</button></span>
+      <span class="scan-actions"><button class="btn btn-small" type="button" data-scandel="${x.isbn}" aria-label="Aus der Liste nehmen">✕</button></span>
     </li>`;
 }
 
@@ -310,21 +297,21 @@ function paintList() {
   document.getElementById('scan-list-h').hidden = !items.length;
   document.getElementById('scan-done-row').hidden = !items.length;
   const n = items.filter((x) => x.status === 'found').length;
-  document.getElementById('scan-done').textContent = n ? `Fertig – ${n} ${n === 1 ? 'Buch' : 'Bücher'} speichern` : 'Fertig';
+  document.getElementById('scan-done').textContent = n ? `Fertig – ${n} ${n === 1 ? 'Buch' : 'Bücher'} bewerten` : 'Fertig';
 }
 
+// Speichern: neue Bücher erst einmal als „Gelesen“ (noch nicht bewertet) – gleich danach fragt die Bewertungsrunde nach.
+// Schon bewertete Bücher bleiben, wie sie sind.
 function finish() {
   stopCamera();
-  let saved = 0; let kept = 0;
-  const toRate = []; // als „Gelesen“ gespeichert → danach kurz fragen: Wie fandst du es?
-  for (const x of items.filter((i) => i.status === 'found')) {
-    const old = profile.books?.[x.book.id]?.s;
-    // „Gelesen“ macht ein schon gemochtes Buch nicht schwächer
-    if (old && x.s === 'seen' && STRONG.has(old)) { kept++; continue; }
-    if (old === 'loved' && x.s === 'liked') { kept++; continue; }
-    store.setMark(profile.id, 'book', x.book.id, x.s, books.markMeta(x.book));
-    if (x.s === 'seen') toRate.push(x.book.id);
-    saved++;
+  let added = 0; let known = 0;
+  const toRate = [];
+  for (const x of [...items].reverse().filter((i) => i.status === 'found')) { // in der Reihenfolge des Scannens
+    const old = profile.books?.[x.book.id];
+    if (!old) { store.setMark(profile.id, 'book', x.book.id, 'seen', books.markMeta(x.book)); added++; }
+    else known++;
+    const now = store.getProfile(profile.id).books[x.book.id];
+    if (now.s === 'seen' && !now.r) toRate.push(x.book.id);
   }
   const missing = items.filter((i) => i.status === 'missing').map((i) => ({ isbn: i.isbn, t: Date.now() }));
   if (missing.length) {
@@ -332,19 +319,12 @@ function finish() {
     store.updateProfile(profile.id, { scanMissing: [...new Map([...(p.scanMissing || []), ...missing].map((x) => [x.isbn, x])).values()] });
   }
   items = [];
-  if (toRate.length) startRating(toRate.reverse()); // in der Reihenfolge des Scannens
-  toast(`${saved} ${saved === 1 ? 'Buch' : 'Bücher'} gespeichert${kept ? `, ${kept} ${kept === 1 ? 'war' : 'waren'} schon gemocht` : ''}${missing.length ? `, ${missing.length} nicht gefunden (gemerkt)` : ''}.`);
+  if (toRate.length) startRating(toRate);
+  toast(`${added} ${added === 1 ? 'Buch' : 'Bücher'} gespeichert${known ? `, ${known} kanntest du schon` : ''}${missing.length ? `, ${missing.length} nicht gefunden (gemerkt)` : ''}.`);
   location.hash = toRate.length ? '#/bewerten' : '#/geschmack';
 }
 
 export function handleClick(e) {
-  const m = e.target.closest('[data-scanmode]');
-  if (m) {
-    mode = m.dataset.scanmode;
-    document.querySelectorAll('[data-scanmode]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.scanmode === mode)));
-    document.getElementById('scan-mode-help').textContent = `… ${MODE_HELP[mode]}. Einzelne kannst du in der Liste unten noch umstellen.`;
-    return true;
-  }
   const del = e.target.closest('[data-scandel]');
   if (del) { items = items.filter((x) => x.isbn !== del.dataset.scandel); paintList(); return true; }
   const miss = e.target.closest('[data-missdel]');
@@ -369,11 +349,3 @@ export function handleClick(e) {
   }
   return false;
 }
-
-// Auswahl je Buch (Gelesen / Mag ich / Steht im Regal)
-document.addEventListener('change', (e) => {
-  const sel = e.target.closest?.('[data-scansel]');
-  if (!sel) return;
-  const x = items.find((i) => i.isbn === sel.dataset.scansel);
-  if (x) x.s = sel.value;
-});

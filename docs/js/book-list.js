@@ -1,11 +1,11 @@
-// Seite „Leseliste“: alle Bücher mit „Merken“ (auch „Steht im Regal“ beim Scannen), neueste zuerst.
+// Seite „Leseliste“: alle Bücher mit „Merken“ oder „Weiterlesen“ (liegen geblieben), neueste zuerst.
 // Titel und Cover in der Lesesprache des Profils.
-import * as store from './store.js?v=1.16.0';
-import * as books from './books.js?v=1.16.0';
-import { esc, toast } from './ui.js?v=1.16.0';
-import { stateLabel, amazonBookUrl, shopLink } from './media.js?v=1.16.0';
-import { coverImg, bookMeta } from './book-taste.js?v=1.16.0';
-import { movieHint } from './book-extra.js?v=1.16.0';
+import * as store from './store.js?v=1.17.0';
+import * as books from './books.js?v=1.17.0';
+import { esc, toast } from './ui.js?v=1.17.0';
+import { stateLabel, amazonBookUrl, shopLink } from './media.js?v=1.17.0';
+import { coverImg, bookMeta } from './book-taste.js?v=1.17.0';
+import { movieHint } from './book-extra.js?v=1.17.0';
 
 const ACTIONS = [
   ['seen', '✓', 'Gelesen'],
@@ -19,7 +19,7 @@ let profile = null;
 let run = 0;
 const info = new Map();
 const box = () => document.getElementById('watch-list');
-const wanted = () => Object.entries(profile.books || {}).filter(([, m]) => m.s === 'want').sort((a, b) => b[1].t - a[1].t).map(([id, m]) => ({ id, ...m }));
+const wanted = () => Object.entries(profile.books || {}).filter(([, m]) => m.s === 'want' || m.s === 'paused').sort((a, b) => b[1].t - a[1].t).map(([id, m]) => ({ id, ...m }));
 
 export function render(p) {
   profile = p;
@@ -69,6 +69,7 @@ function card(m) {
       <div class="film-info">
         <h3 class="film-title">${esc(x.title)}</h3>
         <p class="book-meta muted small">${esc(bookMeta(x))}</p>
+        ${m.s === 'paused' ? '<p class="small">⏸ Angefangen – liegt bereit zum Weiterlesen</p>' : ''}
         <div class="film-extra"><details class="overview" data-bdesc="${esc(m.id)}"><summary>Worum geht's?</summary><p class="muted">Lädt …</p></details>${movieHint(m.id, x.title, x.a)}</div>
         <p class="shop-links">${shopLink(esc(amazonBookUrl(x.title, x.a, profile.language)), '🛒 Bei Amazon ansehen')}</p>
         <div class="marks marks-5" role="group" aria-label="${esc(x.title)}">

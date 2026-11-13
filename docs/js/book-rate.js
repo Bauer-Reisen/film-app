@@ -1,18 +1,20 @@
 // Seite „Wie fandst du sie?“: gelesene Bücher eins nach dem anderen kurz bewerten.
 // Kommt direkt nach dem Scannen; auch später über „Geschmack“ erreichbar (alle nur als „Gelesen“ markierten).
-import * as store from './store.js?v=1.16.0';
-import { esc } from './ui.js?v=1.16.0';
-import { MEDIA } from './media.js?v=1.16.0';
-import { coverImg, bookMeta, openSub } from './book-taste.js?v=1.16.0';
+import * as store from './store.js?v=1.17.0';
+import { esc } from './ui.js?v=1.17.0';
+import { MEDIA } from './media.js?v=1.17.0';
+import { coverImg, bookMeta, openSub } from './book-taste.js?v=1.17.0';
 
 const W = MEDIA.book.w;
+// Zu Ende gelesen → wie war's? Angefangen → abgebrochen oder liegen geblieben? Noch gar nicht → Leseliste
 const CHOICES = [
   ['loved', '★', 'Liebe ich', 'btn-primary'],
   ['liked', '♥', 'Gut', ''],
   ['disliked', '✕', 'Nicht gut', ''],
-  ['dropped', '⏹', 'Abgebrochen', ''],
-  ['keep', '?', 'Weiß nicht mehr', ''],
-  ['want', '+', 'Noch nicht gelesen', ''],
+  ['keep', '✓', 'Gelesen – weiß nicht mehr', ''],
+  ['dropped', '⏹', 'Abgebrochen – passte nicht', ''],
+  ['paused', '⏸', 'Liegen geblieben – weiterlesen', ''],
+  ['want', '+', 'Noch nicht gelesen', 'wide'],
 ];
 
 let profile = null;
@@ -50,13 +52,13 @@ function paint() {
   const m = profile.books[id];
   const b = { title: m.n || 'Buch', a: m.a, y: m.y, pg: m.pg, cover: m.c };
   el.innerHTML = `
-    <p class="muted small">Buch ${pos + 1} von ${queue.length} · Ein Tipp, dann kommt das nächste. Du kannst jederzeit aufhören.</p>
+    <p class="muted small">Buch ${pos + 1} von ${queue.length} · Ein Tipp, dann kommt das nächste. Du kannst jederzeit aufhören – der Rest bleibt erst mal „Gelesen“ und lässt sich später unter „Geschmack“ bewerten.</p>
     <article class="rate-card">
       <div class="group-cover">${coverImg(b.cover, `Cover: ${b.title}`)}</div>
       <h2 class="group-title">${esc(b.title)}</h2>
       <p class="group-meta">${esc(bookMeta(b))}</p>
       <div class="rate-choices" role="group" aria-label="Wie fandst du ${esc(b.title)}?">
-        ${CHOICES.map(([k, icon, label, cls]) => `<button type="button" class="btn btn-big ${cls}" data-rate="${k}"><span aria-hidden="true">${icon}</span> ${label}</button>`).join('')}
+        ${CHOICES.map(([k, icon, label, cls]) => `<button type="button" class="btn btn-big ${cls === 'wide' ? 'rate-wide' : cls}" data-rate="${k}"><span aria-hidden="true">${icon}</span> ${label}</button>`).join('')}
       </div>
     </article>
     <p class="row center-row">

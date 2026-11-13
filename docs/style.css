@@ -521,3 +521,5 @@ ul.plain { list-style: none; padding: 0; margin: 0; display: flex; flex-directio
 .scan-first .btn { margin-top: 4px; }
 .rate-card .group-cover .poster { width: min(150px, 40vw); }
 .shop-links { display: flex; flex-wrap: wrap; gap: 8px; margin: 6px 0; }
+.rate-choices .rate-wide { grid-column: 1 / -1; }
+.rate-choices .btn { white-space: normal; line-height: 1.2; }
