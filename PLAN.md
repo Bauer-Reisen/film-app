@@ -459,3 +459,82 @@ Nach jedem Schritt prüfe ich selbst im Browser, bei 375 px und am Laptop, mit T
 | S2 | **Vorschläge mit Brücke** (1.6.0): Serienvorschläge mit Begründung, Heute Lust auf, Aus welcher Zeit, Brücke in beide Richtungen | Ein Profil nur mit Filmen bekommt passende Serien mit „Weil du den Film … liebst“. Ein Profil nur mit Serien bekommt passende Filme. Kein markierter Titel erscheint. |
 | S3 | **Überrasch mich, Gruppenabend, Kinderserien, Lieblingsserie** (1.7.0) | 20 Klicks auf „Überrasch mich“ bringen 20 verschiedene Serien. Der Gruppenabend hält seine Regeln ein, Kinderserien haben die passende Freigabe. |
 | S4 | **Abschluss** (1.8.0): Über-Seite, README, STAND, Gesamtprüfung | Filme funktionieren unverändert, Serien live. Am Ende steht die Liste, was du am echten Handy testest. |
+
+## 8. Bücher (Plan vom 13.11.2026)
+
+Bücher kommen in dieselbe App. Grundlage: [planung/prompt-buecher.md](planung/prompt-buecher.md). Die Session hatte den Auftrag, ohne Rückfragen durchzubauen.
+
+### Datenquelle (geprüft mit `node scripts/check-books.js`)
+| | Open Library | Google Books (ohne Schlüssel) |
+|---|---|---|
+| Englische Bücher (Titel, Cover, Seiten, Schlagwörter) | 8 von 9 vollständig | keine Antwort: Tageslimit für alle Nutzer ohne Schlüssel schon aufgebraucht (Fehler 429) |
+| Deutsche Bücher | gefunden, mit deutscher Ausgabe und Cover | – |
+| Beschreibung | meist vorhanden, fast immer auf Englisch | – |
+| Bewertungen | ja, aber wenige Stimmen; dazu „Leser“-Zahl (wie oft gelesen/gemerkt) als Beliebtheit | – |
+| ISBN (Strichcode) | 8 von 8 gefunden | – |
+| Verschiedene Ausgaben = dasselbe Werk | ja: 1984, Harry Potter, Der Vorleser/The Reader. **Ausnahme:** Der Hundertjährige ist bei Open Library doppelt angelegt | kennt keine Werke, jede Ausgabe einzeln |
+| Schlüssel nötig | nein | ja, für verlässlichen Betrieb |
+
+**Empfehlung und Wahl: Open Library.** Frei, ohne Schlüssel, kennt „Werke“ (alle Ausgaben eines Buchs). Schwächen: Beschreibungen fast nur auf Englisch, wenige Bewertungen, ein paar Werke doppelt. Gegen Doppelte: die Startliste merkt sich bei bekannten Büchern auch die zweite Werk-Nummer (`alt`), und Markierungen zählen dann für beide.
+
+### Bedienung
+- Umschalter oben: **Filme · Serien · Bücher**. Reiter unten gleich, bei Büchern heißt „Merkliste“ **„Leseliste“**.
+- Markieren: ✓ Gelesen · ♥ Mag ich · ✕ Mag ich nicht · + Merken · ⏹ Abgebrochen, ★ per Tipp aufs Cover.
+- **Geschmack** bei Büchern: Autor·innen · Themen · Genres · Bücher, Suche (Titel, Autor·in, ISBN) und der Knopf **📷 Bücher scannen**.
+- **Profil:** „Bücher lese ich auf: Englisch | Deutsch“ (`settings.bookLang`, Standard Englisch), unabhängig von der Film-Sprache. Bei Englisch kommen Titel und Cover der englischen Ausgabe.
+- Statt Laufzeit: **Seitenzahl**.
+- Auf „Vorschläge“ gibt es bei Büchern „Heute Lust auf …“, „Aus welcher Zeit“ und oben **★ Lieblingsbuch**. Gruppenabend und Kinderfilme gibt es bei Büchern nicht.
+
+### Scannen
+- Kamera bleibt offen, Buch für Buch davorhalten. Jeder Treffer erscheint sofort mit Cover und Titel in der Liste, kurzer Ton und Vibration (wo das Handy das kann). Doppelte werden ignoriert.
+- Vorher wählen: **Gelesen** (Standard) · Mag ich · Steht im Regal (= Leseliste). In der Liste einzeln umstellen oder entfernen. **„Fertig“** speichert alle.
+- Nicht gefunden: kurze Meldung, Nummer bleibt in der Liste und unter „Nicht gefunden“ im Profil (`scanMissing`).
+- Ohne Kamera: ISBN eintippen. Am Rechner zum Ausprobieren: Foto eines Strichcodes wählen.
+- Erkennung: eingebaute Strichcode-Erkennung des Browsers (Android/Chrome), sonst die freie Bibliothek **ZXing** als Datei `docs/vendor/zxing.min.js` (Apache-Lizenz, wird erst beim Scannen geladen). Bilder bleiben auf dem Handy, gesendet wird nur die ISBN.
+- **Regalfoto (Buchrücken):** ehrlich: ohne KI nicht zuverlässig machbar. Buchrücken haben keinen Strichcode, die Schrift steht quer, ist klein und in jeder Gestaltung anders. Texterkennung im Browser bräuchte eine große Zusatzdatei und läge oft daneben. Deshalb nicht gebaut.
+
+### Datenmodell (nur erweitern)
+```json
+"books":   { "OL82563W": { "s": "loved", "t": 1763000000000, "g": ["fantasy"], "y": 1997, "n": "Harry Potter and the Philosopher's Stone", "a": "J. K. Rowling", "ak": "OL23919A", "c": 10521270, "pg": 223 } },
+"authors": [ { "id": "OL23919A", "n": "J. K. Rowling", "w": 2, "t": 1763000000000 } ],
+"bookGenres": [ { "id": "fantasy", "w": 1, "t": 1763000000000 } ],
+"passedBook": [], "surpriseShownBook": [], "surpriseLastGenreBook": {}, "rewatchShownBook": {}, "scanMissing": [],
+"settings": { "media": "book", "bookLang": "en" }
+```
+- Bücher hängen an der **Werk-Nummer** von Open Library (z. B. `OL82563W`), nicht an einer ISBN.
+- Status wie bei Filmen; `seen` heißt bei Büchern „Gelesen“, dazu `dropped` = Abgebrochen.
+- Themen (`themes`) sind dieselben wie bei Filmen und Serien – also automatisch geteilt.
+- Alte Profile/Sicherungen bekommen die Felder beim Laden ergänzt; Zusammenführen wie bei Serien.
+
+### Technik
+- **Worker:** neue erlaubte Adressen unter `/ol/…` → `openlibrary.org` (Suche, Autorensuche, ISBN, Werk, Bewertungen, Autor). Ohne Schlüssel, Antworten werden bei Cloudflare zwischengespeichert. Cover kommen direkt von `covers.openlibrary.org` (wie Poster von TMDB).
+- **Neue Dateien:** `books.js` (Abfragen, Ausgabe in Lesesprache), `seeds-books.js` (Startliste, Bau: `node scripts/make-seeds-books.js`), `book-genres.js`, `book-taste.js`, `book-list.js`, `book-suggest.js`, `book-recommend.js`, `book-surprise.js`, `book-fav.js`, `scan.js`.
+- `themes.js`: jedes Thema bekommt `b` = passende Open-Library-Schlagwörter.
+
+### Vorschläge für Bücher: Punkte
+| Grund | Punkte (★ / ♥) |
+|---|---|
+| Lieblingsautor·in | **+9** / +5 |
+| gleiche Person wie ein ★/♥-Buch (weiteres Buch derselben Autorin) | +4 je Buch (höchstens +8) |
+| gleiche Schlagwörter wie ein ★/♥-Buch | +4 / +2,5 (höchstens +8) |
+| Lieblingsthema | +5 / +3 |
+| Lieblingsgenre | +3 / +1,5 |
+| **Brücke – Romanvorlage** eines ★/♥-Films oder einer Serie | **+8** („Die Vorlage zu „…“, den du liebst“) |
+| **Brücke – Paar-Liste** (von Hand: Forrest Gump → Der Hundertjährige …) | +6 |
+| **Brücke – Themen** der ★/♥-Filme/Serien (TMDB-Stichwörter → Thema → Buch-Schlagwörter) | +3 / +2 (höchstens +6) |
+| Genre-Neigung aus gemochten/nicht gemochten Büchern, „Abgebrochen“ halb negativ | höchstens ±2 |
+| Beliebtheit (Leserzahl) | kleiner Zuschlag |
+
+Mindestqualität: ab 30 Leser·innen bzw. Note ab 3,5 wenn bewertet; bei Lieblingsautor·innen ab 5 Leser·innen.
+
+### Brücke zu Filmen und Serien
+1. **Gemeinsame Themen** (s. o.) – in beide Richtungen.
+2. **Verfilmungen:** Filme/Serien nach Buch erkennt man bei TMDB am Stichwort „based on novel or book“ und an Mitwirkenden mit Aufgabe „Novel“/„Author“. Auf der Vorschlagskarte eines Films steht dann „📖 Das Buch dazu: … von …“ (lädt erst, wenn die Karte sichtbar ist). Bei Büchern steht „🎬 Verfilmt als …“ (Suche bei TMDB nach dem Titel, nur Treffer, deren Vorlage dieselbe Person geschrieben hat).
+3. **Autor·innen aus Filmen:** Unter „Autor·innen“ gibt es „Aus deinen Filmen und Serien“: wer die Vorlagen deiner ★/♥-Titel geschrieben hat (z. B. Stephen King), am häufigsten zuerst.
+4. **Ehrlich:** „Fühlt sich ähnlich an“ (Forrest Gump → Der Hundertjährige) entsteht ohne KI nur über gemeinsame Themen (Lebensreise, schwarzer Humor) – das trifft oft, aber nicht immer. Deshalb zusätzlich eine **kleine Paar-Liste von Hand** (`PAIRS` in `seeds-books.js`, ca. 30 Paare), die man jederzeit erweitern kann. Keine KI-Dienste.
+
+### Bauschritte Bücher
+- **B1 (1.12.0):** Worker, Datenmodell, Umschalter, Lesesprache, Startliste, Geschmack (Bücher, Autor·innen, Themen, Genres, Suche), Leseliste, Über-Seite nennt Open Library.
+- **B2 (1.13.0):** Scannen am Stück, ISBN eintippen, Foto, Testbilder.
+- **B3 (1.14.0):** Vorschläge mit Begründung und Brücke, „Heute Lust auf …“, „Aus welcher Zeit“, „Das Buch dazu“ / „Verfilmt als“.
+- **B4 (1.15.0):** Überrasch mich, Lieblingsbuch, README, Abschluss.

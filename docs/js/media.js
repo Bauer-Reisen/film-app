@@ -1,6 +1,6 @@
 // Filme oder Serien: alles, was sich zwischen beiden unterscheidet, steht hier.
 // Die Seiten fragen hier nach (Adressen, Wörter, Profilfelder), statt alles doppelt zu bauen.
-import { dialog, esc } from './ui.js?v=1.11.1';
+import { dialog, esc } from './ui.js?v=1.12.0';
 
 // Serien-Genres, die nie vorgeschlagen werden: Nachrichten, Reality, Seifenoper, Talkshow
 export const TV_EXCLUDE = [10763, 10764, 10766, 10767];
@@ -28,10 +28,20 @@ export const MEDIA = {
       noPoster: 'Kein Poster', it: 'Die', director: 'Regie & Idee',
     },
   },
+  // Bücher (seit 1.12.0): Daten von Open Library, eigene Seiten (book-*.js) – nur Wörter und Profilfelder hier
+  book: {
+    id: 'book', marks: 'books', suffix: 'Book',
+    w: {
+      one: 'Buch', many: 'Bücher', fav: 'Lieblingsbuch', favs: 'Lieblingsbücher', the: 'das Buch',
+      a: 'ein Buch', ofA: 'einem Buch', yours: 'deine Bücher', ofYours: 'deiner Bücher', unknown: 'Unbekanntes Buch',
+      noPoster: 'Kein Cover', it: 'Das', director: 'Autor·in', list: 'Leseliste',
+    },
+  },
 };
 
 export const other = (media) => (media === 'tv' ? 'movie' : 'tv');
-export const mediaOf = (profile) => (profile?.settings?.media === 'tv' ? 'tv' : 'movie');
+// Filme, Serien oder Bücher – wie oben im Umschalter gewählt
+export const mediaOf = (profile) => (['tv', 'book'].includes(profile?.settings?.media) ? profile.settings.media : 'movie');
 export const M = (profile) => MEDIA[mediaOf(profile)];
 // Markierungen des Profils für Filme oder Serien
 export const marksOf = (profile, media = mediaOf(profile)) => profile[MEDIA[media].marks] || {};
@@ -93,7 +103,7 @@ export async function askStarted(title) {
 export function stateLabel(media, s) {
   const w = MEDIA[media].w;
   return {
-    loved: `★ ${w.fav}`, seen: '✓ Gesehen', liked: '♥ Mag ich', disliked: '✕ Mag ich nicht', want: '+ Gemerkt',
+    loved: `★ ${w.fav}`, seen: media === 'book' ? '✓ Gelesen' : '✓ Gesehen', liked: '♥ Mag ich', disliked: '✕ Mag ich nicht', want: '+ Gemerkt',
     noInterest: 'Kein Interesse', paused: '⏸ Weiterschauen', dropped: '⏹ Abgebrochen',
   }[s] || '';
 }

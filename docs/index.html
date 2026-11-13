@@ -8,12 +8,12 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Was schaue ich?">
-  <meta name="description" content="Passende Film- und Serienvorschläge – ohne langes Stöbern.">
+  <meta name="description" content="Passende Film-, Serien- und Buchvorschläge – ohne langes Stöbern.">
   <title>Was schaue ich?</title>
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-  <link rel="stylesheet" href="style.css?v=1.11.1">
+  <link rel="stylesheet" href="style.css?v=1.12.0">
 </head>
 <body>
   <a class="skip" href="#view">Zum Inhalt springen</a>
@@ -23,9 +23,10 @@
       <svg class="brand-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v14H4z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 9l5 3-5 3z" fill="currentColor"/></svg>
       <span>Was schaue ich?</span>
     </a>
-    <div class="media-switch" role="group" aria-label="Filme oder Serien" hidden>
+    <div class="media-switch" role="group" aria-label="Filme, Serien oder Bücher" hidden>
       <button type="button" class="ms" data-media="movie" aria-pressed="true">Filme</button>
       <button type="button" class="ms" data-media="tv" aria-pressed="false">Serien</button>
+      <button type="button" class="ms" data-media="book" aria-pressed="false">Bücher</button>
     </div>
     <nav class="tabs" aria-label="Hauptmenü">
       <a href="#/vorschlaege" data-tab="vorschlaege">
@@ -60,6 +61,6 @@
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-  <script type="module" src="js/app.js?v=1.11.1"></script>
+  <script type="module" src="js/app.js?v=1.12.0"></script>
 </body>
 </html>

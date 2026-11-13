@@ -26,6 +26,16 @@ const ROUTES = [
   [/^\/3\/configuration$/, 7 * DAY],
 ];
 
+// Bücher: Open Library (frei, ohne Schlüssel). /ol/… wird an openlibrary.org weitergereicht.
+const OL_ROUTES = [
+  [/^\/ol\/search\.json$/, DAY],
+  [/^\/ol\/search\/authors\.json$/, DAY],
+  [/^\/ol\/isbn\/[\dXx]{10,13}\.json$/, 7 * DAY],
+  [/^\/ol\/works\/OL\d+W\.json$/, 7 * DAY],
+  [/^\/ol\/works\/OL\d+W\/(ratings|editions)\.json$/, 7 * DAY],
+  [/^\/ol\/authors\/OL\d+A\.json$/, 7 * DAY],
+];
+
 export default {
   async fetch(request, env) {
     const origin = request.headers.get('Origin') || '';
@@ -45,7 +55,8 @@ export default {
     if (request.method !== 'GET') return reply(405, { error: 'Nur Lesen erlaubt' });
 
     const url = new URL(request.url);
-    const route = ROUTES.find(([re]) => re.test(url.pathname));
+    const olRoute = OL_ROUTES.find(([re]) => re.test(url.pathname));
+    const route = olRoute || ROUTES.find(([re]) => re.test(url.pathname));
     if (!route) return reply(403, { error: 'Adresse nicht erlaubt' });
 
     if (env.RATE_LIMITER) {
@@ -53,6 +64,8 @@ export default {
       const { success } = await env.RATE_LIMITER.limit({ key: ip });
       if (!success) return reply(429, { error: 'Zu viele Anfragen – kurz warten' }, { 'Retry-After': '10' });
     }
+
+    if (olRoute) return openLibrary(url, olRoute[1], reply);
 
     if (!env.TMDB_TOKEN) return reply(500, { error: 'Schlüssel fehlt im Worker (Secret TMDB_TOKEN)' });
 
@@ -75,3 +88,21 @@ export default {
     return reply(upstream.status, body, { ...cache, ...(retry ? { 'Retry-After': retry } : {}) });
   },
 };
+
+// Open Library: ohne Schlüssel, Antworten bei Cloudflare zwischenspeichern (schont Open Library)
+async function openLibrary(url, maxAge, reply) {
+  const target = `https://openlibrary.org${url.pathname.slice(3)}${url.search}`;
+  let upstream;
+  try {
+    upstream = await fetch(target, {
+      headers: { Accept: 'application/json', 'User-Agent': 'film-app-worker/1.0' },
+      redirect: 'follow',
+      cf: { cacheTtl: maxAge, cacheEverything: true },
+    });
+  } catch {
+    return reply(502, { error: 'Open Library nicht erreichbar' });
+  }
+  const body = await upstream.text();
+  const cache = upstream.ok ? { 'Cache-Control': `public, max-age=${maxAge}` } : { 'Cache-Control': 'no-store' };
+  return reply(upstream.status, body, cache);
+}

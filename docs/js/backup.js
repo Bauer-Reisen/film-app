@@ -1,6 +1,6 @@
 // Profil sichern (als Datei) und wieder laden – so zieht man auf ein
 // anderes Gerät oder in die Home-Bildschirm-App um.
-import { newProfile, getProfile, updateProfile, addProfile, profiles } from './store.js?v=1.11.1';
+import { newProfile, getProfile, updateProfile, addProfile, profiles } from './store.js?v=1.12.0';
 
 const FORMAT = 'filmapp-profil';
 
@@ -78,6 +78,7 @@ export function mergeInto(targetId, incoming) {
   };
   const movies = newer(t.movies, incoming.movies);
   const shows = newer(t.shows, incoming.shows);
+  const books = newer(t.books, incoming.books);
   const byId = (a, b) => {
     const map = new Map(a.map((x) => [x.id, x]));
     for (const x of b || []) if (!map.has(x.id) || (x.t || 0) > (map.get(x.id).t || 0)) map.set(x.id, x);
@@ -90,6 +91,14 @@ export function mergeInto(targetId, incoming) {
   };
   const lastGenre = latest(t.surpriseLastGenre, incoming.surpriseLastGenre);
   updateProfile(targetId, {
+    books,
+    authors: byId(t.authors || [], incoming.authors),
+    bookGenres: byId(t.bookGenres || [], incoming.bookGenres),
+    passedBook: [...new Set([...(t.passedBook || []), ...(incoming.passedBook || [])])],
+    surpriseShownBook: byId(t.surpriseShownBook || [], incoming.surpriseShownBook),
+    surpriseLastGenreBook: latest(t.surpriseLastGenreBook, incoming.surpriseLastGenreBook),
+    rewatchShownBook: latest(t.rewatchShownBook, incoming.rewatchShownBook),
+    scanMissing: [...new Map([...(t.scanMissing || []), ...(incoming.scanMissing || [])].map((x) => [x.isbn, x])).values()],
     shows,
     networks: byId(t.networks || [], incoming.networks),
     passedTv: [...new Set([...(t.passedTv || []), ...(incoming.passedTv || [])])],

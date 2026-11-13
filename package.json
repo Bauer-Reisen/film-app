@@ -1,6 +1,6 @@
 {
   "name": "film-app",
-  "version": "1.11.1",
+  "version": "1.12.0",
   "private": true,
   "description": "Was schaue ich als Nächstes? – Filmvorschläge per TMDB",
   "type": "module",
@@ -14,6 +14,7 @@
     "node": ">=20"
   },
   "devDependencies": {
+    "@zxing/library": "^0.21.3",
     "qrcode": "^1.5.4",
     "wrangler": "^4.160.1"
   }

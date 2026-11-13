@@ -1,20 +1,23 @@
 // Oberfläche: Seitenwechsel über die Adresse (#/vorschlaege usw.)
-import { VERSION, LANGUAGES } from './config.js?v=1.11.1';
-import * as store from './store.js?v=1.11.1';
-import { saveBackup, readBackup, findSameName, importAsNew, mergeInto } from './backup.js?v=1.11.1';
-import { esc, dialog, toast, formatDate } from './ui.js?v=1.11.1';
-import * as platform from './platform.js?v=1.11.1';
-import * as taste from './taste.js?v=1.11.1';
-import * as suggest from './suggest.js?v=1.11.1';
-import * as watchlist from './watchlist.js?v=1.11.1';
-import * as sneak from './sneak.js?v=1.11.1';
-import * as group from './group.js?v=1.11.1';
-import * as kids from './kids.js?v=1.11.1';
-import * as rewatch from './rewatch.js?v=1.11.1';
-import * as trailer from './trailer.js?v=1.11.1';
-import { initRuntimes } from './runtime.js?v=1.11.1';
-import { mediaOf } from './media.js?v=1.11.1';
-import { runTour } from './tour.js?v=1.11.1';
+import { VERSION, LANGUAGES } from './config.js?v=1.12.0';
+import * as store from './store.js?v=1.12.0';
+import { saveBackup, readBackup, findSameName, importAsNew, mergeInto } from './backup.js?v=1.12.0';
+import { esc, dialog, toast, formatDate } from './ui.js?v=1.12.0';
+import * as platform from './platform.js?v=1.12.0';
+import * as taste from './taste.js?v=1.12.0';
+import * as suggest from './suggest.js?v=1.12.0';
+import * as watchlist from './watchlist.js?v=1.12.0';
+import * as sneak from './sneak.js?v=1.12.0';
+import * as group from './group.js?v=1.12.0';
+import * as kids from './kids.js?v=1.12.0';
+import * as rewatch from './rewatch.js?v=1.12.0';
+import * as trailer from './trailer.js?v=1.12.0';
+import { initRuntimes } from './runtime.js?v=1.12.0';
+import { mediaOf } from './media.js?v=1.12.0';
+import { runTour } from './tour.js?v=1.12.0';
+import * as bookTaste from './book-taste.js?v=1.12.0';
+import * as bookList from './book-list.js?v=1.12.0';
+import { initBookExtras } from './book-extra.js?v=1.12.0';
 
 const view = document.getElementById('view');
 const APP_URL = 'https://bauer-reisen.github.io/film-app/';
@@ -87,6 +90,29 @@ const deviceNote = `
 
 const fileInput = Object.assign(document.createElement('input'), { type: 'file', accept: 'application/json,.json', hidden: true });
 document.body.append(fileInput);
+
+// ---------- Bücher: eigene Seiten unter denselben Reitern ----------
+const soon = (title, text) => ({
+  mount: null,
+  render: () => `<h1>${title}</h1><div class="card placeholder"><p><strong>${text}</strong></p>
+    <p class="muted">Markiere schon mal unter „Geschmack“ Bücher, die du gelesen hast – oder scanne dein Regal.</p>
+    <p><a class="btn btn-primary btn-big" href="#/geschmack">Zum Geschmack</a></p></div>`,
+});
+const notForBooks = (title) => ({
+  mount: null,
+  render: () => `<p class="back"><a href="#/vorschlaege">← Vorschläge</a></p><h1>${title}</h1>
+    <div class="card placeholder"><p><strong>Das gibt es nur bei Filmen und Serien.</strong></p>
+    <p class="muted">Schalte oben auf „Filme“ oder „Serien“ um.</p></div>`,
+});
+const BOOK_PAGES = {
+  vorschlaege: soon('Vorschläge', 'Buch-Vorschläge kommen in Kürze.'),
+  ueberrasch: soon('Überrasch mich', 'Überrasch mich mit Büchern kommt in Kürze.'),
+  liebling: soon('Lieblingsbuch', 'Das Lieblingsbuch kommt in Kürze.'),
+  gruppe: notForBooks('Gruppenabend'),
+  kinder: notForBooks('Kinderfilme'),
+  geschmack: { render: () => bookTaste.render(current()), mount: () => bookTaste.mount(view, current()), click: bookTaste.handleClick },
+  merkliste: { title: 'Leseliste', render: () => bookList.render(current()), mount: () => bookList.mount(current()), click: bookList.handleClick },
+};
 
 // ---------- Seiten ----------
 const pages = {
@@ -172,6 +198,15 @@ const pages = {
         </section>
 
         <section class="card stack">
+          <h2 id="blang-h">Bücher lese ich auf</h2>
+          <div class="segmented" role="group" aria-labelledby="blang-h">
+            ${[['en', 'Englisch'], ['de', 'Deutsch']].map(([code, label]) => `
+              <button type="button" class="seg" data-blang="${code}" aria-pressed="${(p.settings?.bookLang || 'en') === code}">${label}</button>`).join('')}
+          </div>
+          <p class="muted small">Unabhängig von Filmen und Serien. Titel, Cover und Vorschläge kommen in dieser Sprache. Beim Scannen zählt jede Ausgabe – egal in welcher Sprache.</p>
+        </section>
+
+        <section class="card stack">
           <h2>Sichern</h2>
           <p class="muted small">Zuletzt gesichert: ${p.lastBackup ? formatDate(p.lastBackup) : 'nie'}</p>
           <div class="row">
@@ -214,8 +249,8 @@ const pages = {
     render: () => `
       <h1>Über diese App</h1>
       <div class="card stack">
-        <p>„Was schaue ich?“ schlägt dir Filme und Serien vor, die zu deinem Geschmack passen – mit einem Satz, warum. Dazu gibt es „Überrasch mich“, den Gruppenabend, Kinderfilme und Kinderserien.</p>
-        <p>Oben schaltest du zwischen <strong>Filme</strong> und <strong>Serien</strong> um. Was du bei Filmen magst, hilft auch bei den Serien – und umgekehrt.</p>
+        <p>„Was schaue ich?“ schlägt dir Filme, Serien und Bücher vor, die zu deinem Geschmack passen – mit einem Satz, warum. Dazu gibt es „Überrasch mich“, den Gruppenabend, Kinderfilme und Kinderserien.</p>
+        <p>Oben schaltest du zwischen <strong>Filme</strong>, <strong>Serien</strong> und <strong>Bücher</strong> um. Was du bei Filmen magst, hilft auch bei Serien und Büchern – und umgekehrt.</p>
       </div>
 
       <h2>Filmdaten</h2>
@@ -225,6 +260,12 @@ const pages = {
         </a>
         <p>Alle Film- und Seriendaten und Poster kommen von <a href="https://www.themoviedb.org/" target="_blank" rel="noopener">The Movie Database (TMDB)</a>.</p>
         <p lang="en" class="muted">This product uses the TMDB API but is not endorsed or certified by TMDB.</p>
+      </div>
+
+      <h2>Buchdaten</h2>
+      <div class="card stack">
+        <p>Alle Buchdaten und Cover kommen von <a href="https://openlibrary.org/" target="_blank" rel="noopener">Open Library</a>, einem freien Bücherkatalog des Internet Archive. Beschreibungen gibt es dort meist nur auf Englisch.</p>
+        <p class="muted">Beim Scannen bleibt das Kamerabild auf deinem Handy. Gesendet wird nur die ISBN-Nummer.</p>
       </div>
 
       <h2>App weitergeben</h2>
@@ -238,7 +279,7 @@ const pages = {
       <h2>Deine Daten</h2>
       <div class="card stack">
         <p>Es gibt keine Anmeldung und kein Konto. Deine Profile liegen nur auf diesem Gerät.</p>
-        <p class="muted">Für Filmdaten fragt die App über einen kleinen Zwischenhändler (Cloudflare) bei TMDB an. Dabei werden keine Namen oder Markierungen übertragen, nur die Filmsuche selbst.</p>
+        <p class="muted">Für Filmdaten fragt die App über einen kleinen Zwischenhändler (Cloudflare) bei TMDB an, für Bücher bei Open Library. Dabei werden keine Namen oder Markierungen übertragen, nur die Suche selbst.</p>
         <p class="muted">Trailer kommen von YouTube. YouTube wird erst geladen, wenn du auf „Trailer“ tippst, in der datensparsamen Variante ohne Werbe-Cookies.</p>
         <p class="muted">Streaming-Angebote zeigt die App bewusst nicht an.</p>
       </div>
@@ -361,6 +402,7 @@ fileInput.addEventListener('change', async () => {
 
 view.addEventListener('click', async (e) => {
   if (current() && trailer.handleClick(e, current().language)) return;
+  if (currentPage?.click && currentPage.click(e)) return;
   if (currentKey === 'geschmack' && taste.handleClick(e)) return;
   if (currentKey === 'vorschlaege' && suggest.handleClick(e)) return;
   if (currentKey === 'merkliste' && watchlist.handleClick(e)) return;
@@ -370,6 +412,14 @@ view.addEventListener('click', async (e) => {
   if (currentKey === 'liebling' && rewatch.handleClick(e)) return;
   const pick = e.target.closest('[data-pick]');
   if (pick) return selectProfile(pick.dataset.pick);
+
+  const blang = e.target.closest('[data-blang]');
+  if (blang) {
+    const p = current();
+    store.updateProfile(currentId, { settings: { ...(p.settings || {}), bookLang: blang.dataset.blang } });
+    toast(`Bücher jetzt auf ${blang.dataset.blang === 'de' ? 'Deutsch' : 'Englisch'}.`);
+    return show();
+  }
 
   const lang = e.target.closest('[data-lang]');
   if (lang) {
@@ -431,11 +481,15 @@ window.addEventListener('installable', () => show());
 
 // ---------- Anzeigen ----------
 let currentKey = null;
+let currentPage = null;
+const listTab = document.querySelector('.tabs a[data-tab="merkliste"] span');
 function show() {
   let key = (location.hash.replace(/^#\/?/, '') || 'vorschlaege').split('?')[0];
   if (!pages[key]) key = 'vorschlaege';
   if (!pages[key].noProfile && !current()) key = 'wer';
-  const page = pages[key];
+  const media0 = current() ? mediaOf(current()) : 'movie';
+  const page = (media0 === 'book' && BOOK_PAGES[key]) ? { ...pages[key], ...BOOK_PAGES[key] } : pages[key];
+  currentPage = page;
   const activeTab = page.tab || key;
 
   document.body.classList.toggle('no-tabs', !!page.noTabs);
@@ -448,6 +502,7 @@ function show() {
   mediaSwitch.hidden = !p || !!page.noTabs;
   mediaSwitch.querySelectorAll('[data-media]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.media === media)));
   document.title = `${(media === 'tv' && page.titleTv) || page.title} · Was schaue ich?`;
+  if (listTab) listTab.textContent = media === 'book' ? 'Leseliste' : 'Merkliste';
   tabs.forEach((a) => {
     if (a.dataset.tab === activeTab) a.setAttribute('aria-current', 'page');
     else a.removeAttribute('aria-current');
@@ -459,6 +514,7 @@ function show() {
 
 window.addEventListener('hashchange', show);
 initRuntimes(view, () => current()?.language || 'de-DE');
+initBookExtras(view, () => current());
 show();
 
 // ---------- Update-Prüfung ----------

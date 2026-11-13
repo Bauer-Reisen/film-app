@@ -68,15 +68,25 @@ export const newProfile = (name, language = 'de-DE') => ({
   surpriseShownTv: [],
   surpriseLastGenreTv: {},
   rewatchShownTv: {},
+  // Bücher (seit 1.12.0): Markierungen an der Open-Library-Werk-Nummer, Autor·innen und Buch-Genres in Stufen
+  books: {},
+  authors: [], // [{ id: 'OL2162284A', n, w, t }]
+  bookGenres: [], // [{ id: 'fantasy', w, t }]
+  passedBook: [],
+  surpriseShownBook: [],
+  surpriseLastGenreBook: {},
+  rewatchShownBook: {},
+  scanMissing: [], // gescannte ISBN, die Open Library nicht kannte [{ isbn, t }]
   // tourDone: kurzer Rundgang schon gesehen; hintDone: Hinweis „bei Vorschlägen weitermachen“ weggetippt (je movie/tv)
-  settings: { groupHorror: false, groupWar: false, groupAge: null, kidsAge: 6, media: 'movie', tourDone: false, hintDone: {} },
+  settings: { groupHorror: false, groupWar: false, groupAge: null, kidsAge: 6, media: 'movie', tourDone: false, hintDone: {}, bookLang: 'en' },
 });
 
 // Ältere Profile (vor den Serien) um die neuen Felder ergänzen – nichts wird umgebaut
 export function migrate(p) {
   const base = newProfile(p.name || 'Profil', p.language);
   for (const k of ['movies', 'people', 'companies', 'themes', 'passed', 'surpriseShown', 'surpriseLastGenre',
-    'shows', 'networks', 'passedTv', 'surpriseShownTv', 'surpriseLastGenreTv', 'rewatchShownTv']) {
+    'shows', 'networks', 'passedTv', 'surpriseShownTv', 'surpriseLastGenreTv', 'rewatchShownTv',
+    'books', 'authors', 'bookGenres', 'passedBook', 'surpriseShownBook', 'surpriseLastGenreBook', 'rewatchShownBook', 'scanMissing']) {
     if (p[k] == null) p[k] = base[k];
   }
   const known = p.settings && 'tourDone' in p.settings;
@@ -132,8 +142,10 @@ export function profilesForPicker() {
 
 // ---------- Markierungen (für spätere Schritte) ----------
 // status: 'loved' (Lieblingsfilm) | 'seen' | 'liked' | 'disliked' | 'want' | 'noInterest' | null (= löschen)
-// media: 'movie' (Feld movies) oder 'tv' (Feld shows). Bei Serien zusätzlich 'paused' | 'dropped'.
-const MARKS = { movie: 'movies', tv: 'shows' };
+// media: 'movie' (Feld movies), 'tv' (Feld shows) oder 'book' (Feld books). Bei Serien zusätzlich 'paused' | 'dropped',
+// bei Büchern 'dropped' (abgebrochen); 'seen' heißt bei Büchern „Gelesen“.
+const MARKS = { movie: 'movies', tv: 'shows', book: 'books' };
+const BOOK_META = ['a', 'ak', 'c', 'pg']; // Autor·in, Autor-Nummer, Cover, Seiten
 export function setMark(profileId, media, movieId, status, meta = {}) {
   const p = getProfile(profileId);
   if (!p) return null;
@@ -141,6 +153,7 @@ export function setMark(profileId, media, movieId, status, meta = {}) {
   const old = list[movieId] || null;
   if (status) {
     list[movieId] = { s: status, t: Date.now(), g: meta.g ?? old?.g ?? [], l: meta.l ?? old?.l ?? '', y: meta.y ?? old?.y ?? null, n: meta.n ?? old?.n ?? '' }; // n = Titel (für Begründungen)
+    if (media === 'book') for (const k of BOOK_META) { const v = meta[k] ?? old?.[k]; if (v != null && v !== '') list[movieId][k] = v; }
     p.marksSinceBackup = (p.marksSinceBackup || 0) + 1;
   } else {
     delete list[movieId];
@@ -177,13 +190,14 @@ export function setTier(listName, profileId, entry, w) {
 export function addPassed(profileId, ids, media = 'movie') {
   const p = getProfile(profileId);
   if (!p || !ids.length) return;
-  const key = media === 'tv' ? 'passedTv' : 'passed';
+  const key = media === 'tv' ? 'passedTv' : media === 'book' ? 'passedBook' : 'passed';
   p[key] = [...new Set([...(p[key] || []), ...ids])].slice(-3000);
   save();
 }
 
 export const markCount = (p) => Object.keys(p.movies).length + Object.keys(p.shows || {}).length + p.people.length
-  + p.companies.length + (p.themes || []).length + (p.networks || []).length;
+  + p.companies.length + (p.themes || []).length + (p.networks || []).length
+  + Object.keys(p.books || {}).length + (p.authors || []).length + (p.bookGenres || []).length;
 
 // ---------- Geräte-Einstellungen (Hinweise) ----------
 export const device = () => state.device;
