@@ -1,15 +1,16 @@
 // Seite „Vorschläge“ bei Büchern: Liste mit Begründung, Rückmeldungen, Rückgängig, „Mehr“,
 // „Heute Lust auf …“ und „Aus welcher Zeit“.
-import * as store from './store.js?v=1.25.0';
-import * as books from './books.js?v=1.25.0';
-import { esc, toast } from './ui.js?v=1.25.0';
-import { THEMES, themeById } from './themes.js?v=1.25.0';
-import { MEDIA, stateLabel } from './media.js?v=1.25.0';
-import { computeBooks, visibleBooks, hasBookSources, BOOK_ERAS, bookEraById, BOOK_POINTS } from './book-recommend.js?v=1.25.0';
-import { coverImg, bookMetaHtml, rememberBooks } from './book-taste.js?v=1.25.0';
-import { movieHint } from './book-extra.js?v=1.25.0';
-import { fillSeriesSlots } from './book-series.js?v=1.25.0';
-import { markButtons, moreBox, filterBox } from './cards.js?v=1.25.0';
+import * as store from './store.js?v=1.26.0';
+import * as books from './books.js?v=1.26.0';
+import { esc, toast } from './ui.js?v=1.26.0';
+import { THEMES, themeById } from './themes.js?v=1.26.0';
+import { MEDIA, stateLabel } from './media.js?v=1.26.0';
+import { computeBooks, visibleBooks, hasBookSources, BOOK_ERAS, bookEraById, BOOK_POINTS } from './book-recommend.js?v=1.26.0';
+import { coverImg, bookMetaHtml, rememberBooks } from './book-taste.js?v=1.26.0';
+import { movieHint } from './book-extra.js?v=1.26.0';
+import { fillSeriesSlots } from './book-series.js?v=1.26.0';
+import { markButtons, moreBox, filterBox } from './cards.js?v=1.26.0';
+import { BOOK_GENRES, bookGenreById } from './book-genres.js?v=1.26.0';
 
 // Drei große Knöpfe; „Schon gelesen“ klappt die Bewertung auf
 const MAIN = [['known', '✓', 'Schon gelesen'], ['want', '+', 'Merken'], ['noInterest', '–', 'Nein danke']];
@@ -26,9 +27,10 @@ let run = 0;
 const byId = new Map();
 let mood = '';
 let era = '';
-const calc = () => computeBooks(profile, page, { theme: mood, era });
+let genre = ''; // Genre-Filter (seit 1.26.0)
+const calc = () => computeBooks(profile, page, { theme: mood, era, genre });
 const box = () => document.getElementById('suggest-list');
-const active = () => [mood && themeById.get(mood)?.n, era && bookEraById.get(era)?.n].filter(Boolean).join(' · ');
+const active = () => [genre && bookGenreById.get(genre)?.n, mood && themeById.get(mood)?.n, era && bookEraById.get(era)?.n].filter(Boolean).join(' · ');
 
 function pickers() {
   const withB = THEMES.filter((t) => t.b?.length);
@@ -36,6 +38,12 @@ function pickers() {
   const rest = withB.filter((t) => !favs.includes(t)).sort((a, b) => a.n.localeCompare(b.n, 'de'));
   const opt = (t) => `<option value="${t.id}" ${t.id === mood ? 'selected' : ''}>${esc(t.n)}</option>`;
   return `
+    <label class="mood"><span>Genre</span>
+      <select id="genre">
+        <option value="">alle</option>
+        ${[...BOOK_GENRES].sort((a, b) => a.n.localeCompare(b.n, 'de')).map((g) => `<option value="${g.id}" ${g.id === genre ? 'selected' : ''}>${esc(g.n)}</option>`).join('')}
+      </select>
+    </label>
     <label class="mood"><span>Heute Lust auf</span>
       <select id="mood">
         <option value="">alles, was zu mir passt</option>
@@ -70,15 +78,17 @@ export async function mount(p) {
   shown = []; page = 1;
   const sel = document.getElementById('mood');
   const selEra = document.getElementById('era');
-  if (sel && selEra) sel.onchange = selEra.onchange = () => {
+  const selGenre = document.getElementById('genre');
+  if (sel && selEra && selGenre) sel.onchange = selEra.onchange = selGenre.onchange = () => {
     mood = sel.value;
     era = selEra.value;
+    genre = selGenre.value;
     const now = document.querySelector('.filters-now');
     if (now) now.textContent = active() || 'alles, was zu dir passt';
     box().innerHTML = '<p class="muted center">Suche passende Bücher …</p>';
     mount(profile);
   };
-  if (!hasBookSources(p) && !mood && !era) {
+  if (!hasBookSources(p) && !mood && !era && !genre) {
     box().innerHTML = `
       <div class="card placeholder">
         <p><strong>Noch keine Vorschläge – die App kennt deinen Lesegeschmack noch nicht.</strong></p>
@@ -103,8 +113,8 @@ export async function mount(p) {
       <p class="muted">Markiere unter „Geschmack“ weitere Bücher oder Autor·innen – dann kommen neue dazu.</p></div>`;
     return;
   }
-  const head = mood || era
-    ? `${[mood && `Thema „${esc(themeById.get(mood).n)}“`, era && esc(bookEraById.get(era).n)].filter(Boolean).join(', ')} – sortiert nach deinem Geschmack.`
+  const head = active()
+    ? `${esc(active())} – sortiert nach deinem Geschmack.`
     : 'Passend zu dem, was du magst – auch zu deinen Filmen und Serien.';
   box().innerHTML = `
     <p class="muted small">${head} Tipp aufs Cover = ★ ${W.fav}.</p>

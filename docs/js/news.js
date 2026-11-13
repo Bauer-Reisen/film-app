@@ -1,9 +1,13 @@
 // „Was ist neu?“ – nach einem Update einmal pro Profil, wenn man die App wieder öffnet.
 // Neue Profile bekommen stattdessen den Rundgang (tour.js) und sehen die alten Neuigkeiten nicht.
 // Neueste zuerst; nur Änderungen, die man sieht und kennen sollte.
-import { dialog } from './ui.js?v=1.25.0';
+import { dialog } from './ui.js?v=1.26.0';
 
 export const NEWS = [
+  {
+    v: '1.26.0', title: 'Nach Genre filtern',
+    items: ['Bei den Vorschlägen kannst du unter <strong>Filter &amp; mehr</strong> jetzt auch ein <strong>Genre</strong> wählen – z. B. nur Krimis oder nur Komödien. Das geht auch zusammen mit Thema und Zeit.'],
+  },
   {
     v: '1.25.0', title: 'Aufgeräumt',
     items: [

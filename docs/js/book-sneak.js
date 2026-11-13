@@ -1,15 +1,15 @@
 // „Überrasch mich“ bei Büchern: ein viel gelesenes, gut bewertetes Buch aus einem Genre, das du sonst nicht liest.
 // Vorhang (nur Genre, Zeit, Seitenzahl) → Aufdecken → Rückmeldung oder anderes Buch.
-import * as store from './store.js?v=1.25.0';
-import * as books from './books.js?v=1.25.0';
-import { esc, toast } from './ui.js?v=1.25.0';
-import { markButtons } from './cards.js?v=1.25.0';
-import { SURPRISE } from './config.js?v=1.25.0';
-import { BOOK_GENRES, bookGenreById } from './book-genres.js?v=1.25.0';
-import { MEDIA, stateLabel, pressed, pressedExact } from './media.js?v=1.25.0';
-import { coverImg, bookMetaHtml, nextStatus } from './book-taste.js?v=1.25.0';
-import { movieHint } from './book-extra.js?v=1.25.0';
-import { currentBookIds } from './book-suggest.js?v=1.25.0';
+import * as store from './store.js?v=1.26.0';
+import * as books from './books.js?v=1.26.0';
+import { esc, toast } from './ui.js?v=1.26.0';
+import { markButtons } from './cards.js?v=1.26.0';
+import { SURPRISE } from './config.js?v=1.26.0';
+import { BOOK_GENRES, bookGenreById } from './book-genres.js?v=1.26.0';
+import { MEDIA, stateLabel, pressed, pressedExact } from './media.js?v=1.26.0';
+import { coverImg, bookMetaHtml, nextStatus } from './book-taste.js?v=1.26.0';
+import { movieHint } from './book-extra.js?v=1.26.0';
+import { currentBookIds } from './book-suggest.js?v=1.26.0';
 
 // Drei große Knöpfe; „Schon gelesen“ klappt die Bewertung auf
 const MAIN = [['known', '✓', 'Schon gelesen'], ['want', '+', 'Merken'], ['noInterest', '–', 'Nein danke']];

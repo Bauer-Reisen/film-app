@@ -1,16 +1,17 @@
 // Seite „Vorschläge“: Liste mit Begründung, fünf Rückmeldungen, Rückgängig, „Mehr“.
-import * as store from './store.js?v=1.25.0';
-import * as tmdb from './tmdb.js?v=1.25.0';
-import { esc, toast } from './ui.js?v=1.25.0';
-import { runtimeSlot, titleText } from './runtime.js?v=1.25.0';
-import { trailerBtn } from './trailer.js?v=1.25.0';
-import { compute, computeFiltered, visible, hasSources, erasFor, eraById } from './recommend.js?v=1.25.0';
-import { MEDIA, mediaOf, askStarted, stateLabel } from './media.js?v=1.25.0';
-import { THEMES, themeById } from './themes.js?v=1.25.0';
-import { RECOMMEND } from './config.js?v=1.25.0';
-import { bookSlot } from './book-extra.js?v=1.25.0';
-import { peopleSlot, fillPeopleSlots } from './people.js?v=1.25.0';
-import { markButtons, moreBox, filterBox } from './cards.js?v=1.25.0';
+import * as store from './store.js?v=1.26.0';
+import * as tmdb from './tmdb.js?v=1.26.0';
+import { esc, toast } from './ui.js?v=1.26.0';
+import { runtimeSlot, titleText } from './runtime.js?v=1.26.0';
+import { trailerBtn } from './trailer.js?v=1.26.0';
+import { compute, computeFiltered, visible, hasSources, erasFor, eraById } from './recommend.js?v=1.26.0';
+import { MEDIA, mediaOf, askStarted, stateLabel } from './media.js?v=1.26.0';
+import { THEMES, themeById } from './themes.js?v=1.26.0';
+import { RECOMMEND } from './config.js?v=1.26.0';
+import { GENRES, GENRES_TV } from './surprise.js?v=1.26.0';
+import { bookSlot } from './book-extra.js?v=1.26.0';
+import { peopleSlot, fillPeopleSlots } from './people.js?v=1.26.0';
+import { markButtons, moreBox, filterBox } from './cards.js?v=1.26.0';
 
 // Drei große Knöpfe; „Schon gesehen“ klappt die Bewertung auf
 const MAIN = [['known', '✓', 'Schon gesehen'], ['want', '+', 'Merken'], ['noInterest', '–', 'Nein danke']];
@@ -26,8 +27,12 @@ let run = 0;
 const byId = new Map();
 let mood = ''; // „Heute Lust auf …“ – gilt, solange die App offen ist
 let era = '';  // „Aus welcher Zeit?“
+let genre = ''; // „Genre“ (TMDB-Nummer als Text)
+const genreMap = () => (md === 'tv' ? GENRES_TV : GENRES);
+const genreList = () => Object.entries(genreMap()).map(([id, n]) => ({ id, n: n[0] })).sort((a, b) => a.n.localeCompare(b.n, 'de'));
+const activeText = () => [genre && genreMap()[genre]?.[0], mood && themeById.get(mood)?.n, era && eraById(md).get(era)?.n].filter(Boolean).join(' · ');
 let md = 'movie'; // Filme oder Serien – wie gerade oben eingestellt
-const calc = () => (mood || era ? computeFiltered(profile, { theme: mood, era }, page, md) : compute(profile, page, md));
+const calc = () => (mood || era || genre ? computeFiltered(profile, { theme: mood, era, genre }, page, md) : compute(profile, page, md));
 const W = () => MEDIA[md].w;
 
 function moodPicker() {
@@ -35,6 +40,12 @@ function moodPicker() {
   const rest = THEMES.filter((t) => !favs.includes(t)).sort((a, b) => a.n.localeCompare(b.n, 'de'));
   const opt = (t) => `<option value="${t.id}" ${t.id === mood ? 'selected' : ''}>${esc(t.n)}</option>`;
   return `
+    <label class="mood"><span>Genre</span>
+      <select id="genre">
+        <option value="">alle</option>
+        ${genreList().map((g) => `<option value="${g.id}" ${g.id === genre ? 'selected' : ''}>${esc(g.n)}</option>`).join('')}
+      </select>
+    </label>
     <label class="mood"><span>Heute Lust auf</span>
       <select id="mood">
         <option value="">alles, was zu mir passt</option>
@@ -56,9 +67,10 @@ export function render(p) {
   profile = p;
   md = mediaOf(p);
   if (era && !eraById(md).has(era)) era = '';
+  if (genre && !genreMap()[genre]) genre = ''; // Film- und Serien-Genres sind verschieden
   return `
     <h1>Vorschläge</h1>
-    ${filterBox([mood && themeById.get(mood)?.n, era && eraById(md).get(era)?.n].filter(Boolean).join(' · '), `
+    ${filterBox(activeText(), `
       ${moodPicker()}
       <nav class="modes" aria-label="Besondere Vorschläge">
         <a class="mode" href="#/gruppe"><span aria-hidden="true">🍿</span> Gruppenabend</a>
@@ -76,15 +88,17 @@ export async function mount(p) {
   shown = []; page = 1;
   const sel = document.getElementById('mood');
   const selEra = document.getElementById('era');
-  if (sel && selEra) sel.onchange = selEra.onchange = () => {
+  const selGenre = document.getElementById('genre');
+  if (sel && selEra && selGenre) sel.onchange = selEra.onchange = selGenre.onchange = () => {
     mood = sel.value;
     era = selEra.value;
+    genre = selGenre.value;
     const now = document.querySelector('.filters-now');
-    if (now) now.textContent = [mood && themeById.get(mood)?.n, era && eraById(md).get(era)?.n].filter(Boolean).join(' · ') || 'alles, was zu dir passt';
+    if (now) now.textContent = activeText() || 'alles, was zu dir passt';
     box().innerHTML = `<p class="muted center">Suche passende ${W().many} …</p>`;
     mount(profile);
   };
-  if (!hasSources(p, md) && !mood && !era) {
+  if (!hasSources(p, md) && !mood && !era && !genre) {
     box().innerHTML = `
       <div class="card placeholder">
         <p><strong>Noch keine Vorschläge – die App kennt deinen Geschmack noch nicht.</strong></p>
@@ -109,7 +123,7 @@ export async function mount(p) {
     return;
   }
   box().innerHTML = `
-    <p class="muted small">${mood || era ? `${[mood && `Thema „${esc(themeById.get(mood).n)}“`, era && esc(eraById(md).get(era).n)].filter(Boolean).join(', ')} – sortiert nach deinem Geschmack.` : 'Passend zu dem, was du magst.'} Tipp aufs Poster = ★ ${W().fav}.</p>
+    <p class="muted small">${activeText() ? `${esc(activeText())} – sortiert nach deinem Geschmack.` : 'Passend zu dem, was du magst.'} Tipp aufs Poster = ★ ${W().fav}.</p>
     <div class="suggestions">${first.map(card).join('')}</div>
     <div class="row center-row"><button class="btn btn-primary" type="button" data-sg="more">Mehr Vorschläge</button></div>`;
   fillPeopleSlots(box());

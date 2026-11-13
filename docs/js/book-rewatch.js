@@ -1,11 +1,11 @@
 // Seite „Lieblingsbuch“: eins deiner ★-Bücher zum Wiederlesen.
 // Bevorzugt Bücher, die hier am längsten nicht mehr kamen. Funktioniert auch ohne Netz (gespeicherte Angaben).
-import * as store from './store.js?v=1.25.0';
-import * as books from './books.js?v=1.25.0';
-import { esc, toast } from './ui.js?v=1.25.0';
-import { MEDIA } from './media.js?v=1.25.0';
-import { coverImg, bookMetaHtml } from './book-taste.js?v=1.25.0';
-import { movieHint } from './book-extra.js?v=1.25.0';
+import * as store from './store.js?v=1.26.0';
+import * as books from './books.js?v=1.26.0';
+import { esc, toast } from './ui.js?v=1.26.0';
+import { MEDIA } from './media.js?v=1.26.0';
+import { coverImg, bookMetaHtml } from './book-taste.js?v=1.26.0';
+import { movieHint } from './book-extra.js?v=1.26.0';
 
 const W = MEDIA.book.w;
 let profile = null;

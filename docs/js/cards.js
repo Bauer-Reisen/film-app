@@ -1,6 +1,6 @@
 // Gemeinsame Bausteine für Film-, Serien- und Buchkarten (Vorschläge, Merk- und Leseliste).
 // Wenige große Knöpfe; „Kenn ich schon“ klappt die Bewertung direkt auf der Karte auf.
-import { esc } from './ui.js?v=1.25.0';
+import { esc } from './ui.js?v=1.26.0';
 
 // main: [[key, icon, text], …] – key 'known' ist der Aufklapp-Knopf; known: die Bewertungen dahinter.
 // attr: das data-Attribut, auf das die Seite schon hört (z. B. 'data-fb').

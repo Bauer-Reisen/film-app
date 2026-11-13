@@ -1,13 +1,13 @@
 // Vorschläge berechnen – nachvollziehbar, ohne „Lernen“:
 // Ausgangspunkte holen → Kandidaten sammeln → Punkte vergeben → Vielfalt → Begründung.
 // Gilt für Filme und Serien (media = 'movie' | 'tv'). Alle Zahlen stehen in config.js.
-import { RECOMMEND as R, RECOMMEND_TV as RT, BRIDGE as B } from './config.js?v=1.25.0';
-import * as tmdb from './tmdb.js?v=1.25.0';
-import { SEED_MOVIES, SEED_STUDIOS } from './seeds.js?v=1.25.0';
-import { SEED_SHOWS } from './seeds-tv.js?v=1.25.0';
-import { tierOf } from './store.js?v=1.25.0';
-import { themeById, themeQuery } from './themes.js?v=1.25.0';
-import { MEDIA, mediaOf, marksOf, other, excludedGenre, creditsOf, mapGenres } from './media.js?v=1.25.0';
+import { RECOMMEND as R, RECOMMEND_TV as RT, BRIDGE as B } from './config.js?v=1.26.0';
+import * as tmdb from './tmdb.js?v=1.26.0';
+import { SEED_MOVIES, SEED_STUDIOS } from './seeds.js?v=1.26.0';
+import { SEED_SHOWS } from './seeds-tv.js?v=1.26.0';
+import { tierOf } from './store.js?v=1.26.0';
+import { themeById, themeQuery } from './themes.js?v=1.26.0';
+import { MEDIA, mediaOf, marksOf, other, excludedGenre, creditsOf, mapGenres } from './media.js?v=1.26.0';
 
 const seedById = { movie: new Map(SEED_MOVIES.map((m) => [m.id, m])), tv: new Map(SEED_SHOWS.map((m) => [m.id, m])) };
 const studioName = new Map(SEED_STUDIOS.map((s) => [s.id, s.n]));
@@ -327,7 +327,8 @@ function topGenres(profile, n, md) {
  * Vorschläge mit Filter: Thema (Stichwörter) und/oder Zeitraum.
  * Zieht dafür eigene Abfragen bei TMDB – so kommen auch neue Titel mit noch wenigen Stimmen.
  */
-export async function computeFiltered(profile, { theme = '', era = '' } = {}, page = 1, md = mediaOf(profile)) {
+export async function computeFiltered(profile, { theme = '', era = '', genre = '' } = {}, page = 1, md = mediaOf(profile)) {
+  const gid = Number(genre) || 0; // Genre-Filter (seit 1.26.0): nur Titel mit diesem TMDB-Genre
   const L = limits(md);
   const c = MEDIA[md];
   const th = theme ? themeById.get(theme) : null;
@@ -350,10 +351,11 @@ export async function computeFiltered(profile, { theme = '', era = '' } = {}, pa
   const src = sourcesOf(profile, md);
   const marks = marksOf(profile, md);
   const jobs = [];
-  const add = (kind, ref, params) => jobs.push(tmdb.get(c.discover, { ...base, ...kw, ...params }).then((d) => ({ kind, ref, movies: d.results || [] })));
+  const withGenre = (q) => (gid ? { ...q, with_genres: q.with_genres ? `${q.with_genres},${gid}` : String(gid) } : q);
+  const add = (kind, ref, params) => jobs.push(tmdb.get(c.discover, withGenre({ ...base, ...kw, ...params })).then((d) => ({ kind, ref, movies: d.results || [] })));
 
   // breite Suche: Thema bzw. Lieblingsgenres im Zeitraum
-  const genres = th ? [] : topGenres(profile, 3, md);
+  const genres = th || gid ? [] : topGenres(profile, 3, md);
   for (let p = (page - 1) * 2 + 1; p <= page * 2; p++) add('wide', null, { page: p, ...(genres.length ? { with_genres: genres.join('|') } : {}) });
   // gezielt: Lieblingspersonen, -studios und -sender im Zeitraum
   // (über die Liste der Person – so zählt nur echte Regie bzw. eine Hauptrolle)
@@ -378,6 +380,7 @@ export async function computeFiltered(profile, { theme = '', era = '' } = {}, pa
   const cands = new Map();
   const put = (m, kind, ref) => {
     if (m.adult || !m.poster_path || !inRange(m) || marks[m.id]) return;
+    if (gid && !(m.genre_ids || (m.genres || []).map((g) => g.id)).includes(gid)) return;
     if ((md === 'tv' && excludedGenre(m)) || kidsBlocked(profile, md, m)) return;
     if (!cands.has(m.id)) cands.set(m.id, { movie: m, reasons: [] });
     if (ref) cands.get(m.id).reasons.push({ kind, ref });
@@ -386,7 +389,6 @@ export async function computeFiltered(profile, { theme = '', era = '' } = {}, pa
   // eigene Vorschläge aus dem Zeitraum (ohne Thema; mit Thema zählen sie nur als Bonus)
   if (!th) own.forEach((x) => { if (inRange(x.movie)) put(x.movie, null, null); });
 
-  const label = [th?.n, er?.short].filter(Boolean).join(' · ');
   const list = [];
   for (const cand of cands.values()) {
     const m = cand.movie;
@@ -396,9 +398,8 @@ export async function computeFiltered(profile, { theme = '', era = '' } = {}, pa
     const score = (mine ? mine.score + 3 : 0) + favPts + t * 1.5 + ((m.vote_average || 0) - L.minVote)
       + Math.log10(Math.max(m.vote_count || 1, 1)) * 0.3 + (recent ? Math.log10(Math.max(m.popularity || 1, 1)) * 0.5 : 0);
     const why = mine ? mine.text : cand.reasons.length ? reasonText(profile, cand.reasons, md) : t > 0.5 ? 'passt zu deinen Lieblingsgenres' : recent ? 'gerade beliebt' : 'beliebt';
-    // Thema nicht doppelt nennen, wenn die Begründung es schon enthält („Thema: …“)
-    const head = th && why.includes(th.n) ? er?.short : label;
-    list.push({ movie: m, score, reasons: cand.reasons, source: cand.reasons[0] ? `${cand.reasons[0].kind}:${cand.reasons[0].ref.id}` : 'wide', strong: false, text: head ? `${head} · ${why}` : why });
+    // Filter steht schon oben über der Liste – auf der Karte nur der Grund (1.26.0)
+    list.push({ movie: m, score, reasons: cand.reasons, source: cand.reasons[0] ? `${cand.reasons[0].kind}:${cand.reasons[0].ref.id}` : 'wide', strong: false, text: why.charAt(0).toUpperCase() + why.slice(1) });
   }
   list.sort((a, b) => b.score - a.score);
   return diversify(list);
