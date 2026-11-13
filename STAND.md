@@ -98,7 +98,7 @@ Die Nutzerin kann nicht programmieren. Antworte auf Deutsch, knapp und ohne Fach
   - Geprüft: je 20 Filme bei ab 0, 6, 12 – alle mit passender Freigabe. „Mehr laden“ bringt 20 weitere.
 - [x] **Schritt 8 – Über-Seite, README, Abnahme** (11.11.2026, Version 1.0.0):
   - Über-Seite: TMDB-Hinweis mit Link, QR-Code (`node scripts/make-qr.js`), „Link teilen“, Abschnitt „Deine Daten“.
-  - **Offen:** Das offizielle TMDB-Logo fehlt noch, TMDB blockt das automatische Herunterladen. Bis dahin steht dort ein „TMDB“-Schild. Logo von themoviedb.org/about/logos-attribution als `docs/img/tmdb.svg` speichern, dann erscheint es von selbst.
+  - **Erledigt (13.11.2026, 1.8.1):** Das offizielle TMDB-Logo liegt jetzt als `docs/img/tmdb.svg` im Projekt.
   - README fertig: Bedienung, Aufbau, neue Version veröffentlichen, Worker, Schlüssel.
   - Abnahme am Rechner geprüft: Link und lokal, zwei Profile → verschiedene Vorschläge, Deutsch/Englisch, 30× Überrasch mich, keine gesehenen Filme in Vorschlägen, Gruppenabend-Regeln, Kinder-Freigaben, Speichern nach Neuladen, Sichern/Laden, 375 px ohne Querscrollen, check-secrets, Worker lehnt fremde Herkunft und fremde Adressen ab (403).
 - [x] **Trailer und „Heute Lust auf …“** (12.11.2026, Version 1.1.0):
