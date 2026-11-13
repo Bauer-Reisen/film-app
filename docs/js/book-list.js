@@ -1,11 +1,11 @@
 // Seite „Leseliste“: alle Bücher mit „Merken“ (auch „Steht im Regal“ beim Scannen), neueste zuerst.
 // Titel und Cover in der Lesesprache des Profils.
-import * as store from './store.js?v=1.13.0';
-import * as books from './books.js?v=1.13.0';
-import { esc, toast } from './ui.js?v=1.13.0';
-import { stateLabel } from './media.js?v=1.13.0';
-import { coverImg, bookMeta } from './book-taste.js?v=1.13.0';
-import { movieHint } from './book-extra.js?v=1.13.0';
+import * as store from './store.js?v=1.14.0';
+import * as books from './books.js?v=1.14.0';
+import { esc, toast } from './ui.js?v=1.14.0';
+import { stateLabel } from './media.js?v=1.14.0';
+import { coverImg, bookMeta } from './book-taste.js?v=1.14.0';
+import { movieHint } from './book-extra.js?v=1.14.0';
 
 const ACTIONS = [
   ['seen', '✓', 'Gelesen'],

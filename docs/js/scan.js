@@ -2,11 +2,11 @@
 // Erkennung: eingebaute Strichcode-Erkennung des Browsers (Android/Chrome) oder die freie Bibliothek ZXing
 // (docs/vendor/zxing.min.js, Apache-Lizenz, wird erst hier geladen – iPhone/Safari kann es nicht von sich aus).
 // Das Kamerabild bleibt auf dem Gerät, gesendet wird nur die erkannte ISBN.
-import * as store from './store.js?v=1.13.0';
-import * as books from './books.js?v=1.13.0';
-import { esc, toast, dialog } from './ui.js?v=1.13.0';
-import { coverImg, bookMeta } from './book-taste.js?v=1.13.0';
-import { stateLabel } from './media.js?v=1.13.0';
+import * as store from './store.js?v=1.14.0';
+import * as books from './books.js?v=1.14.0';
+import { esc, toast, dialog } from './ui.js?v=1.14.0';
+import { coverImg, bookMeta } from './book-taste.js?v=1.14.0';
+import { stateLabel } from './media.js?v=1.14.0';
 
 const MODES = [['seen', 'Gelesen'], ['liked', 'Mag ich'], ['want', 'Im Regal']];
 const MODE_HELP = { seen: 'gelten als gelesen', liked: 'gelten als gelesen und gemocht', want: 'stehen im Regal, noch nicht gelesen – sie kommen auf die Leseliste' };

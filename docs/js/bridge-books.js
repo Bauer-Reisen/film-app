@@ -1,9 +1,9 @@
 // Brücke Filme/Serien ↔ Bücher.
 // Romanvorlagen erkennt man bei TMDB an Mitwirkenden mit der Aufgabe „Novel“, „Author“ oder „Book“
 // (dazu oft das Stichwort „based on novel or book“). Die Person suchen wir bei Open Library.
-import * as tmdb from './tmdb.js?v=1.13.0';
-import * as books from './books.js?v=1.13.0';
-import { marksOf } from './media.js?v=1.13.0';
+import * as tmdb from './tmdb.js?v=1.14.0';
+import * as books from './books.js?v=1.14.0';
+import { marksOf } from './media.js?v=1.14.0';
 
 const NOVEL_JOBS = new Set(['Novel', 'Author', 'Book', 'Original Story', 'Characters', 'Comic Book', 'Graphic Novel']);
 const STRONG_JOBS = new Set(['Novel', 'Author', 'Book']);
@@ -46,13 +46,13 @@ export async function authorsFromFilms(profile) {
   for (const r of res) {
     if (r.status !== 'fulfilled') continue;
     for (const w of r.value.writers.filter((x) => STRONG_JOBS.has(x.job)).slice(0, 2)) {
-      const e = found.get(w.name) || { name: w.name, count: 0, score: 0 };
+      const e = found.get(w.name) || { name: w.name, count: 0, score: 0, from: r.value.t.n || '', fromMd: r.value.t.md, fromS: r.value.t.s };
       e.count++; e.score += r.value.t.s === 'loved' ? 2 : 1;
       found.set(w.name, e);
     }
   }
   const top = [...found.values()].sort((a, b) => b.score - a.score).slice(0, 10);
-  const authors = await Promise.all(top.map(async (e) => { const a = await findAuthor(e.name); return a && { ...a, n: e.name, count: e.count }; }));
+  const authors = await Promise.all(top.map(async (e) => { const a = await findAuthor(e.name); return a && { ...a, n: e.name, count: e.count, from: e.from, fromMd: e.fromMd, fromS: e.fromS }; }));
   const seen = new Set();
   return authors.filter((a) => a && !seen.has(a.id) && seen.add(a.id));
 }

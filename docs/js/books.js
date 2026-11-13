@@ -1,9 +1,9 @@
 // Buchdaten von Open Library (frei, ohne Schlüssel).
 // Erst über unseren Worker (/ol/…). Kennt der Worker die Adressen noch nicht, direkt bei Open Library
 // (die Seite erlaubt das ausdrücklich). Merkt sich Antworten für die Sitzung, höchstens 4 Anfragen gleichzeitig.
-import { WORKER_URL } from './config.js?v=1.13.0';
-import { SEED_BOOKS } from './seeds-books.js?v=1.13.0';
-import { genresOf } from './book-genres.js?v=1.13.0';
+import { WORKER_URL } from './config.js?v=1.14.0';
+import { SEED_BOOKS } from './seeds-books.js?v=1.14.0';
+import { genresOf } from './book-genres.js?v=1.14.0';
 
 const OL = 'https://openlibrary.org';
 const COVERS = 'https://covers.openlibrary.org';
@@ -93,9 +93,10 @@ export function fromDoc(d, lang = 'en') {
     y: d.first_publish_year || seed?.y || null,
     pg: d.number_of_pages_median || seed?.pg || null,
     g: seed?.g || genresOf(d.subject_key || []),
-    s: seed?.s || (d.subject_key || []).slice(0, 25),
+    s: d.subject_key?.length ? d.subject_key : seed?.s || [], // alle Schlagwörter (für Vorschläge)
     r: d.readinglog_count || seed?.r || 0,
     rating: d.ratings_count >= 5 ? d.ratings_average : null,
+    edLang: seed ? true : edOk ? true : (d.editions ? false : null), // gibt es eine Ausgabe in der Lesesprache?
   };
 }
 
