@@ -1,19 +1,19 @@
 // Oberfläche: Seitenwechsel über die Adresse (#/vorschlaege usw.)
-import { VERSION, LANGUAGES } from './config.js?v=1.8.1';
-import * as store from './store.js?v=1.8.1';
-import { saveBackup, readBackup, findSameName, importAsNew, mergeInto } from './backup.js?v=1.8.1';
-import { esc, dialog, toast, formatDate } from './ui.js?v=1.8.1';
-import * as platform from './platform.js?v=1.8.1';
-import * as taste from './taste.js?v=1.8.1';
-import * as suggest from './suggest.js?v=1.8.1';
-import * as watchlist from './watchlist.js?v=1.8.1';
-import * as sneak from './sneak.js?v=1.8.1';
-import * as group from './group.js?v=1.8.1';
-import * as kids from './kids.js?v=1.8.1';
-import * as rewatch from './rewatch.js?v=1.8.1';
-import * as trailer from './trailer.js?v=1.8.1';
-import { initRuntimes } from './runtime.js?v=1.8.1';
-import { mediaOf } from './media.js?v=1.8.1';
+import { VERSION, LANGUAGES } from './config.js?v=1.9.0';
+import * as store from './store.js?v=1.9.0';
+import { saveBackup, readBackup, findSameName, importAsNew, mergeInto } from './backup.js?v=1.9.0';
+import { esc, dialog, toast, formatDate } from './ui.js?v=1.9.0';
+import * as platform from './platform.js?v=1.9.0';
+import * as taste from './taste.js?v=1.9.0';
+import * as suggest from './suggest.js?v=1.9.0';
+import * as watchlist from './watchlist.js?v=1.9.0';
+import * as sneak from './sneak.js?v=1.9.0';
+import * as group from './group.js?v=1.9.0';
+import * as kids from './kids.js?v=1.9.0';
+import * as rewatch from './rewatch.js?v=1.9.0';
+import * as trailer from './trailer.js?v=1.9.0';
+import { initRuntimes } from './runtime.js?v=1.9.0';
+import { mediaOf } from './media.js?v=1.9.0';
 
 const view = document.getElementById('view');
 const APP_URL = 'https://bauer-reisen.github.io/film-app/';

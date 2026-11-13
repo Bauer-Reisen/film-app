@@ -63,6 +63,34 @@ Frieren: Beyond Journey's End|2023; Shōgun|2024; Baby Reindeer|2024; The Pengui
 The Studio|2025
 `.split(';').map((s) => s.trim()).filter(Boolean).map((s) => { const [t, y] = s.split('|'); return { t, y: +y }; });
 
+// Dazu Serien, die in Deutschland besonders viele kennen (lange im Fernsehen gelaufen oder große Streaming-Erfolge)
+const SHOWS_DE = `
+Alf|1986; Full House|1987; Home Improvement|1991; The Nanny|1993; Beverly Hills, 90210|1990; Sailor Moon|1992;
+Alarm für Cobra 11: Die Autobahnpolizei|1996; South Park|1997; Ally McBeal|1997; Stargate SG-1|1997; Charmed|1998;
+Dawson's Creek|1998; The King of Queens|1998; Futurama|1999; Family Guy|1999; Digimon Adventure|1999; Malcolm in the Middle|2000;
+CSI: Crime Scene Investigation|2000; Scrubs|2001; Smallville|2001; Monk|2002; Berlin, Berlin|2002; Two and a Half Men|2003;
+The O.C.|2003; One Tree Hill|2003; NCIS|2003; House|2004; Boston Legal|2004; Bones|2005; Criminal Minds|2005; Supernatural|2005;
+Pastewka|2005; Heroes|2006; Psych|2006; Hannah Montana|2006; Gossip Girl|2007; iCarly|2007; Phineas and Ferb|2007;
+The Mentalist|2008; True Blood|2008; Merlin|2008; Fringe|2008; Doctor's Diary|2008; The Vampire Diaries|2009; Glee|2009;
+Castle|2009; The Good Wife|2009; Der letzte Bulle|2010; Danni Lowinski|2010; Pretty Little Liars|2010; Spartacus|2010;
+Suits|2011; Shameless|2011; New Girl|2011; Once Upon a Time|2011; Teen Wolf|2011; American Horror Story|2011; Arrow|2012;
+Chicago Fire|2012; Vikings|2013; The Blacklist|2013; The 100|2014; The Flash|2014; Outlander|2014; Jane the Virgin|2014;
+Club der roten Bänder|2015; Grace and Frankie|2015; Daredevil|2015; Lucifer|2016; 13 Reasons Why|2017; Riverdale|2017;
+The Good Doctor|2017; Jerks.|2017; Bad Banks|2018; You|2018; The Umbrella Academy|2019; The Witcher|2019; Emily in Paris|2020;
+Barbarians|2020; Biohackers|2020; Tribes of Europa|2021; Loki|2021; WandaVision|2021; The Rings of Power|2022; Reacher|2022;
+One Piece|2023; Fallout|2024
+`.split(';').map((s) => s.trim()).filter(Boolean).map((s) => { const [t, y] = s.split('|'); return { t, y: +y }; });
+
+// Aus der Startliste: eher international, in Deutschland wenig bekannt – kommen in der Liste erst später
+const INTL = new Set(`Monty Python's Flying Circus; Fawlty Towers; Blackadder; Absolutely Fabulous; Pride and Prejudice; Cowboy Bebop;
+Inspector Montalbano; Curb Your Enthusiasm; Six Feet Under; The West Wing; Arrested Development; Kaamelott; Spiral; 30 Rock;
+The Killing; Midnight Diner; Prisoners of War; Borgen; Magnificent Century; Top Boy; Veep; Line of Duty; Lilyhammer; The Returned;
+Hannibal; Orphan Black; Shtisel; The Leftovers; Happy Valley; Gomorrah; Inside No. 9; Fauda; Call My Agent!; The Bureau; Skam;
+Trapped; Reply 1988; Club de Cuervos; Occupied; Guardian: The Lonely and Great God; 3%; Suburra; Sacred Games; My Brilliant Friend;
+Derry Girls; My Mister; Mr Inbetween; Kingdom; Crash Landing on You; The Family Man; Ragnarok; Panchayat; Ethos; Kleo;
+Extraordinary Attorney Woo; The Glory; Moving; Frieren: Beyond Journey's End; Watchmen; Atlanta; Schitt's Creek; Barry;
+Neon Genesis Evangelion; Twin Peaks; The Twilight Zone; Cheers; Frasier`.split(';').map((s) => s.trim()));
+
 // Personen, die vor allem durch Serien bekannt sind. Rolle „director“ = Regie oder Serienidee.
 const ACTORS = `Bryan Cranston; Aaron Paul; Bob Odenkirk; Rhea Seehorn; Elisabeth Moss; Jon Hamm; Phoebe Waller-Bridge; Olivia Colman;
 Jennifer Aniston; Steve Carell; Sarah Jessica Parker; James Gandolfini; Emilia Clarke; Peter Dinklage; Millie Bobby Brown;
@@ -80,7 +108,7 @@ const warn = [];
 // ---------- Serien ----------
 const shows = [];
 const netCount = new Map(); // Sender aus den Seriendaten zählen
-for (const f of SHOWS) {
+for (const f of [...SHOWS, ...SHOWS_DE]) {
   let hits = (await api('search/tv', { query: f.t, first_air_date_year: f.y, language: 'en-US' })).results || [];
   if (!hits.length) hits = (await api('search/tv', { query: f.t, language: 'en-US' })).results || [];
   const m = hits.find((h) => Math.abs(year(h.first_air_date) - f.y) <= 1) || hits[0];
@@ -94,18 +122,23 @@ for (const f of SHOWS) {
     netCount.set(n.id, e);
   }
   shows.push({
-    id: m.id, y: year(m.first_air_date), g: m.genre_ids, l: m.original_language, n: m.vote_count,
+    id: m.id, y: year(m.first_air_date), g: m.genre_ids, l: m.original_language, n: m.vote_count, ...(INTL.has(f.t) ? { x: 1 } : {}),
     t: { de: de.name, en: m.name }, p: { de: de.poster_path || m.poster_path, en: m.poster_path || de.poster_path },
   });
 }
 
-// Reihenfolge: reihum aus den Jahrzehnten, bekannte Serien zuerst
-const buckets = {};
-for (const m of shows) (buckets[Math.max(1980, Math.min(Math.floor(m.y / 10) * 10, 2020))] ||= []).push(m);
-Object.values(buckets).forEach((b) => b.sort((a, b2) => b2.n - a.n));
-const order = [2010, 2000, 2020, 1990, 2010, 1980, 2000, 2020, 2010, 1990];
-const ordered = [];
-while (ordered.length < shows.length) for (const d of order) if (buckets[d]?.length) ordered.push(buckets[d].shift());
+// Reihenfolge: zuerst die in Deutschland bekannten, dann die internationalen (x = 1);
+// jeweils reihum aus den Jahrzehnten, bekannte Serien zuerst
+function roundRobin(list) {
+  const buckets = {};
+  for (const m of list) (buckets[Math.max(1980, Math.min(Math.floor(m.y / 10) * 10, 2020))] ||= []).push(m);
+  Object.values(buckets).forEach((b) => b.sort((a, b2) => b2.n - a.n));
+  const order = [2010, 2000, 2020, 1990, 2010, 1980, 2000, 2020, 2010, 1990];
+  const out = [];
+  while (out.length < list.length) for (const d of order) if (buckets[d]?.length) out.push(buckets[d].shift());
+  return out;
+}
+const ordered = [...roundRobin(shows.filter((m) => !m.x)), ...roundRobin(shows.filter((m) => m.x))];
 ordered.forEach((m) => delete m.n);
 
 // ---------- Personen ----------
@@ -132,7 +165,7 @@ const networks = [...netCount.values()]
   .filter((x, i, arr) => arr.findIndex((y) => y.n === x.n) === i).slice(0, 50).map(({ count, ...x }) => x);
 
 const out = `// Startauswahl für Serien – erzeugt mit: node scripts/make-seeds-tv.js
-// t = Titel, p = Poster (je Sprache), y = Startjahr, g = Genres, l = Originalsprache
+// t = Titel, p = Poster (je Sprache), y = Startjahr, g = Genres, l = Originalsprache, x = eher international (kommt später)
 // Personen: r = actor/director (Regie oder Serienidee), k = bekannt aus. Sender: c = Land
 export const SEED_SHOWS = ${JSON.stringify(ordered)};
 export const SEED_TV_PEOPLE = ${JSON.stringify(people)};

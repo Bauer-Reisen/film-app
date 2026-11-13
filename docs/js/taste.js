@@ -1,12 +1,12 @@
 // Seite „Geschmack“: Personen, Studios/Sender und Themen in Stufen wählen, Filme oder Serien markieren, Suche.
-import * as store from './store.js?v=1.8.1';
-import * as tmdb from './tmdb.js?v=1.8.1';
-import { esc, toast } from './ui.js?v=1.8.1';
-import { runtimeSlot, titleText } from './runtime.js?v=1.8.1';
-import { SEED_MOVIES, SEED_PEOPLE, SEED_STUDIOS } from './seeds.js?v=1.8.1';
-import { SEED_SHOWS, SEED_TV_PEOPLE, SEED_NETWORKS } from './seeds-tv.js?v=1.8.1';
-import { THEMES, themeById } from './themes.js?v=1.8.1';
-import { MEDIA, mediaOf, marksOf, excludedGenre, askStarted, stateLabel, STARTED, creditsOf } from './media.js?v=1.8.1';
+import * as store from './store.js?v=1.9.0';
+import * as tmdb from './tmdb.js?v=1.9.0';
+import { esc, toast } from './ui.js?v=1.9.0';
+import { runtimeSlot, titleText } from './runtime.js?v=1.9.0';
+import { SEED_MOVIES, SEED_PEOPLE, SEED_STUDIOS } from './seeds.js?v=1.9.0';
+import { SEED_SHOWS, SEED_TV_PEOPLE, SEED_NETWORKS } from './seeds-tv.js?v=1.9.0';
+import { THEMES, themeById } from './themes.js?v=1.9.0';
+import { MEDIA, mediaOf, marksOf, excludedGenre, askStarted, stateLabel, STARTED, creditsOf } from './media.js?v=1.9.0';
 
 const STEP = 20;
 const MARKS = [
@@ -40,7 +40,7 @@ const lang = () => profile.language.slice(0, 2); // 'de' | 'en'
 const otherLanguage = () => (profile.language === 'de-DE' ? 'en-US' : 'de-DE');
 
 // ---------- Filme/Serien vereinheitlichen ----------
-const fromSeed = (m) => ({ id: m.id, title: m.t[lang()] || m.t.en, poster: m.p[lang()] || m.p.en, y: m.y, g: m.g, l: m.l });
+const fromSeed = (m) => ({ id: m.id, title: m.t[lang()] || m.t.en, poster: m.p[lang()] || m.p.en, y: m.y, g: m.g, l: m.l, x: !!m.x });
 const fromTmdb = (m) => ({
   id: m.id, title: m.title, poster: m.poster_path, y: tmdb.year(m.release_date),
   g: m.genre_ids || (m.genres || []).map((x) => x.id), l: m.original_language,
@@ -212,10 +212,12 @@ function fillBody() {
 // ----- Filme / Serien -----
 // Beim Öffnen der Seite wird festgehalten, was schon erledigt ist (markiert oder übersprungen).
 // Diese bleiben ausgeblendet; was man jetzt markiert, bleibt bis zum nächsten Öffnen sichtbar.
-// Reihenfolge: Titel der Lieblinge → Startliste → weitere bekannte Titel von TMDB
+// Reihenfolge: Titel der Lieblinge → Startliste → weitere bekannte Titel von TMDB.
+// Serien, die in Deutschland wenig bekannt sind (x), kommen ganz ans Ende.
 const allFilms = () => {
   const seen = new Set();
-  return remember([...L().personal, ...SEEDS[media()].map(fromSeed), ...L().extra].filter((f) => !seen.has(f.id) && seen.add(f.id)));
+  const list = [...L().personal, ...SEEDS[media()].map(fromSeed), ...L().extra].filter((f) => !seen.has(f.id) && seen.add(f.id));
+  return remember([...list.filter((f) => !f.x), ...list.filter((f) => f.x)]);
 };
 const candidates = () => (L().showAll ? allFilms() : allFilms().filter((f) => !L().done.has(f.id)));
 const passedList = () => (media() === 'tv' ? profile.passedTv : profile.passed) || [];
@@ -267,11 +269,14 @@ async function loadPersonal() {
 // Notfalls weitere Titel bei TMDB holen, bis genug da sind
 async function ensure(n) {
   const c = cfg();
-  while (candidates().length < n && L().discoverPage < 50) {
+  // Die wenig bekannten (x) am Ende zählen nicht mit – sonst kämen keine weiteren bekannten Titel nach
+  while (candidates().filter((f) => !f.x).length < n && L().discoverPage < 50) {
     L().discoverPage++;
     const data = await tmdb.get(c.discover, { language: profile.language, sort_by: 'vote_count.desc', without_genres: c.without, page: L().discoverPage });
     const known = new Set([...SEED_IDS[media()], ...L().extra.map((f) => f.id)]);
-    L().extra.push(...(data.results || []).filter((m) => !known.has(m.id)).map(fromTmdb));
+    // Serien ohne deutsche Inhaltsangabe liefen in Deutschland vermutlich kaum → nach hinten
+    const rare = (m) => media() === 'tv' && profile.language === 'de-DE' && !m.overview;
+    L().extra.push(...(data.results || []).filter((m) => !known.has(m.id)).map((m) => ({ ...fromTmdb(m), x: rare(m) })));
   }
 }
 
