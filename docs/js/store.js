@@ -77,6 +77,7 @@ export const newProfile = (name, language = 'de-DE') => ({
   surpriseLastGenreBook: {},
   rewatchShownBook: {},
   scanMissing: [], // gescannte ISBN, die Open Library nicht kannte [{ isbn, t }]
+  shelf: [], // im Regal, noch nicht gelesen [{ id, n, a, ak, c, y, pg, g, t }] (seit 1.19.0)
   pendingBooks: [], // gescannt oder aus einer geteilten Liste, aber noch nicht bewertet [{ id, n, a, ak, c, y, pg, g, t }] (seit 1.18.0)
   // tourDone: kurzer Rundgang schon gesehen; hintDone: Hinweis „bei Vorschlägen weitermachen“ weggetippt (je movie/tv)
   settings: { groupHorror: false, groupWar: false, groupAge: null, kidsAge: 6, media: 'movie', tourDone: false, hintDone: {}, bookLang: 'en' },
@@ -87,7 +88,7 @@ export function migrate(p) {
   const base = newProfile(p.name || 'Profil', p.language);
   for (const k of ['movies', 'people', 'companies', 'themes', 'passed', 'surpriseShown', 'surpriseLastGenre',
     'shows', 'networks', 'passedTv', 'surpriseShownTv', 'surpriseLastGenreTv', 'rewatchShownTv',
-    'books', 'authors', 'bookGenres', 'passedBook', 'surpriseShownBook', 'surpriseLastGenreBook', 'rewatchShownBook', 'scanMissing', 'pendingBooks']) {
+    'books', 'authors', 'bookGenres', 'passedBook', 'surpriseShownBook', 'surpriseLastGenreBook', 'rewatchShownBook', 'scanMissing', 'pendingBooks', 'shelf']) {
     if (p[k] == null) p[k] = base[k];
   }
   const known = p.settings && 'tourDone' in p.settings;
@@ -201,6 +202,15 @@ export function removePending(profileId, id) {
   const p = getProfile(profileId);
   if (!p) return;
   p.pendingBooks = (p.pendingBooks || []).filter((x) => x.id !== id);
+  save();
+}
+
+// Bücher im Regal, die man (noch) nicht gelesen hat – tauchen in Vorschlägen mit „Steht im Regal“ auf
+export function setShelf(profileId, entry, on) {
+  const p = getProfile(profileId);
+  if (!p || !entry?.id) return;
+  p.shelf = (p.shelf || []).filter((x) => x.id !== entry.id);
+  if (on) p.shelf.push({ ...entry, t: Date.now() });
   save();
 }
 

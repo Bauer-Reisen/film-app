@@ -1,13 +1,14 @@
 // Seite „Wie fandst du sie?“: Bücher eins nach dem anderen kurz bewerten.
 // Kommt direkt nach dem Scannen oder dem Einfügen einer geteilten Liste; auch später über „Geschmack“ erreichbar.
 // Offen sind: Bücher auf der Warteliste (pendingBooks, noch gar nicht markiert) und ältere, nur als „Gelesen“ markierte.
-import * as store from './store.js?v=1.18.0';
-import { esc } from './ui.js?v=1.18.0';
-import { MEDIA } from './media.js?v=1.18.0';
-import { coverImg, bookMeta, openSub } from './book-taste.js?v=1.18.0';
+import * as store from './store.js?v=1.19.0';
+import { esc } from './ui.js?v=1.19.0';
+import { MEDIA } from './media.js?v=1.19.0';
+import { coverImg, bookMeta, openSub } from './book-taste.js?v=1.19.0';
 
 const W = MEDIA.book.w;
-// Zu Ende gelesen → wie war's? Angefangen → abgebrochen oder liegen geblieben? Noch gar nicht → Leseliste
+// Zu Ende gelesen → wie war's? Angefangen → abgebrochen oder liegen geblieben?
+// Noch gar nicht → nur „im Regal“ (taucht passend in Vorschlägen auf) oder gleich auf die Leseliste
 const CHOICES = [
   ['loved', '★', 'Liebe ich', 'btn-primary'],
   ['liked', '♥', 'Gut', ''],
@@ -15,7 +16,8 @@ const CHOICES = [
   ['keep', '✓', 'Gelesen – weiß nicht mehr', ''],
   ['dropped', '⏹', 'Abgebrochen – passte nicht', ''],
   ['paused', '⏸', 'Liegen geblieben – weiterlesen', ''],
-  ['want', '+', 'Noch nicht gelesen – auf die Leseliste', 'wide'],
+  ['shelf', '📚', 'Ungelesen – steht im Regal', ''],
+  ['want', '+', 'Ungelesen – auf die Leseliste', ''],
 ];
 
 let profile = null;
@@ -66,6 +68,7 @@ function paint() {
       <div class="group-cover">${coverImg(b.cover, `Cover: ${b.title}`)}</div>
       <h2 class="group-title">${esc(b.title)}</h2>
       <p class="group-meta">${esc(bookMeta(b))}</p>
+      <details class="overview rate-desc" data-bdesc="${esc(id)}" open><summary>Worum ging's?</summary><p class="muted">Lädt …</p></details>
       <div class="rate-choices" role="group" aria-label="Wie fandst du ${esc(b.title)}?">
         ${CHOICES.map(([k, icon, label, cls]) => `<button type="button" class="btn btn-big ${cls === 'wide' ? 'rate-wide' : cls}" data-rate="${k}"><span aria-hidden="true">${icon}</span> ${label}</button>`).join('')}
       </div>
@@ -74,15 +77,19 @@ function paint() {
       ${pos > 0 ? '<button class="btn" type="button" data-rateact="back">← Voriges Buch</button>' : ''}
       <button class="btn" type="button" data-rateact="stop">Später weitermachen</button>
     </p>`;
+  // Inhaltsangabe gleich laden (sie ist schon aufgeklappt)
+  el.querySelector('details[data-bdesc]')?.dispatchEvent(new Event('toggle'));
 }
 
 function summary() {
-  const counted = answers.filter((a) => a.choice !== 'keep');
+  const counted = answers.filter((a) => !['keep', 'shelf'].includes(a.choice));
   const liked = answers.filter((a) => ['loved', 'liked'].includes(a.choice)).length;
+  const shelved = answers.filter((a) => a.choice === 'shelf').length;
   return `
     <div class="card placeholder">
       <p><strong>${answers.length ? `Fertig – danke! ${counted.length} ${counted.length === 1 ? 'Buch' : 'Bücher'} bewertet.` : 'Gerade gibt es nichts zu bewerten.'}</strong></p>
       <p class="muted">${liked ? 'Unter „Geschmack“ → Bücher kommen jetzt zuerst weitere Bücher deiner Autor·innen. Und die Vorschläge kennen deinen Lesegeschmack schon.' : 'Unter „Geschmack“ kannst du weitere Bücher markieren oder dein Regal scannen.'}</p>
+      ${shelved ? `<p class="muted">📚 ${shelved} ungelesene${shelved === 1 ? 's Buch steht' : ' Bücher stehen'} jetzt „im Regal“. Passt eins zu deinem Geschmack, taucht es in den Vorschlägen auf – mit dem Hinweis, dass ihr es schon habt.</p>` : ''}
       <p><a class="btn btn-primary btn-big" href="#/scannen" data-rateact="scan"><span aria-hidden="true">📷</span> Weiter scannen</a></p>
       <div class="row center-row">
         <a class="btn" href="#/geschmack" data-rateact="more">Mehr von deinen Autor·innen</a>
@@ -97,8 +104,14 @@ function answer(choice) {
   const pend = pendingOf(id);
   answers = answers.filter((a) => a.id !== id);
   answers.push({ id, old, pend, choice });
-  // „Weiß nicht mehr“ = „Gelesen“, wird aber nicht nochmal gefragt
-  store.setMark(profile.id, 'book', id, choice === 'keep' ? 'seen' : choice, { ...(pend || {}), r: 1 });
+  if (choice === 'shelf') {
+    // Noch nicht gelesen, steht aber im Regal: keine Markierung, nur „im Regal“
+    store.setShelf(profile.id, pend || { id, ...(old || {}) }, true);
+    if (old) store.restoreMark(profile.id, 'book', id, null);
+  } else {
+    // „Weiß nicht mehr“ = „Gelesen“, wird aber nicht nochmal gefragt
+    store.setMark(profile.id, 'book', id, choice === 'keep' ? 'seen' : choice, { ...(pend || {}), r: 1 });
+  }
   if (pend) store.removePending(profile.id, id);
   profile = store.getProfile(profile.id);
   pos++;
@@ -112,6 +125,7 @@ function back() {
   const a = answers.find((x) => x.id === queue[pos]);
   if (a) {
     store.restoreMark(profile.id, 'book', a.id, a.old);
+    if (a.choice === 'shelf') store.setShelf(profile.id, { id: a.id }, false);
     if (a.pend) store.addPending(profile.id, [a.pend]);
     answers = answers.filter((x) => x !== a);
     profile = store.getProfile(profile.id);
@@ -120,6 +134,9 @@ function back() {
 }
 
 export function handleClick(e) {
+  // Lange Inhaltsangabe: Tippen zeigt alles
+  const desc = e.target.closest('.rate-desc p');
+  if (desc) { desc.classList.toggle('full'); return true; }
   const r = e.target.closest('[data-rate]');
   if (r) { answer(r.dataset.rate); return true; }
   const act = e.target.closest('[data-rateact]')?.dataset.rateact;

@@ -1,8 +1,8 @@
 // Bücherliste weitergeben (z. B. per WhatsApp an jemanden im Haushalt) und einfügen.
 // Weitergegeben werden nur die Werk-Nummern der Bücher – keine Bewertungen, keine Namen.
 // Wer die Liste einfügt, bekommt die Bücher auf die Warteliste und bewertet sie selbst.
-import * as store from './store.js?v=1.18.0';
-import * as books from './books.js?v=1.18.0';
+import * as store from './store.js?v=1.19.0';
+import * as books from './books.js?v=1.19.0';
 
 const APP_URL = 'https://bauer-reisen.github.io/film-app/';
 
@@ -11,10 +11,10 @@ let pasteWanted = false;
 export const requestPaste = () => { pasteWanted = true; };
 export const takePaste = () => { const w = pasteWanted; pasteWanted = false; return w; };
 
-// Alle Bücher des Profils (markiert oder wartend), ohne „Kein Interesse“
+// Alle Bücher des Profils (markiert, wartend oder im Regal), ohne „Kein Interesse“
 export function shareIds(p) {
   const marked = Object.entries(p.books || {}).filter(([, m]) => m.s !== 'noInterest').map(([id]) => id);
-  return [...new Set([...marked, ...(p.pendingBooks || []).map((x) => x.id)])];
+  return [...new Set([...marked, ...(p.pendingBooks || []).map((x) => x.id), ...(p.shelf || []).map((x) => x.id)])];
 }
 
 export function shareText(p) {
@@ -36,15 +36,9 @@ export function parseList(text) {
 export async function importList(p, text) {
   const lang = books.readLang(p);
   const { ids, isbns } = parseList(text);
-  const have = new Set([...Object.keys(p.books || {}), ...(p.pendingBooks || []).map((x) => x.id)]);
+  const have = new Set([...Object.keys(p.books || {}), ...(p.pendingBooks || []).map((x) => x.id), ...(p.shelf || []).map((x) => x.id)]);
   const want = ids.filter((id) => !have.has(id));
-  const found = new Map();
-  for (let i = 0; i < want.length; i += 40) {
-    const chunk = want.slice(i, i + 40);
-    const list = await books.search({ q: chunk.map((id) => `key:/works/${id}`).join(' OR ') }, lang, chunk.length).catch(() => []);
-    list.forEach((b) => found.set(b.id, b));
-    chunk.filter((id) => !found.has(id) && books.seedBook.has(id)).forEach((id) => found.set(id, books.fromSeed(books.seedBook.get(id), lang)));
-  }
+  const found = await books.byIds(want, lang);
   for (const isbn of isbns) {
     const b = await books.byIsbn(isbn, lang).catch(() => null);
     if (b && !have.has(b.id)) found.set(b.id, b);

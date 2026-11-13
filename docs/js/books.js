@@ -1,9 +1,9 @@
 // Buchdaten von Open Library (frei, ohne Schlüssel).
 // Erst über unseren Worker (/ol/…). Kennt der Worker die Adressen noch nicht, direkt bei Open Library
 // (die Seite erlaubt das ausdrücklich). Merkt sich Antworten für die Sitzung, höchstens 4 Anfragen gleichzeitig.
-import { WORKER_URL } from './config.js?v=1.18.0';
-import { SEED_BOOKS } from './seeds-books.js?v=1.18.0';
-import { genresOf } from './book-genres.js?v=1.18.0';
+import { WORKER_URL } from './config.js?v=1.19.0';
+import { SEED_BOOKS } from './seeds-books.js?v=1.19.0';
+import { genresOf } from './book-genres.js?v=1.19.0';
 
 const OL = 'https://openlibrary.org';
 const COVERS = 'https://covers.openlibrary.org';
@@ -118,6 +118,18 @@ export async function byId(id, lang = 'en') {
   const list = await search({ q: `key:/works/${id}` }, lang, 1).catch(() => []);
   if (list[0]) return list[0];
   return seed ? fromSeed(seed, lang) : null;
+}
+
+// Mehrere Werke auf einmal (je 40 pro Anfrage); fehlende aus der Startliste
+export async function byIds(ids, lang = 'en') {
+  const found = new Map();
+  for (let i = 0; i < ids.length; i += 40) {
+    const chunk = ids.slice(i, i + 40);
+    const list = await search({ q: chunk.map((id) => `key:/works/${id}`).join(' OR ') }, lang, chunk.length).catch(() => []);
+    list.forEach((b) => found.set(b.id, b));
+    chunk.filter((id) => !found.has(id) && seedBook.has(id)).forEach((id) => found.set(id, fromSeed(seedBook.get(id), lang)));
+  }
+  return found;
 }
 
 // Beschreibung des Werks (meist Englisch)

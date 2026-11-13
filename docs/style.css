@@ -519,7 +519,10 @@ ul.plain { list-style: none; padding: 0; margin: 0; display: flex; flex-directio
 .chip:hover, .chip:focus-visible { border-color: var(--accent); }
 .tile .link-btn.small { font-size: 13px; min-height: 32px; }
 .scan-first .btn { margin-top: 4px; }
-.rate-card .group-cover .poster { width: min(150px, 40vw); }
+.rate-card .group-cover .poster { width: min(110px, 30vw); }
 .shop-links { display: flex; flex-wrap: wrap; gap: 8px; margin: 6px 0; }
 .rate-choices .rate-wide { grid-column: 1 / -1; }
+.rate-desc { width: 100%; max-width: 480px; text-align: left; }
+.rate-desc p { display: -webkit-box; -webkit-line-clamp: 6; -webkit-box-orient: vertical; overflow: hidden; cursor: pointer; }
+.rate-desc p.full { display: block; }
 .rate-choices .btn { white-space: normal; line-height: 1.2; }

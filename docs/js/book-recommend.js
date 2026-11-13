@@ -1,13 +1,13 @@
 // Buch-Vorschläge berechnen – nachvollziehbar wie bei Filmen:
 // Ausgangspunkte → Kandidaten (Open Library) → Punkte → Vielfalt → Begründung.
 // Brücke: Romanvorlagen gemochter Filme und Serien, feste Paare (seeds-books.js), Autor·innen aus Filmen.
-import * as books from './books.js?v=1.18.0';
-import { tierOf } from './store.js?v=1.18.0';
-import { themeById } from './themes.js?v=1.18.0';
-import { BOOK_GENRES, bookGenreById } from './book-genres.js?v=1.18.0';
-import { PAIRS } from './seeds-books.js?v=1.18.0';
-import { likedTitles, novelOf, authorsFromFilms } from './bridge-books.js?v=1.18.0';
-import { markedTitle } from './recommend.js?v=1.18.0';
+import * as books from './books.js?v=1.19.0';
+import { tierOf } from './store.js?v=1.19.0';
+import { themeById } from './themes.js?v=1.19.0';
+import { BOOK_GENRES, bookGenreById } from './book-genres.js?v=1.19.0';
+import { PAIRS } from './seeds-books.js?v=1.19.0';
+import { likedTitles, novelOf, authorsFromFilms } from './bridge-books.js?v=1.19.0';
+import { markedTitle } from './recommend.js?v=1.19.0';
 
 // Punkte je Grund (Stufe 2 = ★ Liebe, 1 = ♥ Gern) und Obergrenzen
 export const BOOK_POINTS = {
@@ -19,6 +19,7 @@ export const BOOK_POINTS = {
   novel: 8,        // Vorlage zu einem gemochten Film / einer Serie
   pair: 6,         // Paarliste
   filmAuthor: 4,   // Autor·in von Vorlagen gemochter Filme
+  shelf: 3,       // steht ungelesen im eigenen Regal
   tiltMax: 2,
   minReaders: 30, minRating: 3.5, favMinReaders: 5,
   blockSize: 20, perSourceInBlock: 4,
@@ -211,6 +212,9 @@ export async function computeBooks(profile, page = 1, filter = {}) {
   const lang = books.readLang(profile);
   const src = await sourcesOf(profile, lang);
   const results = await collect(profile, src, lang, page, filter);
+  // Bücher im eigenen Regal (noch ungelesen) kommen dazu, wenn sie zum Geschmack passen
+  const shelf = new Set((profile.shelf || []).map((x) => x.id));
+  if (shelf.size) (await books.byIds([...shelf], lang).catch(() => new Map())).forEach((book) => results.push({ book }));
   const tilt = genreTilt(profile);
   const marks = profile.books || {};
   const th = filter.theme ? themeById.get(filter.theme) : null;
@@ -235,25 +239,27 @@ export async function computeBooks(profile, page = 1, filter = {}) {
   const sameWork = new Map(); // gleicher Titel + Autor·in → nur einmal
   for (const c of cands.values()) {
     const b = c.book;
-    if (marks[b.id] || waiting.has(b.id) || !b.cover || knownTitles.has(norm(b.title)) || BUNDLE.test(b.title)) continue;
-    if (lang === 'en' && b.edLang === false) continue; // keine englische Ausgabe bekannt
+    const own = shelf.has(b.id);
+    if (marks[b.id] || waiting.has(b.id) || (!b.cover && !own) || knownTitles.has(norm(b.title)) || BUNDLE.test(b.title)) continue;
+    if (lang === 'en' && b.edLang === false && !own) continue; // keine englische Ausgabe bekannt
     if ((b.g || []).includes('kinder') && !kids) continue; // Kinderbücher nur, wenn man selbst welche mag
     if (th && !th.b.some((x) => (b.s || []).includes(x))) continue;
     if (!inEra(er, b.y)) continue;
     const reasons = [...reasonsOf(b, src), ...c.extra].filter((r, _, all) => !(r.kind === 'filmAuthor' && all.some((x) => x.kind === 'novel')));
     if (!reasons.length && !filtered) continue;
     const fav = reasons.some((r) => FAV.has(r.kind));
-    if (!(b.r >= (fav ? P.favMinReaders : P.minReaders) || (b.rating || 0) >= P.minRating)) continue;
+    if (!own && !(b.r >= (fav ? P.favMinReaders : P.minReaders) || (b.rating || 0) >= P.minRating)) continue;
     let score = 0;
     for (const kind of PRIORITY) {
       const sum = reasons.filter((r) => r.kind === kind).reduce((acc, r) => acc + r.p, 0);
       if (sum) score += Math.min(sum, CAP[kind] ?? Infinity);
     }
     const t = tilt(b.g);
+    if (own) score += P.shelf;
     score += t + Math.log10(Math.max(b.r || 1, 1)) * 0.6 + (b.rating ? (b.rating - 3.5) : 0);
     const main = [...reasons].sort((x, y) => y.p - x.p)[0];
     const why = reasonText(reasons) || (t > 0.5 ? 'Passt zu deinen Lieblingsgenres' : 'Viel gelesen');
-    const head = [th && !why.includes(th.n) ? th.n : '', er?.short].filter(Boolean).join(' · ');
+    const head = [own ? '📚 Steht schon bei euch im Regal' : '', th && !why.includes(th.n) ? th.n : '', er?.short].filter(Boolean).join(' · ');
     const item = { book: b, score, reasons, source: main ? `${main.kind}:${main.kind === 'author' || main.kind === 'sameAuthor' ? akOf(b.ak) : main.ref.id}` : `a:${akOf(b.ak)}`, text: head ? `${head} · ${why}` : why };
     const key = `${norm(b.title)}|${lastName(b.a)}`;
     const prev = sameWork.get(key);
