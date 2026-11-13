@@ -1,7 +1,7 @@
 // Abfragen an TMDB – immer über den Worker, nie direkt (dort liegt der Schlüssel).
 // Merkt sich Antworten für die Dauer der Sitzung und stellt höchstens
 // TMDB.maxParallel Anfragen gleichzeitig.
-import { WORKER_URL, IMAGE_BASE, TMDB } from './config.js?v=1.10.1';
+import { WORKER_URL, IMAGE_BASE, TMDB } from './config.js?v=1.11.0';
 
 const memo = new Map();
 let running = 0;

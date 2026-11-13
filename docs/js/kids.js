@@ -1,13 +1,13 @@
 // Seite „Kinderfilme“ bzw. „Kinderserien“: gute Titel mit passender Altersfreigabe.
 // Es zählt vor allem Bewertung und Beliebtheit – Kinder haben ihren eigenen Geschmack.
-import { KIDS, KIDS_TV } from './config.js?v=1.10.1';
-import * as store from './store.js?v=1.10.1';
-import * as tmdb from './tmdb.js?v=1.10.1';
-import { esc, toast } from './ui.js?v=1.10.1';
-import { runtimeSlot } from './runtime.js?v=1.10.1';
-import { trailerBtn } from './trailer.js?v=1.10.1';
-import { ageOk } from './age.js?v=1.10.1';
-import { MEDIA, mediaOf, marksOf, askStarted, stateLabel, STARTED, pressed } from './media.js?v=1.10.1';
+import { KIDS, KIDS_TV } from './config.js?v=1.11.0';
+import * as store from './store.js?v=1.11.0';
+import * as tmdb from './tmdb.js?v=1.11.0';
+import { esc, toast } from './ui.js?v=1.11.0';
+import { runtimeSlot } from './runtime.js?v=1.11.0';
+import { trailerBtn } from './trailer.js?v=1.11.0';
+import { ageOk } from './age.js?v=1.11.0';
+import { MEDIA, mediaOf, marksOf, askStarted, stateLabel, STARTED, pressed } from './media.js?v=1.11.0';
 
 const FEEDBACK = [
   ['want', '+', 'Merken'],
@@ -76,7 +76,9 @@ async function loadPage(mine) {
   }
   // Jeden Titel einzeln prüfen: die strengste deutsche Freigabe zählt, sonst die US-Freigabe
   await Promise.allSettled([...fresh.values()].map(async (x) => {
-    const det = await tmdb.get(`${c.path}/${x.movie.id}`, { append_to_response: md === 'tv' ? 'content_ratings' : 'release_dates' });
+    // auf Deutsch laden: FLIMMO kennt nur deutsche Titel (der Link unten sucht danach)
+    const det = await tmdb.get(`${c.path}/${x.movie.id}`, { language: 'de-DE', append_to_response: md === 'tv' ? 'content_ratings' : 'release_dates' });
+    x.de = det.title;
     if (ageOk(det, a)) { pool.set(x.movie.id, x); added++; }
   }));
   return added > 0 || (ok[0].d.total_pages || 1) > page;
@@ -99,7 +101,7 @@ export function render(p) {
     <div class="segmented ages" role="group" aria-label="Altersfreigabe">
       ${K.ages.map((x) => `<button type="button" class="seg" data-kid-age="${x}" aria-pressed="${x === a}">ab ${x}</button>`).join('')}
     </div>
-    <p class="muted small">Nach deutscher FSK, sonst nach US-Freigabe. Vor allem gut bewertete und beliebte ${W().many}.</p>
+    <p class="muted small">Nach deutscher FSK, sonst nach US-Freigabe. Ob ein Titel wirklich zum Alter passt, sagt dir der Elternratgeber FLIMMO – Link auf jeder Karte. Vor allem gut bewertete und beliebte ${W().many}.</p>
     <div id="kids-list" aria-live="polite"><p class="muted center">Suche ${W().kids} …</p></div>`;
 }
 
@@ -133,6 +135,11 @@ function paint(extra = 0) {
     <div class="row center-row"><button class="btn btn-primary" type="button" data-kid="more">Mehr laden</button></div>`;
 }
 
+// FLIMMO (Elternratgeber) zeigt, ab welchem Alter ein Titel wirklich passt – dort nach dem Titel suchen
+// Nur der Haupttitel: „Coco - Lebendiger als das Leben!“ findet FLIMMO nicht, „Coco“ schon
+const mainTitle = (t) => { const m = String(t).split(/\s[-–:]\s|:\s/)[0].trim(); return m.length >= 2 ? m : String(t); };
+const flimmoLink = (title) => `<a class="btn btn-small flimmo-link" href="https://www.flimmo.de/?q=${encodeURIComponent(mainTitle(title))}" target="_blank" rel="noopener" aria-label="Bei FLIMMO nachsehen: ${esc(title)}">Bei FLIMMO nachsehen ↗</a>`;
+
 function card(x) {
   const m = x.movie;
   const y = tmdb.year(m.release_date);
@@ -150,7 +157,7 @@ function card(x) {
         <h3 class="film-title">${esc(m.title)}${y ? ` <span class="year">${y}</span>` : ''}</h3>
         ${hint ? `<p class="reason">${hint}</p>` : ''}
         <p class="rating muted small">TMDB-Note ${(m.vote_average || 0).toFixed(1).replace('.', ',')}${runtimeSlot(m.id, md)}</p>
-        <div class="film-extra">${overview}${trailerBtn(m.id, m.title, false, md)}</div>
+        <div class="film-extra">${overview}${trailerBtn(m.id, m.title, false, md)}${flimmoLink(x.de || m.title)}</div>
         <div class="marks marks-5" role="group" aria-label="Rückmeldung zu ${esc(m.title)}">
           ${(md === 'tv' ? FEEDBACK_TV : FEEDBACK).map(([key, icon, label]) => `<button type="button" class="mark mark-${key}" data-kfb="${key}" aria-pressed="${pressed(s, key)}"><span aria-hidden="true">${icon}</span> ${label}</button>`).join('')}
         </div>
