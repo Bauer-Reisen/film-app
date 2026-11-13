@@ -1,12 +1,12 @@
 // Seite „Leseliste“: alle Bücher mit „Merken“ oder „Weiterlesen“ (liegen geblieben), neueste zuerst.
 // Titel und Cover in der Lesesprache des Profils.
-import * as store from './store.js?v=1.23.0';
-import * as books from './books.js?v=1.23.0';
-import { esc, toast } from './ui.js?v=1.23.0';
-import { stateLabel, amazonBookUrl, shopLink } from './media.js?v=1.23.0';
-import { coverImg, bookMetaHtml } from './book-taste.js?v=1.23.0';
-import { movieHint } from './book-extra.js?v=1.23.0';
-import { fillSeriesSlots } from './book-series.js?v=1.23.0';
+import * as store from './store.js?v=1.24.0';
+import * as books from './books.js?v=1.24.0';
+import { esc, toast } from './ui.js?v=1.24.0';
+import { stateLabel, amazonBookUrl, shopLink } from './media.js?v=1.24.0';
+import { coverImg, bookMetaHtml } from './book-taste.js?v=1.24.0';
+import { movieHint } from './book-extra.js?v=1.24.0';
+import { fillSeriesSlots } from './book-series.js?v=1.24.0';
 
 const ACTIONS = [
   ['seen', '✓', 'Gelesen'],

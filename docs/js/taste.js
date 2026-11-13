@@ -1,13 +1,14 @@
 // Seite „Geschmack“: Personen, Studios/Sender und Themen in Stufen wählen, Filme oder Serien markieren, Suche.
-import * as store from './store.js?v=1.23.0';
-import * as tmdb from './tmdb.js?v=1.23.0';
-import { esc, toast } from './ui.js?v=1.23.0';
-import { runtimeSlot, titleText } from './runtime.js?v=1.23.0';
-import { SEED_MOVIES, SEED_PEOPLE, SEED_STUDIOS } from './seeds.js?v=1.23.0';
-import { SEED_SHOWS, SEED_TV_PEOPLE, SEED_NETWORKS } from './seeds-tv.js?v=1.23.0';
-import { THEMES, themeById, themeQuery } from './themes.js?v=1.23.0';
-import { MEDIA, mediaOf, marksOf, excludedGenre, askStarted, stateLabel, STARTED, creditsOf, pressed } from './media.js?v=1.23.0';
-import { TASTE_HINT_AFTER } from './config.js?v=1.23.0';
+import * as store from './store.js?v=1.24.0';
+import * as tmdb from './tmdb.js?v=1.24.0';
+import { esc, toast } from './ui.js?v=1.24.0';
+import { runtimeSlot, titleText } from './runtime.js?v=1.24.0';
+import { SEED_MOVIES, SEED_PEOPLE, SEED_STUDIOS } from './seeds.js?v=1.24.0';
+import { SEED_SHOWS, SEED_TV_PEOPLE, SEED_NETWORKS } from './seeds-tv.js?v=1.24.0';
+import { THEMES, themeById, themeQuery } from './themes.js?v=1.24.0';
+import { MEDIA, mediaOf, marksOf, excludedGenre, askStarted, stateLabel, STARTED, creditsOf, pressed } from './media.js?v=1.24.0';
+import { TASTE_HINT_AFTER } from './config.js?v=1.24.0';
+import { personLink } from './people.js?v=1.24.0';
 
 const STEP = 20;
 const MARKS = [
@@ -21,7 +22,9 @@ const SEEDS = { movie: SEED_MOVIES, tv: SEED_SHOWS };
 const SEED_IDS = { movie: new Set(SEED_MOVIES.map((m) => m.id)), tv: new Set(SEED_SHOWS.map((m) => m.id)) };
 
 // Zustand der Seite – bleibt erhalten, solange die App offen ist
-const ui = { sub: null, query: '', personFilter: 'all', studioFilter: 'all' };
+const ui = { sub: null, query: '', personFilter: 'all', studioFilter: 'all', view: null };
+// Von außen (Name auf einer Karte angetippt): gleich die Personen-Seite zeigen; „Zurück“ führt nach back
+export function openPerson(id, n, r, p, back = '') { ui.query = ''; ui.view = { id: Number(id), n, r: r || 'actor', p: p || '', back }; }
 // Listen getrennt für Filme und Serien
 const fresh = () => ({ showAll: false, done: null, personal: [], personalKey: '', shown: STEP, extra: [], extraLang: null, discoverPage: 0 });
 const per = { movie: fresh(), tv: fresh() };
@@ -102,14 +105,16 @@ function tierButtons(name, w) {
 function personCard(x) {
   persons.set(x.id, x);
   const w = tier('person', x.id);
-  const photo = x.p ? `<img class="face" src="${tmdb.img(x.p, 'w185')}" alt="" loading="lazy" width="72" height="72">`
-    : `<span class="face noimg" aria-hidden="true">${esc(x.n.slice(0, 1))}</span>`;
+  const face = x.p ? `<img class="face" src="${tmdb.img(x.p, 'w185')}" alt="" loading="lazy" width="72" height="72">`
+    : `<span class="face noimg">${esc(x.n.slice(0, 1))}</span>`;
+  // Foto und Name öffnen die Personen-Seite
+  const photo = personLink(x, 'face-link', face, ' tabindex="-1" aria-hidden="true"');
   const known = x.k?.[lang()]?.length ? x.k[lang()] : x.k?.en || [];
   const sub = x.count ? (x.count === 1 ? (media() === 'tv' ? 'in einer deiner Serien' : 'in einem deiner Filme') :`in ${x.count} ${cfg().w.ofYours}`) : known.join(', ');
   return `
     <div class="tile w${w}" data-person="${x.id}">
       ${photo}
-      <span class="tile-name">${esc(x.n)}</span>
+      ${personLink(x, 'tile-name tile-link')}
       <span class="tile-sub">${x.r === 'director' ? cfg().w.director : 'Schauspiel'}${sub ? ` · ${esc(sub)}` : ''}</span>
       ${tierButtons(x.n, w)}
     </div>`;
@@ -195,6 +200,7 @@ export function mount(view, p) {
   const input = view.querySelector('#taste-search');
   input.addEventListener('input', () => {
     ui.query = input.value;
+    ui.view = null;
     clearTimeout(searchTimer);
     searchTimer = setTimeout(fillBody, ui.query.trim().length >= 2 ? 400 : 0);
   });
@@ -207,8 +213,9 @@ function body() { return document.getElementById('taste-body'); }
 function fillBody() {
   const el = body();
   if (!el) return;
-  document.querySelector('.sub-tabs')?.toggleAttribute('hidden', ui.query.trim().length >= 2);
+  document.querySelector('.sub-tabs')?.toggleAttribute('hidden', ui.query.trim().length >= 2 || !!ui.view);
   if (ui.query.trim().length >= 2) return runSearch();
+  if (ui.view) return fillPersonView();
   if (ui.sub === 'filme') return fillFilms();
   if (ui.sub === 'personen') return fillPeople();
   if (ui.sub === 'themen') return fillThemes();
@@ -410,6 +417,80 @@ async function fillFromLiked(keep, skip) {
   list.forEach((x) => document.querySelector(`#known-people [data-person="${x.id}"]`)?.remove());
 }
 
+// ----- Personen-Seite: Foto, kurze Info, ★/♥ und alle Filme bzw. Serien zum Abhaken -----
+async function fillPersonView() {
+  const el = body();
+  const v = ui.view;
+  const md = media();
+  const c = cfg();
+  const seed = seedPerson.get(v.id) || {};
+  const x = { ...seed, id: v.id, n: v.n || seed.n || 'Unbekannt', r: v.r || seed.r || 'actor', p: v.p || seed.p || '' };
+  persons.set(x.id, x);
+  const w = tier('person', x.id);
+  const face = x.p ? `<img class="face" id="person-face" src="${tmdb.img(x.p, 'w185')}" alt="" width="96" height="96">`
+    : `<span class="face noimg" id="person-face" aria-hidden="true">${esc(x.n.slice(0, 1))}</span>`;
+  const otherWord = md === 'tv' ? 'Filme' : 'Serien';
+  el.innerHTML = `
+    <p><button class="btn btn-small" type="button" data-taste="view-back">← Zurück</button></p>
+    <div class="author-head w${w}" data-person="${x.id}">
+      <span class="face-wrap">${face}</span>
+      <div class="author-head-text">
+        <p class="author-head-name">${esc(x.n)}</p>
+        <p class="muted small" id="person-dates">${x.r === 'director' ? c.w.director : 'Schauspiel'}</p>
+        ${tierButtons(x.n, w)}
+      </div>
+      <div class="author-bio" id="person-bio"></div>
+    </div>
+    <h2>${c.w.many} ${x.r === 'director' ? 'von' : 'mit'} ${esc(x.n)}</h2>
+    <p class="muted small">Tipp an, was du kennst – die bekanntesten stehen oben. <strong>Aufs Poster tippen = ★ ${c.w.fav}.</strong> Die ${otherWord} siehst du, wenn du oben auf „${otherWord}“ umschaltest.</p>
+    <div id="person-films"><p class="muted center">Lädt …</p></div>`;
+  window.scrollTo({ top: 0 });
+  fillPersonInfo(v, x);
+  let d;
+  try { d = await tmdb.get(`person/${x.id}/${c.credits}`, { language: profile.language }); } catch (err) {
+    if (ui.view === v && document.getElementById('person-films')) document.getElementById('person-films').innerHTML = errorBox(err.message, 'view-retry');
+    return;
+  }
+  const box = document.getElementById('person-films');
+  if (ui.view !== v || !box || media() !== md) return;
+  // Regie und Rolle zusammen (z. B. wer selbst spielt und Regie führt); nur Erschienenes mit Poster
+  const today = new Date().toISOString().slice(0, 10);
+  const seen = new Set();
+  const list = [...creditsOf(d, x.r, md), ...creditsOf(d, x.r === 'director' ? 'actor' : 'director', md)]
+    .filter((m) => !m.adult && m.poster_path && m.release_date && m.release_date <= today && !(m.genre_ids || []).includes(99))
+    .filter((m) => md !== 'tv' || !excludedGenre(m))
+    .filter((m) => !seen.has(m.id) && seen.add(m.id))
+    .sort((a, b) => (b.vote_count || 0) - (a.vote_count || 0))
+    .slice(0, 60);
+  box.innerHTML = list.length
+    ? `<div class="films">${remember(list.map(fromTmdb)).map(filmCard).join('')}</div>`
+    : `<p class="muted center">Keine ${c.w.many} gefunden.</p>`;
+}
+
+async function fillPersonInfo(v, x) {
+  let d;
+  try { d = await tmdb.get(`person/${x.id}`, { language: profile.language }); } catch { return; }
+  let bio = d.biography || '';
+  let bioLang = lang();
+  if (!bio && profile.language !== 'en-US') {
+    try { bio = (await tmdb.get(`person/${x.id}`, { language: 'en-US' })).biography || ''; bioLang = 'en'; } catch { /* ohne Text */ }
+  }
+  if (ui.view !== v) return;
+  const yearOf = (s) => (s ? s.slice(0, 4) : '');
+  const life = d.birthday ? (d.deathday ? `${yearOf(d.birthday)} – ${yearOf(d.deathday)}` : `geboren ${yearOf(d.birthday)}`) : '';
+  const place = d.place_of_birth ? `in ${d.place_of_birth.split(',')[0].trim()}` : '';
+  const dates = document.getElementById('person-dates');
+  if (dates) dates.textContent = [x.r === 'director' ? cfg().w.director : 'Schauspiel', [life, life && place].filter(Boolean).join(' ')].filter(Boolean).join(' · ');
+  const face = document.getElementById('person-face');
+  if (face && !x.p && d.profile_path) face.outerHTML = `<img class="face" id="person-face" src="${tmdb.img(d.profile_path, 'w185')}" alt="" width="96" height="96">`;
+  if (!x.p && d.profile_path) { x.p = d.profile_path; persons.set(x.id, x); }
+  const box = document.getElementById('person-bio');
+  if (box && bio) {
+    box.innerHTML = `<p class="clamp" lang="${bioLang}">${esc(bio)}</p>`;
+    box.querySelector('p').addEventListener('click', (e) => e.currentTarget.classList.toggle('full'));
+  }
+}
+
 // ----- Studios -----
 const seedStudio = new Map(SEED_STUDIOS.map((x) => [x.id, x]));
 function fillStudios() {
@@ -545,6 +626,7 @@ export function handleClick(e) {
   const sub = e.target.closest('[data-sub]');
   if (sub) {
     ui.sub = sub.dataset.sub;
+    ui.view = null;
     document.querySelectorAll('.sub-tabs [data-sub]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.sub === ui.sub)));
     fillBody();
     return true;
@@ -563,5 +645,13 @@ export function handleClick(e) {
   }
   if (act === 'toggle-all') { L().showAll = !L().showAll; snapshotDone(); fillFilms(); return true; }
   if (act === 'search') { runSearch(); return true; }
+  if (act === 'view-back') {
+    const back = ui.view?.back;
+    ui.view = null;
+    if (back) { location.hash = back; return true; }
+    fillBody(); window.scrollTo({ top: 0 });
+    return true;
+  }
+  if (act === 'view-retry') { fillBody(); return true; }
   return false;
 }

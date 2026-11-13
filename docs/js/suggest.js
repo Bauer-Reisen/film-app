@@ -1,14 +1,15 @@
 // Seite „Vorschläge“: Liste mit Begründung, fünf Rückmeldungen, Rückgängig, „Mehr“.
-import * as store from './store.js?v=1.23.0';
-import * as tmdb from './tmdb.js?v=1.23.0';
-import { esc, toast } from './ui.js?v=1.23.0';
-import { runtimeSlot, titleText } from './runtime.js?v=1.23.0';
-import { trailerBtn } from './trailer.js?v=1.23.0';
-import { compute, computeFiltered, visible, hasSources, erasFor, eraById } from './recommend.js?v=1.23.0';
-import { MEDIA, mediaOf, askStarted, stateLabel } from './media.js?v=1.23.0';
-import { THEMES, themeById } from './themes.js?v=1.23.0';
-import { RECOMMEND } from './config.js?v=1.23.0';
-import { bookSlot } from './book-extra.js?v=1.23.0';
+import * as store from './store.js?v=1.24.0';
+import * as tmdb from './tmdb.js?v=1.24.0';
+import { esc, toast } from './ui.js?v=1.24.0';
+import { runtimeSlot, titleText } from './runtime.js?v=1.24.0';
+import { trailerBtn } from './trailer.js?v=1.24.0';
+import { compute, computeFiltered, visible, hasSources, erasFor, eraById } from './recommend.js?v=1.24.0';
+import { MEDIA, mediaOf, askStarted, stateLabel } from './media.js?v=1.24.0';
+import { THEMES, themeById } from './themes.js?v=1.24.0';
+import { RECOMMEND } from './config.js?v=1.24.0';
+import { bookSlot } from './book-extra.js?v=1.24.0';
+import { peopleSlot, fillPeopleSlots } from './people.js?v=1.24.0';
 
 const FEEDBACK = [
   ['want', '+', 'Merken'],
@@ -111,6 +112,7 @@ export async function mount(p) {
     <p class="muted small">${mood || era ? `${[mood && `Thema „${esc(themeById.get(mood).n)}“`, era && esc(eraById(md).get(era).n)].filter(Boolean).join(', ')} – sortiert nach deinem Geschmack.` : 'Passend zu dem, was du magst.'} Tipp aufs Poster = ★ ${W().fav}.</p>
     <div class="suggestions">${first.map(card).join('')}</div>
     <div class="row center-row"><button class="btn btn-primary" type="button" data-sg="more">Mehr Vorschläge</button></div>`;
+  fillPeopleSlots(box());
 }
 
 const errorBox = (msg) => `<div class="card center"><p>${esc(msg)}</p><button class="btn" type="button" data-sg="retry">Nochmal versuchen</button></div>`;
@@ -129,6 +131,7 @@ function card(x) {
       <div class="film-info">
         <h3 class="film-title">${titleText(m.title, m.id, md) || esc(m.title)}${y ? ` <span class="year">${y}</span>` : ''}</h3>
         <p class="reason">${esc(x.text)}</p>
+        ${peopleSlot(m.id, md)}
         <p class="rating muted small">TMDB-Note ${m.vote_average.toFixed(1).replace('.', ',')}${runtimeSlot(m.id, md)}</p>
         <div class="film-extra">${overview}${trailerBtn(m.id, m.title, false, md)}</div>
         ${bookSlot(m.id, md, m.original_title || m.original_name || m.title)}
@@ -150,6 +153,7 @@ function append(items) {
   if (!list || !items.length) return;
   items.forEach((x) => shown.push(x.movie.id));
   list.insertAdjacentHTML('beforeend', items.map(card).join(''));
+  fillPeopleSlots(list);
 }
 
 // Nach jeder Rückmeldung neu rechnen (höchstens eine neue Abfrage, der Rest ist gemerkt)

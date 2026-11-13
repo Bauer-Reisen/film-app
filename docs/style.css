@@ -537,4 +537,9 @@ ul.plain { list-style: none; padding: 0; margin: 0; display: flex; flex-directio
 .author-bio p { margin: 0; }
 .author-bio .clamp { display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden; cursor: pointer; }
 .author-bio .clamp.full { display: block; }
+/* Personen bei Filmen/Serien: Name und Foto auf Kacheln öffnen die Personen-Seite */
+.tile-link { color: inherit; text-decoration: underline; text-decoration-color: color-mix(in srgb, currentColor 30%, transparent); text-underline-offset: 3px; }
+.face-link { display: block; border-radius: 50%; }
+.people-slot { margin: 2px 0 6px; }
+.people-slot:empty { display: none; }
 .author-link { color: inherit; text-decoration: underline; text-decoration-color: color-mix(in srgb, currentColor 40%, transparent); text-underline-offset: 2px; }
