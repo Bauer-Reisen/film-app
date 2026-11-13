@@ -1,8 +1,8 @@
 // Bücherliste weitergeben (z. B. per WhatsApp an jemanden im Haushalt) und einfügen.
 // Weitergegeben werden nur die Werk-Nummern der Bücher – keine Bewertungen, keine Namen.
 // Wer die Liste einfügt, bekommt die Bücher auf die Warteliste und bewertet sie selbst.
-import * as store from './store.js?v=1.19.1';
-import * as books from './books.js?v=1.19.1';
+import * as store from './store.js?v=1.20.0';
+import * as books from './books.js?v=1.20.0';
 
 const APP_URL = 'https://bauer-reisen.github.io/film-app/';
 

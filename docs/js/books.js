@@ -1,9 +1,9 @@
 // Buchdaten von Open Library (frei, ohne Schlüssel).
 // Erst über unseren Worker (/ol/…). Kennt der Worker die Adressen noch nicht, direkt bei Open Library
 // (die Seite erlaubt das ausdrücklich). Merkt sich Antworten für die Sitzung, höchstens 4 Anfragen gleichzeitig.
-import { WORKER_URL } from './config.js?v=1.19.1';
-import { SEED_BOOKS } from './seeds-books.js?v=1.19.1';
-import { genresOf } from './book-genres.js?v=1.19.1';
+import { WORKER_URL } from './config.js?v=1.20.0';
+import { SEED_BOOKS } from './seeds-books.js?v=1.20.0';
+import { genresOf } from './book-genres.js?v=1.20.0';
 
 const OL = 'https://openlibrary.org';
 const COVERS = 'https://covers.openlibrary.org';
@@ -179,5 +179,67 @@ export const BUNDLE = /( \/ |\b(complete|collected|omnibus|box(ed)? set|boxset|c
 
 // Eintrag für die Warteliste (noch nicht bewertet)
 export const pendingEntry = (b) => ({ id: b.id, n: b.title || '', a: b.a || '', ak: b.ak || null, c: b.cover || null, y: b.y || null, pg: b.pg || null, g: b.g || [] });
+
+// ---------- Gleiches Buch, andere Werk-Nummer? ----------
+// Open Library legt dasselbe Buch oft mehrfach an („The Forty Rules of Love“, „Forty Rules of Love“,
+// „The forty rules of love“ …). Gleich ist ein Buch, wenn die Autor·in gleich ist und
+// – der Titel ohne Artikel/Zusätze gleich oder fast gleich ist (Tippfehler, Honour/Honor), oder
+// – der kürzere Titel fast ganz im längeren steckt („My Last 10 Minutes …“), oder
+// – das Erscheinungsjahr gleich ist und mindestens ein besonderes Wort übereinstimmt.
+// Unterschiedliche Zahlen (Band 1 / Band 2) sind nie dasselbe Buch.
+const STOP = new Set(('the a an of and in on to for with by my at from this that is '
+  + 'der die das ein eine einer und von vom im am zu zum zur mit auf fur des den dem '
+  + 'le la les l un une de du des et el los las y il lo gli i e di da het een van').split(' '));
+const fold = (s) => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/ß/g, 'ss').replace(/ı/g, 'i');
+const lastOf = (a) => fold(a).replace(/[^a-z\s-]/g, '').trim().split(/\s+/).pop() || '';
+function lev(a, b) {
+  if (Math.abs(a.length - b.length) > 2) return 3;
+  let prev = Array.from({ length: b.length + 1 }, (_, i) => i);
+  for (let i = 1; i <= a.length; i++) {
+    const cur = [i];
+    for (let j = 1; j <= b.length; j++) cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+    prev = cur;
+  }
+  return prev[b.length];
+}
+// Vorbereiten: { last, ak, core, words, digits, y }
+export function bookKey(b) {
+  const last = lastOf(b.a);
+  let t = fold(b.title ?? b.n).replace(/\(.*?\)|\[.*?\]/g, ' ');
+  // „The Flea Palace by Elif Shafak“, „Flea Palace; trans. by …“
+  t = t.split(/;|\s\/\s|\btrans(lated)?\b/)[0];
+  const by = t.lastIndexOf(' by ');
+  if (by > 0 && last && lev(lastOf(t.slice(by + 4)), last) <= 2) t = t.slice(0, by);
+  const words = t.split(/[^a-z0-9]+/).filter((w) => w && !STOP.has(w));
+  return { last, ak: b.ak ? String(b.ak).replace('/authors/', '') : null, core: words.join(' '), words: new Set(words.filter((w) => w.length >= 3 || /\d/.test(w))), digits: (t.match(/\d+/g) || []).join(','), y: b.y || null };
+}
+const sameAuthor = (x, y) => (x.ak && y.ak && x.ak === y.ak) || (x.last && y.last && (x.last === y.last || (Math.min(x.last.length, y.last.length) >= 5 && lev(x.last, y.last) <= 1)));
+export function sameKey(x, y) {
+  if (!x.core || !y.core || !sameAuthor(x, y)) return false;
+  if (x.digits !== y.digits) return false;
+  if (x.core === y.core) return true;
+  if (Math.min(x.core.length, y.core.length) >= 5 && lev(x.core, y.core) <= 2) return true;
+  const [s, l] = x.words.size <= y.words.size ? [x.words, y.words] : [y.words, x.words];
+  const shared = [...s].filter((w) => l.has(w)).length;
+  if (s.size >= 2 && shared === s.size && s.size / l.size >= 0.6) return true;
+  return !!(x.y && x.y === y.y && shared >= 1);
+}
+export const sameBook = (a, b) => sameKey(bookKey(a), bookKey(b));
+// Prüfer gegen eine Liste bekannter Bücher (Markierungen { id: { n, a, ak, y } } oder Listen [{ id, n, a, ak, y }])
+export function matcher(entries) {
+  const keys = entries.filter((e) => e && (e.n || e.title)).map((e) => ({ id: e.id, k: bookKey(e) }));
+  return (b) => { const k = bookKey(b); return keys.find((x) => x.id !== b.id && sameKey(x.k, k))?.id || null; };
+}
+// Alles, was das Profil schon kennt: markiert oder wartend
+export const knownMatcher = (p) => matcher([...Object.entries(p.books || {}).map(([id, m]) => ({ id, ...m })), ...(p.pendingBooks || [])]);
+// Doppelte aus einer Liste entfernen (das erste bleibt – Listen sind nach Beliebtheit sortiert)
+export function dedupe(list) {
+  const kept = [];
+  for (const b of list) {
+    const k = bookKey(b);
+    if (!kept.some((x) => sameKey(x.k, k))) kept.push({ b, k });
+  }
+  return kept.map((x) => x.b);
+}
 
 export const pagesText = (pg) => (pg ? `${pg} Seiten` : '');

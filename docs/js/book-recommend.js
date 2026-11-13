@@ -1,13 +1,13 @@
 // Buch-Vorschläge berechnen – nachvollziehbar wie bei Filmen:
 // Ausgangspunkte → Kandidaten (Open Library) → Punkte → Vielfalt → Begründung.
 // Brücke: Romanvorlagen gemochter Filme und Serien, feste Paare (seeds-books.js), Autor·innen aus Filmen.
-import * as books from './books.js?v=1.19.1';
-import { tierOf } from './store.js?v=1.19.1';
-import { themeById } from './themes.js?v=1.19.1';
-import { BOOK_GENRES, bookGenreById } from './book-genres.js?v=1.19.1';
-import { PAIRS } from './seeds-books.js?v=1.19.1';
-import { likedTitles, novelOf, authorsFromFilms } from './bridge-books.js?v=1.19.1';
-import { markedTitle } from './recommend.js?v=1.19.1';
+import * as books from './books.js?v=1.20.0';
+import { tierOf } from './store.js?v=1.20.0';
+import { themeById } from './themes.js?v=1.20.0';
+import { BOOK_GENRES, bookGenreById } from './book-genres.js?v=1.20.0';
+import { PAIRS } from './seeds-books.js?v=1.20.0';
+import { likedTitles, novelOf, authorsFromFilms } from './bridge-books.js?v=1.20.0';
+import { markedTitle } from './recommend.js?v=1.20.0';
 
 // Punkte je Grund (Stufe 2 = ★ Liebe, 1 = ♥ Gern) und Obergrenzen
 export const BOOK_POINTS = {
@@ -27,8 +27,6 @@ export const BOOK_POINTS = {
 const P = BOOK_POINTS;
 const LIKED = new Set(['liked', 'loved']);
 const FAV = new Set(['author', 'sameAuthor', 'novel', 'pair', 'filmAuthor']);
-const norm = (s) => (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]/g, '');
-const lastName = (n) => norm(String(n || '').split(' ').pop());
 const akOf = (id) => String(id || '').replace('/authors/', '');
 // Schlagwörter, die fast jedes Buch hat – zählen nicht als Gemeinsamkeit
 const GENERIC = /(fiction|literature|novel|general|bestseller|reviewed|english|american|german|englisch|award|adaptation|large_type|accessible|protected|lending|in_library|reading|translation|chang_pian|xiao_shuo|literary|classic|contemporary|drama|belletrist|roman|juvenile|children|staff_picks|open_library|nyt|_\d|\d{4}|stories|books|fictitious|history_and_criticism|criticism|study|guides|manners_and_customs|social_life|man-woman)/;
@@ -223,7 +221,8 @@ export async function computeBooks(profile, page = 1, filter = {}) {
   // Titel, die man schon kennt (andere Werk-Nummer, gleicher Titel)
   const waiting = new Set((profile.pendingBooks || []).map((x) => x.id)); // gescannt, noch nicht bewertet
   const kids = Object.values(marks).some((m) => LIKED.has(m.s) && (m.g || []).includes('kinder')) || (profile.bookGenres || []).some((g) => g.id === 'kinder');
-  const knownTitles = new Set(Object.values(marks).map((m) => norm(m.n)).filter((t) => t.length > 3));
+  const isKnown = books.knownMatcher(profile); // dasselbe Buch unter anderer Werk-Nummer
+  const onShelf = books.matcher(profile.shelf || []);
 
   const cands = new Map();
   for (const { book, src: s2 } of results) {
@@ -236,11 +235,10 @@ export async function computeBooks(profile, page = 1, filter = {}) {
   }
 
   const list = [];
-  const sameWork = new Map(); // gleicher Titel + Autor·in → nur einmal
   for (const c of cands.values()) {
     const b = c.book;
-    const own = shelf.has(b.id);
-    if (marks[b.id] || waiting.has(b.id) || (!b.cover && !own) || knownTitles.has(norm(b.title)) || BUNDLE.test(b.title)) continue;
+    const own = shelf.has(b.id) || !!onShelf(b);
+    if (marks[b.id] || waiting.has(b.id) || (!b.cover && !own) || BUNDLE.test(b.title) || isKnown(b)) continue;
     if (lang === 'en' && b.edLang === false && !own) continue; // keine englische Ausgabe bekannt
     if ((b.g || []).includes('kinder') && !kids) continue; // Kinderbücher nur, wenn man selbst welche mag
     if (th && !th.b.some((x) => (b.s || []).includes(x))) continue;
@@ -261,11 +259,12 @@ export async function computeBooks(profile, page = 1, filter = {}) {
     const why = reasonText(reasons) || (t > 0.5 ? 'Passt zu deinen Lieblingsgenres' : 'Viel gelesen');
     const head = [own ? '📚 Steht schon bei euch im Regal – nichts besorgen, einfach loslegen' : '', th && !why.includes(th.n) ? th.n : '', er?.short].filter(Boolean).join(' · ');
     const item = { book: b, score, reasons, source: main ? `${main.kind}:${main.kind === 'author' || main.kind === 'sameAuthor' ? akOf(b.ak) : main.ref.id}` : `a:${akOf(b.ak)}`, text: head ? `${head} · ${why}` : why };
-    const key = `${norm(b.title)}|${lastName(b.a)}`;
-    const prev = sameWork.get(key);
-    if (prev && prev.book.r >= b.r) continue;
+    // Dasselbe Buch mehrfach bei Open Library → nur einmal, das meistgelesene (oder das im Regal)
+    item.key = books.bookKey(b);
+    const prev = list.find((x) => books.sameKey(x.key, item.key));
+    if (prev && (prev.own || (!own && prev.book.r >= b.r))) continue;
     if (prev) list.splice(list.indexOf(prev), 1);
-    sameWork.set(key, item);
+    item.own = own;
     list.push(item);
   }
   list.sort((a, b) => b.score - a.score || (b.book.r || 0) - (a.book.r || 0));
@@ -291,4 +290,7 @@ function diversify(list) {
   return out;
 }
 
-export const visibleBooks = (profile, list) => list.filter((x) => !(profile.books || {})[x.book.id] && !(profile.pendingBooks || []).some((w) => w.id === x.book.id));
+export function visibleBooks(profile, list) {
+  const isKnown = books.knownMatcher(profile);
+  return list.filter((x) => !(profile.books || {})[x.book.id] && !(profile.pendingBooks || []).some((w) => w.id === x.book.id) && !isKnown(x.book));
+}

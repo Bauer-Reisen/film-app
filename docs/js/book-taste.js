@@ -1,15 +1,15 @@
 // Seite „Geschmack“ bei Büchern: Autor·innen, Themen und Genres in Stufen, Bücher markieren, Suche (auch ISBN), Scannen.
-import * as store from './store.js?v=1.19.1';
-import * as books from './books.js?v=1.19.1';
-import { esc, toast } from './ui.js?v=1.19.1';
-import { SEED_BOOKS, SEED_AUTHORS } from './seeds-books.js?v=1.19.1';
-import { THEMES, themeById } from './themes.js?v=1.19.1';
-import { BOOK_GENRES, bookGenreById } from './book-genres.js?v=1.19.1';
-import { MEDIA, stateLabel, pressed } from './media.js?v=1.19.1';
-import { TASTE_HINT_AFTER } from './config.js?v=1.19.1';
-import { authorsFromFilms } from './bridge-books.js?v=1.19.1';
-import { unrated } from './book-rate.js?v=1.19.1';
-import { requestPaste } from './book-share.js?v=1.19.1';
+import * as store from './store.js?v=1.20.0';
+import * as books from './books.js?v=1.20.0';
+import { esc, toast } from './ui.js?v=1.20.0';
+import { SEED_BOOKS, SEED_AUTHORS } from './seeds-books.js?v=1.20.0';
+import { THEMES, themeById } from './themes.js?v=1.20.0';
+import { BOOK_GENRES, bookGenreById } from './book-genres.js?v=1.20.0';
+import { MEDIA, stateLabel, pressed } from './media.js?v=1.20.0';
+import { TASTE_HINT_AFTER } from './config.js?v=1.20.0';
+import { authorsFromFilms } from './bridge-books.js?v=1.20.0';
+import { unrated } from './book-rate.js?v=1.20.0';
+import { requestPaste } from './book-share.js?v=1.20.0';
 
 const STEP = 20;
 const SCAN = true; // Knopf „Bücher scannen“
@@ -202,11 +202,12 @@ function fillBody() {
 const seedList = () => [...SEED_BOOKS].sort((a, b) => b.r - a.r).map((b) => books.fromSeed(b, lang()));
 const allBooks = () => {
   const seen = new Set();
-  return remember([...L.personal, ...seedList(), ...L.extra].filter((b) => !seen.has(b.id) && seen.add(b.id)));
+  return remember(books.dedupe([...L.personal, ...seedList(), ...L.extra].filter((b) => !seen.has(b.id) && seen.add(b.id))));
 };
-const candidates = () => (L.showAll ? allBooks() : allBooks().filter((b) => !L.done.has(b.id)));
+const candidates = () => (L.showAll ? allBooks() : allBooks().filter((b) => !L.done.has(b.id) && !L.doneMatch(b)));
 function snapshotDone() {
   L.done = new Set([...Object.keys(marks()), ...(profile.passedBook || []), ...(profile.pendingBooks || []).map((x) => x.id)]);
+  L.doneMatch = books.knownMatcher(profile); // dasselbe Buch unter anderer Werk-Nummer
   L.shown = STEP;
 }
 
@@ -274,9 +275,11 @@ async function fillAuthorView() {
     return;
   }
   if (ui.author !== a || !document.getElementById('author-books')) return;
-  const norm = (t) => (t || '').toLowerCase().replace(/[^a-z0-9äöüß]/g, '');
-  const seen = new Set();
-  const shown = remember(list.filter((b) => (b.cover || b.r >= 5 || marks()[b.id]) && !books.BUNDLE.test(b.title) && !seen.has(norm(b.title)) && seen.add(norm(b.title))));
+  // Doppelt angelegte Bücher nur einmal; markierte zuerst behalten, Doppel von Markierten weglassen
+  const known = books.knownMatcher(profile);
+  const ok = list.filter((b) => (b.cover || b.r >= 5 || marks()[b.id]) && !books.BUNDLE.test(b.title) && (marks()[b.id] || !known(b)));
+  const shown = remember(books.dedupe([...ok.filter((b) => marks()[b.id]), ...ok.filter((b) => !marks()[b.id])]));
+  shown.sort((x, y) => (y.r || 0) - (x.r || 0));
   document.getElementById('author-books').innerHTML = shown.length
     ? `<div class="films">${shown.map(bookCard).join('')}</div>`
     : '<p class="muted center">Keine Bücher gefunden.</p>';

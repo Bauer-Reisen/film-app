@@ -2,13 +2,13 @@
 // Erkennung: eingebaute Strichcode-Erkennung des Browsers (Android/Chrome) oder die freie Bibliothek ZXing
 // (docs/vendor/zxing.min.js, Apache-Lizenz, wird erst hier geladen – iPhone/Safari kann es nicht von sich aus).
 // Das Kamerabild bleibt auf dem Gerät, gesendet wird nur die erkannte ISBN.
-import * as store from './store.js?v=1.19.1';
-import * as books from './books.js?v=1.19.1';
-import { esc, toast, dialog } from './ui.js?v=1.19.1';
-import { coverImg, bookMeta } from './book-taste.js?v=1.19.1';
-import { stateLabel } from './media.js?v=1.19.1';
-import { startRating, takeAutoCamera } from './book-rate.js?v=1.19.1';
-import { shareIds, shareText, importList, takePaste } from './book-share.js?v=1.19.1';
+import * as store from './store.js?v=1.20.0';
+import * as books from './books.js?v=1.20.0';
+import { esc, toast, dialog } from './ui.js?v=1.20.0';
+import { coverImg, bookMeta } from './book-taste.js?v=1.20.0';
+import { stateLabel } from './media.js?v=1.20.0';
+import { startRating, takeAutoCamera } from './book-rate.js?v=1.20.0';
+import { shareIds, shareText, importList, takePaste } from './book-share.js?v=1.20.0';
 
 
 let profile = null;
@@ -335,7 +335,8 @@ async function add(isbn) {
 }
 
 function itemRow(x) {
-  const old = x.book ? profile.books?.[x.book.id]?.s : null;
+  const dup = x.book && !profile.books?.[x.book.id] ? books.knownMatcher(profile)(x.book) : null;
+  const old = x.book ? (profile.books?.[x.book.id] || profile.books?.[dup])?.s : null;
   const body = x.status === 'loading'
     ? `<span class="muted">ISBN ${esc(x.isbn)} – suche …</span>`
     : x.status === 'missing'
@@ -369,6 +370,7 @@ function finish() {
     const p = store.getProfile(profile.id);
     const old = p.books?.[x.book.id];
     const waiting = (p.pendingBooks || []).some((w) => w.id === x.book.id);
+    if (!old && !waiting && books.knownMatcher(p)(x.book)) { known++; continue; } // dasselbe Buch, andere Werk-Nummer
     if (!old && !waiting) { store.addPending(profile.id, [books.pendingEntry(x.book)]); added++; } else known++;
     if (!old || (old.s === 'seen' && !old.r)) toRate.push(x.book.id);
   }
