@@ -164,6 +164,7 @@ export function setMark(profileId, media, movieId, status, meta = {}) {
   const old = list[movieId] || null;
   if (status) {
     list[movieId] = { s: status, t: Date.now(), g: meta.g ?? old?.g ?? [], l: meta.l ?? old?.l ?? '', y: meta.y ?? old?.y ?? null, n: meta.n ?? old?.n ?? '' }; // n = Titel (für Begründungen)
+    if (media === 'book' && p.pendingBooks?.length) p.pendingBooks = p.pendingBooks.filter((x) => x.id !== movieId); // markiert = wartet nicht mehr
     if (media === 'book') for (const k of BOOK_META) { const v = meta[k] ?? old?.[k]; if (v != null && v !== '') list[movieId][k] = v; }
     p.marksSinceBackup = (p.marksSinceBackup || 0) + 1;
   } else {

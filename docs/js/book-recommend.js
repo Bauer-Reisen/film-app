@@ -1,13 +1,13 @@
 // Buch-Vorschläge berechnen – nachvollziehbar wie bei Filmen:
 // Ausgangspunkte → Kandidaten (Open Library) → Punkte → Vielfalt → Begründung.
 // Brücke: Romanvorlagen gemochter Filme und Serien, feste Paare (seeds-books.js), Autor·innen aus Filmen.
-import * as books from './books.js?v=1.20.0';
-import { tierOf } from './store.js?v=1.20.0';
-import { themeById } from './themes.js?v=1.20.0';
-import { BOOK_GENRES, bookGenreById } from './book-genres.js?v=1.20.0';
-import { PAIRS } from './seeds-books.js?v=1.20.0';
-import { likedTitles, novelOf, authorsFromFilms } from './bridge-books.js?v=1.20.0';
-import { markedTitle } from './recommend.js?v=1.20.0';
+import * as books from './books.js?v=1.21.0';
+import { tierOf } from './store.js?v=1.21.0';
+import { themeById } from './themes.js?v=1.21.0';
+import { BOOK_GENRES, bookGenreById } from './book-genres.js?v=1.21.0';
+import { PAIRS } from './seeds-books.js?v=1.21.0';
+import { likedTitles, novelOf, authorsFromFilms } from './bridge-books.js?v=1.21.0';
+import { markedTitle } from './recommend.js?v=1.21.0';
 
 // Punkte je Grund (Stufe 2 = ★ Liebe, 1 = ♥ Gern) und Obergrenzen
 export const BOOK_POINTS = {
@@ -34,7 +34,7 @@ const GENERIC = /(fiction|literature|novel|general|bestseller|reviewed|english|a
 const LANGS = /(language|spanish|french|german|italian|welsh|latin|chinese|japanese|_materials|translat)/;
 const specific = (subjects) => (subjects || []).filter((s) => s.length <= 40 && !GENERIC.test(s) && !LANGS.test(s) && !BOOK_GENRES.some((g) => g.re.test(s)));
 // Sammelbände, Gesamtausgaben, Studienhilfen
-const BUNDLE = /( \/ |\b(complete|collected|omnibus|box(ed)? set|boxset|collection|trilogy set|novels of|works of|study guide|sparknotes|cliffs ?notes)\b)/i;
+const BUNDLE = /( \/ |\b(complete|collected|omnibus|box(ed)? set|boxset|collection|trilogy set|novels of|works of|study guide|sparknotes|cliffs ?notes)\b|\b\d+ ?[-–] ?\d+\s*$)/i;
 
 // Zeiträume (Jahr der Erstausgabe)
 const THIS_YEAR = new Date().getFullYear();

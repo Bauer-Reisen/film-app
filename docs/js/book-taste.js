@@ -1,15 +1,16 @@
 // Seite „Geschmack“ bei Büchern: Autor·innen, Themen und Genres in Stufen, Bücher markieren, Suche (auch ISBN), Scannen.
-import * as store from './store.js?v=1.20.0';
-import * as books from './books.js?v=1.20.0';
-import { esc, toast } from './ui.js?v=1.20.0';
-import { SEED_BOOKS, SEED_AUTHORS } from './seeds-books.js?v=1.20.0';
-import { THEMES, themeById } from './themes.js?v=1.20.0';
-import { BOOK_GENRES, bookGenreById } from './book-genres.js?v=1.20.0';
-import { MEDIA, stateLabel, pressed } from './media.js?v=1.20.0';
-import { TASTE_HINT_AFTER } from './config.js?v=1.20.0';
-import { authorsFromFilms } from './bridge-books.js?v=1.20.0';
-import { unrated } from './book-rate.js?v=1.20.0';
-import { requestPaste } from './book-share.js?v=1.20.0';
+import * as store from './store.js?v=1.21.0';
+import * as books from './books.js?v=1.21.0';
+import { esc, toast } from './ui.js?v=1.21.0';
+import { SEED_BOOKS, SEED_AUTHORS } from './seeds-books.js?v=1.21.0';
+import { THEMES, themeById } from './themes.js?v=1.21.0';
+import { BOOK_GENRES, bookGenreById } from './book-genres.js?v=1.21.0';
+import { MEDIA, stateLabel, pressed } from './media.js?v=1.21.0';
+import { TASTE_HINT_AFTER } from './config.js?v=1.21.0';
+import { authorsFromFilms } from './bridge-books.js?v=1.21.0';
+import { unrated } from './book-rate.js?v=1.21.0';
+import { requestPaste } from './book-share.js?v=1.21.0';
+import { seriesOf, seriesBooks } from './book-series.js?v=1.21.0';
 
 const STEP = 20;
 const SCAN = true; // Knopf „Bücher scannen“
@@ -22,8 +23,11 @@ export const BOOK_MARKS = [
 ];
 const W = MEDIA.book.w;
 
-const ui = { sub: null, query: '', author: null }; // author = { id, n }: Ansicht „Bücher von …“ zum Abhaken
-export function openSub(sub) { ui.sub = sub; ui.query = ''; ui.author = null; }
+// view = { kind: 'author' | 'series' | 'school', id, n, back }: Liste zum Abhaken („Bücher von …“, „Reihe …“, „Schullektüre“)
+const ui = { sub: null, query: '', view: null };
+export function openSub(sub) { ui.sub = sub; ui.query = ''; ui.view = null; }
+// Von außen (z. B. Bewertungsrunde): gleich die Bände einer Reihe zeigen; „Zurück“ führt nach back
+export function openSeries(id, n, back = '') { ui.sub = 'buecher'; ui.query = ''; ui.view = { kind: 'series', id, n, back }; }
 const L = { showAll: false, done: null, personal: [], personalKey: '', shown: STEP, extra: [], extraKey: '', page: 0 };
 const known = new Map(); // id → Buch (für die Angaben beim Markieren)
 const authorsSeen = new Map();
@@ -56,6 +60,7 @@ function bookCard(b) {
         <h3 class="film-title">${esc(b.title)}</h3>
         <p class="book-meta muted small">${esc(bookMeta(b))}</p>
         ${b.why ? `<p class="film-why">${esc(b.why)}</p>` : ''}
+        <p class="series-slot small" data-bseries-for="${b.id}"></p>
         <p class="film-state">${s ? esc(stateLabel('book', s)) : ''}</p>
         <div class="marks marks-5" role="group" aria-label="${esc(b.title)} markieren">
           ${BOOK_MARKS.map(([key, icon, label]) => `
@@ -189,9 +194,9 @@ const searching = () => ui.query.trim().length >= 2;
 function fillBody() {
   const el = body();
   if (!el) return;
-  document.querySelector('.sub-tabs')?.toggleAttribute('hidden', searching() || !!ui.author);
+  document.querySelector('.sub-tabs')?.toggleAttribute('hidden', searching() || !!ui.view);
   if (searching()) return runSearch();
-  if (ui.author) return fillAuthorView();
+  if (ui.view) return fillListView();
   if (ui.sub === 'buecher') return fillBooks();
   if (ui.sub === 'themen') return fillThemes();
   if (ui.sub === 'genres') return fillGenres();
@@ -199,7 +204,11 @@ function fillBody() {
 }
 
 // ----- Bücher -----
-const seedList = () => [...SEED_BOOKS].sort((a, b) => b.r - a.r).map((b) => books.fromSeed(b, lang()));
+// In Deutschland bekannte Bücher zuerst – ursprünglich deutsche nur, wenn man auf Deutsch liest
+const germanFirst = (b) => (b.d && !(lang() === 'en' && b.o === 'de') ? 1 : 0);
+// Open Library zählt vor allem englischsprachige Leser·innen – deutsche Bücher wirken dort zu unbekannt
+const fame = (b) => (b.o === 'de' && lang() === 'de' ? b.r * 8 : b.r);
+const seedList = () => [...SEED_BOOKS].sort((a, b) => germanFirst(b) - germanFirst(a) || fame(b) - fame(a)).map((b) => books.fromSeed(b, lang()));
 const allBooks = () => {
   const seen = new Set();
   return remember(books.dedupe([...L.personal, ...seedList(), ...L.extra].filter((b) => !seen.has(b.id) && seen.add(b.id))));
@@ -259,37 +268,69 @@ async function loadPersonal() {
   L.personalKey = key;
 }
 
-// ----- Ansicht „Bücher von …“: alle bekannten Bücher einer Autor·in zum Abhaken -----
-async function fillAuthorView() {
-  const el = body();
-  const a = ui.author;
-  el.innerHTML = `
-    <p><button class="btn btn-small" type="button" data-bauthorview="">← Zurück</button></p>
-    <h2>Bücher von ${esc(a.n)}</h2>
-    <p class="muted small">Tipp an, was du gelesen hast – auch die, die du nicht im Regal hast. Die bekanntesten stehen oben.</p>
-    <div id="author-books"><p class="muted center">Lädt …</p></div>`;
-  window.scrollTo({ top: 0 });
-  let list = [];
-  try { list = await books.search({ q: `author_key:${a.id.replace('/authors/', '')}`, sort: 'readinglog' }, lang(), 100); } catch (err) {
-    if (ui.author === a && body()) document.getElementById('author-books').innerHTML = `<p class="muted center">${esc(err.message)}</p>`;
-    return;
+// ----- Abhak-Listen: „Bücher von …“, „Reihe …“, „Schullektüre“ -----
+async function viewList(v) {
+  if (v.kind === 'series') return seriesBooks(v.id, lang());
+  if (v.kind === 'school') {
+    // Ursprünglich deutsche Schullektüre zuerst, dann die übrigen; je die bekanntesten oben
+    const list = SEED_BOOKS.filter((b) => b.k).sort((a, b) => (b.o === 'de') - (a.o === 'de') || b.r - a.r);
+    return list.map((b) => books.fromSeed(b, lang()));
   }
-  if (ui.author !== a || !document.getElementById('author-books')) return;
+  const list = await books.search({ q: `author_key:${v.id.replace('/authors/', '')}`, sort: 'readinglog' }, lang(), 100);
   // Doppelt angelegte Bücher nur einmal; markierte zuerst behalten, Doppel von Markierten weglassen
   const known = books.knownMatcher(profile);
   const ok = list.filter((b) => (b.cover || b.r >= 5 || marks()[b.id]) && !books.BUNDLE.test(b.title) && (marks()[b.id] || !known(b)));
-  const shown = remember(books.dedupe([...ok.filter((b) => marks()[b.id]), ...ok.filter((b) => !marks()[b.id])]));
-  shown.sort((x, y) => (y.r || 0) - (x.r || 0));
-  document.getElementById('author-books').innerHTML = shown.length
+  return books.dedupe([...ok.filter((b) => marks()[b.id]), ...ok.filter((b) => !marks()[b.id])]).sort((x, y) => (y.r || 0) - (x.r || 0));
+}
+const VIEW_TEXT = {
+  author: (v) => [`Bücher von ${v.n}`, 'Tipp an, was du gelesen hast – auch die, die du nicht im Regal hast. Die bekanntesten stehen oben.'],
+  series: (v) => [`Reihe: ${v.n}`, 'Alle Bände in ihrer Reihenfolge. Tipp nur die an, die du wirklich gelesen hast – wer Band 7 kennt, kennt nicht automatisch alle davor.'],
+  school: () => ['Schullektüre', 'Typische Schulbücher – tipp schnell an, was du kennst, und überscroll den Rest. Auch ✕ „Nicht gut“ hilft den Vorschlägen.'],
+};
+async function fillListView() {
+  const el = body();
+  const v = ui.view;
+  const [title, hint] = VIEW_TEXT[v.kind](v);
+  el.innerHTML = `
+    <p><button class="btn btn-small" type="button" data-bviewback>← Zurück</button></p>
+    <h2>${esc(title)}</h2>
+    <p class="muted small">${esc(hint)}</p>
+    <div id="author-books"><p class="muted center">Lädt …</p></div>`;
+  window.scrollTo({ top: Math.max(0, el.getBoundingClientRect().top + window.scrollY - 80) }); // gleich zur Liste, nicht zum Scan-Hinweis
+  let list = [];
+  try { list = await viewList(v); } catch (err) {
+    if (ui.view === v && document.getElementById('author-books')) document.getElementById('author-books').innerHTML = `<p class="muted center">${esc(err.message)}</p>`;
+    return;
+  }
+  const box = document.getElementById('author-books');
+  if (ui.view !== v || !box) return;
+  const shown = remember(list || []);
+  box.innerHTML = shown.length
     ? `<div class="films">${shown.map(bookCard).join('')}</div>`
-    : '<p class="muted center">Keine Bücher gefunden.</p>';
+    : `<p class="muted center">${v.kind === 'series' ? 'Zu dieser Reihe kennt Wikidata keine einzelnen Bände.' : 'Keine Bücher gefunden.'}</p>`;
+  if (v.kind !== 'series') fillSeriesSlots(box);
+}
+
+// Reihen-Knopf auf Buchkarten: einmal nachschlagen, welche Bücher zu einer Reihe gehören
+async function fillSeriesSlots(root) {
+  const slots = [...(root || document).querySelectorAll('[data-bseries-for]:not([data-done])')];
+  if (!slots.length) return;
+  slots.forEach((x) => { x.dataset.done = '1'; });
+  const map = await seriesOf(slots.map((x) => x.dataset.bseriesFor), lang());
+  for (const slot of slots) {
+    const ser = map.get(slot.dataset.bseriesFor);
+    if (!ser || !slot.isConnected) continue;
+    const band = ser.ord && /^\d+$/.test(ser.ord) ? `Band ${ser.ord} · ` : '';
+    slot.innerHTML = `${band}<button type="button" class="link-btn" data-bseriesview="${esc(ser.id)}" data-bseriesname="${esc(ser.n)}">📚 Reihe „${esc(ser.n)}“: alle Bände</button>`;
+  }
 }
 
 // Kleine Leiste über der Bücherliste: deine Autor·innen zum Abhaken
 function authorChips() {
   const list = ownAuthors().slice(0, 8);
-  if (!list.length) return '';
-  return `<div class="author-chips"><span class="muted small">Alle Bücher abhaken von:</span>
+  const school = '<div class="author-chips"><button type="button" class="chip" data-bschool>🎓 Schullektüre abhaken</button></div>';
+  if (!list.length) return school;
+  return `${school}<div class="author-chips"><span class="muted small">Alle Bücher abhaken von:</span>
     ${list.map((x) => `<button type="button" class="chip" data-bauthorview="${esc(x.id)}" data-bauthorname="${esc(x.n)}">${esc(x.n)}</button>`).join('')}</div>`;
 }
 
@@ -340,6 +381,7 @@ async function fillBooks() {
     ${doneInfo}
     <div class="films">${candidates().slice(0, L.shown).map(bookCard).join('')}</div>
     <div class="row center-row"><button class="btn btn-primary" type="button" data-btaste="more">Weitere laden</button></div>`;
+  fillSeriesSlots(el);
 }
 
 async function loadMore(btn) {
@@ -353,6 +395,7 @@ async function loadMore(btn) {
   btn.disabled = false; btn.textContent = 'Weitere laden';
   const have = new Set(present);
   grid.insertAdjacentHTML('beforeend', candidates().slice(0, L.shown).filter((b) => !have.has(b.id)).map(bookCard).join(''));
+  fillSeriesSlots(grid);
 }
 
 // ----- Autor·innen -----
@@ -445,6 +488,7 @@ async function runSearch() {
       ${auths.length ? `<h2>Autor·innen</h2><div class="tiles">${auths.map(authorCard).join('')}</div>` : ''}
       ${genreList.length ? `<h2>Genres</h2><div class="tiles">${genreList.map(genreCard).join('')}</div>` : ''}
       ${themeList.length ? `<h2>Themen</h2><div class="tiles">${themeList.map(themeCard).join('')}</div>` : ''}`;
+    fillSeriesSlots(el);
   } catch (err) {
     if (run === searchRun && body()) el.innerHTML = `<div class="card center"><p>${esc(err.message)}</p><button class="btn" type="button" data-btaste="search">Nochmal versuchen</button></div>`;
   }
@@ -487,16 +531,26 @@ export function handleClick(e) {
     return true;
   }
   const av = e.target.closest('[data-bauthorview]');
-  if (av) {
-    ui.author = av.dataset.bauthorview ? { id: av.dataset.bauthorview, n: av.dataset.bauthorname || '' } : null;
-    if (!ui.author) { L.done = null; window.scrollTo({ top: 0 }); }
+  const sv = e.target.closest('[data-bseriesview]');
+  if (av || sv || e.target.closest('[data-bschool]')) {
+    ui.view = av ? { kind: 'author', id: av.dataset.bauthorview, n: av.dataset.bauthorname || '' }
+      : sv ? { kind: 'series', id: sv.dataset.bseriesview, n: sv.dataset.bseriesname || '' }
+        : { kind: 'school' };
+    fillBody();
+    return true;
+  }
+  if (e.target.closest('[data-bviewback]')) {
+    const back = ui.view?.back;
+    ui.view = null;
+    if (back) { location.hash = back; return true; }
+    L.done = null; window.scrollTo({ top: 0 });
     fillBody();
     return true;
   }
   const sub = e.target.closest('[data-bsub]');
   if (sub) {
     ui.sub = sub.dataset.bsub;
-    ui.author = null;
+    ui.view = null;
     document.querySelectorAll('.sub-tabs [data-bsub]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.bsub === ui.sub)));
     fillBody();
     return true;

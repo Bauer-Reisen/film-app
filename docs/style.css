@@ -526,3 +526,5 @@ ul.plain { list-style: none; padding: 0; margin: 0; display: flex; flex-directio
 .rate-desc p { display: -webkit-box; -webkit-line-clamp: 6; -webkit-box-orient: vertical; overflow: hidden; cursor: pointer; }
 .rate-desc p.full { display: block; }
 .rate-choices .btn { white-space: normal; line-height: 1.2; }
+.series-slot:empty { display: none; }
+.series-slot { margin: 2px 0 6px; }

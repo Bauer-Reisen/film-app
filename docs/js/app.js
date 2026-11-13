@@ -1,28 +1,28 @@
 // Oberfläche: Seitenwechsel über die Adresse (#/vorschlaege usw.)
-import { VERSION, LANGUAGES } from './config.js?v=1.20.0';
-import * as store from './store.js?v=1.20.0';
-import { saveBackup, readBackup, findSameName, importAsNew, mergeInto } from './backup.js?v=1.20.0';
-import { esc, dialog, toast, formatDate } from './ui.js?v=1.20.0';
-import * as platform from './platform.js?v=1.20.0';
-import * as taste from './taste.js?v=1.20.0';
-import * as suggest from './suggest.js?v=1.20.0';
-import * as watchlist from './watchlist.js?v=1.20.0';
-import * as sneak from './sneak.js?v=1.20.0';
-import * as group from './group.js?v=1.20.0';
-import * as kids from './kids.js?v=1.20.0';
-import * as rewatch from './rewatch.js?v=1.20.0';
-import * as trailer from './trailer.js?v=1.20.0';
-import { initRuntimes } from './runtime.js?v=1.20.0';
-import { mediaOf } from './media.js?v=1.20.0';
-import { runTour } from './tour.js?v=1.20.0';
-import * as bookTaste from './book-taste.js?v=1.20.0';
-import * as bookList from './book-list.js?v=1.20.0';
-import * as scan from './scan.js?v=1.20.0';
-import * as bookRate from './book-rate.js?v=1.20.0';
-import * as bookSuggest from './book-suggest.js?v=1.20.0';
-import * as bookSneak from './book-sneak.js?v=1.20.0';
-import * as bookRewatch from './book-rewatch.js?v=1.20.0';
-import { initBookExtras } from './book-extra.js?v=1.20.0';
+import { VERSION, LANGUAGES } from './config.js?v=1.21.0';
+import * as store from './store.js?v=1.21.0';
+import { saveBackup, readBackup, findSameName, importAsNew, mergeInto } from './backup.js?v=1.21.0';
+import { esc, dialog, toast, formatDate } from './ui.js?v=1.21.0';
+import * as platform from './platform.js?v=1.21.0';
+import * as taste from './taste.js?v=1.21.0';
+import * as suggest from './suggest.js?v=1.21.0';
+import * as watchlist from './watchlist.js?v=1.21.0';
+import * as sneak from './sneak.js?v=1.21.0';
+import * as group from './group.js?v=1.21.0';
+import * as kids from './kids.js?v=1.21.0';
+import * as rewatch from './rewatch.js?v=1.21.0';
+import * as trailer from './trailer.js?v=1.21.0';
+import { initRuntimes } from './runtime.js?v=1.21.0';
+import { mediaOf } from './media.js?v=1.21.0';
+import { runTour } from './tour.js?v=1.21.0';
+import * as bookTaste from './book-taste.js?v=1.21.0';
+import * as bookList from './book-list.js?v=1.21.0';
+import * as scan from './scan.js?v=1.21.0';
+import * as bookRate from './book-rate.js?v=1.21.0';
+import * as bookSuggest from './book-suggest.js?v=1.21.0';
+import * as bookSneak from './book-sneak.js?v=1.21.0';
+import * as bookRewatch from './book-rewatch.js?v=1.21.0';
+import { initBookExtras } from './book-extra.js?v=1.21.0';
 
 const view = document.getElementById('view');
 const APP_URL = 'https://bauer-reisen.github.io/film-app/';
@@ -279,7 +279,7 @@ const pages = {
 
       <h2>Buchdaten</h2>
       <div class="card stack">
-        <p>Alle Buchdaten und Cover kommen von <a href="https://openlibrary.org/" target="_blank" rel="noopener">Open Library</a>, einem freien Bücherkatalog des Internet Archive. Beschreibungen gibt es dort meist nur auf Englisch.</p>
+        <p>Alle Buchdaten und Cover kommen von <a href="https://openlibrary.org/" target="_blank" rel="noopener">Open Library</a>, einem freien Bücherkatalog des Internet Archive. Beschreibungen gibt es dort meist nur auf Englisch. Welche Bücher zu einer Reihe gehören (und in welcher Reihenfolge), kommt von <a href="https://www.wikidata.org/" target="_blank" rel="noopener">Wikidata</a>.</p>
         <p class="muted">Beim Scannen bleibt das Kamerabild auf deinem Handy. Gesendet wird nur die ISBN-Nummer.</p>
       </div>
 
@@ -294,7 +294,7 @@ const pages = {
       <h2>Deine Daten</h2>
       <div class="card stack">
         <p>Es gibt keine Anmeldung und kein Konto. Deine Profile liegen nur auf diesem Gerät.</p>
-        <p class="muted">Für Filmdaten fragt die App über einen kleinen Zwischenhändler (Cloudflare) bei TMDB an, für Bücher bei Open Library. Dabei werden keine Namen oder Markierungen übertragen, nur die Suche selbst.</p>
+        <p class="muted">Für Filmdaten fragt die App über einen kleinen Zwischenhändler (Cloudflare) bei TMDB an, für Bücher bei Open Library, für Buchreihen direkt bei Wikidata. Dabei werden keine Namen oder Markierungen übertragen, nur die Suche selbst.</p>
         <p class="muted">Trailer kommen von YouTube. YouTube wird erst geladen, wenn du auf „Trailer“ tippst, in der datensparsamen Variante ohne Werbe-Cookies.</p>
         <p class="muted">Wo ein Film oder eine Serie läuft, zeigt die App nicht selbst an. Auf der Merkliste führt „Wo kann ich das schauen?“ zu JustWatch, auf der Leseliste „Bei Amazon ansehen“ zu Amazon – nur Links, die App sendet dabei nichts und verdient nichts daran.</p>
       </div>

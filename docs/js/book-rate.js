@@ -1,10 +1,12 @@
 // Seite „Wie fandst du sie?“: Bücher eins nach dem anderen kurz bewerten.
 // Kommt direkt nach dem Scannen oder dem Einfügen einer geteilten Liste; auch später über „Geschmack“ erreichbar.
 // Offen sind: Bücher auf der Warteliste (pendingBooks, noch gar nicht markiert) und ältere, nur als „Gelesen“ markierte.
-import * as store from './store.js?v=1.20.0';
-import { esc } from './ui.js?v=1.20.0';
-import { MEDIA } from './media.js?v=1.20.0';
-import { coverImg, bookMeta, openSub } from './book-taste.js?v=1.20.0';
+import * as store from './store.js?v=1.21.0';
+import { esc } from './ui.js?v=1.21.0';
+import { MEDIA } from './media.js?v=1.21.0';
+import { coverImg, bookMeta, openSub, openSeries } from './book-taste.js?v=1.21.0';
+import { seriesOf } from './book-series.js?v=1.21.0';
+import { readLang } from './books.js?v=1.21.0';
 
 const W = MEDIA.book.w;
 // Zu Ende gelesen → wie war's? Angefangen → abgebrochen oder liegen geblieben?
@@ -67,6 +69,7 @@ function paint() {
       <div class="group-cover">${coverImg(b.cover, `Cover: ${b.title}`)}</div>
       <h2 class="group-title">${esc(b.title)}</h2>
       <p class="group-meta">${esc(bookMeta(b))}</p>
+      <p class="small" id="rate-series"></p>
       <details class="overview rate-desc" data-bdesc="${esc(id)}" open><summary>Worum ging's?</summary><p class="muted">Lädt …</p></details>
       <div class="rate-choices" role="group" aria-label="Wie fandst du ${esc(b.title)}?">
         ${CHOICES.map(([k, icon, label, cls]) => `<button type="button" class="btn btn-big ${cls === 'wide' ? 'rate-wide' : cls}" data-rate="${k}"><span aria-hidden="true">${icon}</span> ${label}</button>`).join('')}
@@ -78,6 +81,13 @@ function paint() {
     </p>`;
   // Inhaltsangabe gleich laden (sie ist schon aufgeklappt)
   el.querySelector('details[data-bdesc]')?.dispatchEvent(new Event('toggle'));
+  // Teil einer Reihe? Dann die anderen Bände anbieten
+  seriesOf([id], readLang(profile)).then((map) => {
+    const ser = map.get(id);
+    const slot = document.getElementById('rate-series');
+    if (!ser || !slot || queue?.[pos] !== id) return;
+    slot.innerHTML = `📚 ${ser.ord && /^\d+$/.test(ser.ord) ? `Band ${ser.ord} der Reihe` : 'Aus der Reihe'} „${esc(ser.n)}“ · <a href="#/geschmack" data-rateseries="${esc(ser.id)}" data-rateseriesname="${esc(ser.n)}">Andere Bände abhaken</a>`;
+  });
 }
 
 function summary() {
@@ -142,6 +152,8 @@ export function handleClick(e) {
   if (act === 'back') { back(); return true; }
   if (act === 'stop') { queue = null; location.hash = '#/geschmack'; return true; }
   if (act === 'scan') { queue = null; autoCamera = true; return false; } // Link führt zur Scan-Seite
+  const rs = e.target.closest('[data-rateseries]');
+  if (rs) { openSeries(rs.dataset.rateseries, rs.dataset.rateseriesname, '#/bewerten'); return false; } // Link führt zu Geschmack
   if (act === 'more') { queue = null; openSub('buecher'); return false; } // Link führt weiter
   return false;
 }

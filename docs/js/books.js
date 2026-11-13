@@ -1,9 +1,9 @@
 // Buchdaten von Open Library (frei, ohne Schlüssel).
 // Erst über unseren Worker (/ol/…). Kennt der Worker die Adressen noch nicht, direkt bei Open Library
 // (die Seite erlaubt das ausdrücklich). Merkt sich Antworten für die Sitzung, höchstens 4 Anfragen gleichzeitig.
-import { WORKER_URL } from './config.js?v=1.20.0';
-import { SEED_BOOKS } from './seeds-books.js?v=1.20.0';
-import { genresOf } from './book-genres.js?v=1.20.0';
+import { WORKER_URL } from './config.js?v=1.21.0';
+import { SEED_BOOKS } from './seeds-books.js?v=1.21.0';
+import { genresOf } from './book-genres.js?v=1.21.0';
 
 const OL = 'https://openlibrary.org';
 const COVERS = 'https://covers.openlibrary.org';
@@ -175,7 +175,7 @@ export async function searchAuthors(q, limit = 8) {
 export const markMeta = (b) => ({ g: b.g || [], y: b.y || null, n: b.title || '', a: b.a || '', ak: b.ak || null, c: b.cover || null, pg: b.pg || null });
 
 // Sammelbände, Gesamtausgaben, Studienhilfen – die schlagen wir nicht vor
-export const BUNDLE = /( \/ |\b(complete|collected|omnibus|box(ed)? set|boxset|collection|trilogy set|novels of|works of|study guide|sparknotes|cliffs ?notes)\b)/i;
+export const BUNDLE = /( \/ |\b(complete|collected|omnibus|box(ed)? set|boxset|collection|trilogy set|novels of|works of|study guide|sparknotes|cliffs ?notes)\b|\b\d+ ?[-–] ?\d+\s*$)/i; // auch „Harry Potter 1-7“
 
 // Eintrag für die Warteliste (noch nicht bewertet)
 export const pendingEntry = (b) => ({ id: b.id, n: b.title || '', a: b.a || '', ak: b.ak || null, c: b.cover || null, y: b.y || null, pg: b.pg || null, g: b.g || [] });

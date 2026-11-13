@@ -1,13 +1,13 @@
 // Vorschläge berechnen – nachvollziehbar, ohne „Lernen“:
 // Ausgangspunkte holen → Kandidaten sammeln → Punkte vergeben → Vielfalt → Begründung.
 // Gilt für Filme und Serien (media = 'movie' | 'tv'). Alle Zahlen stehen in config.js.
-import { RECOMMEND as R, RECOMMEND_TV as RT, BRIDGE as B } from './config.js?v=1.20.0';
-import * as tmdb from './tmdb.js?v=1.20.0';
-import { SEED_MOVIES, SEED_STUDIOS } from './seeds.js?v=1.20.0';
-import { SEED_SHOWS } from './seeds-tv.js?v=1.20.0';
-import { tierOf } from './store.js?v=1.20.0';
-import { themeById, themeQuery } from './themes.js?v=1.20.0';
-import { MEDIA, mediaOf, marksOf, other, excludedGenre, creditsOf, mapGenres } from './media.js?v=1.20.0';
+import { RECOMMEND as R, RECOMMEND_TV as RT, BRIDGE as B } from './config.js?v=1.21.0';
+import * as tmdb from './tmdb.js?v=1.21.0';
+import { SEED_MOVIES, SEED_STUDIOS } from './seeds.js?v=1.21.0';
+import { SEED_SHOWS } from './seeds-tv.js?v=1.21.0';
+import { tierOf } from './store.js?v=1.21.0';
+import { themeById, themeQuery } from './themes.js?v=1.21.0';
+import { MEDIA, mediaOf, marksOf, other, excludedGenre, creditsOf, mapGenres } from './media.js?v=1.21.0';
 
 const seedById = { movie: new Map(SEED_MOVIES.map((m) => [m.id, m])), tv: new Map(SEED_SHOWS.map((m) => [m.id, m])) };
 const studioName = new Map(SEED_STUDIOS.map((s) => [s.id, s.n]));

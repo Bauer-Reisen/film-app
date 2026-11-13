@@ -1,13 +1,13 @@
 // Seite „Kinderfilme“ bzw. „Kinderserien“: gute Titel mit passender Altersfreigabe.
 // Es zählt vor allem Bewertung und Beliebtheit – Kinder haben ihren eigenen Geschmack.
-import { KIDS, KIDS_TV } from './config.js?v=1.20.0';
-import * as store from './store.js?v=1.20.0';
-import * as tmdb from './tmdb.js?v=1.20.0';
-import { esc, toast } from './ui.js?v=1.20.0';
-import { runtimeSlot } from './runtime.js?v=1.20.0';
-import { trailerBtn } from './trailer.js?v=1.20.0';
-import { ageOk } from './age.js?v=1.20.0';
-import { MEDIA, mediaOf, marksOf, askStarted, stateLabel, STARTED, pressed } from './media.js?v=1.20.0';
+import { KIDS, KIDS_TV } from './config.js?v=1.21.0';
+import * as store from './store.js?v=1.21.0';
+import * as tmdb from './tmdb.js?v=1.21.0';
+import { esc, toast } from './ui.js?v=1.21.0';
+import { runtimeSlot } from './runtime.js?v=1.21.0';
+import { trailerBtn } from './trailer.js?v=1.21.0';
+import { ageOk } from './age.js?v=1.21.0';
+import { MEDIA, mediaOf, marksOf, askStarted, stateLabel, STARTED, pressed } from './media.js?v=1.21.0';
 
 const FEEDBACK = [
   ['want', '+', 'Merken'],

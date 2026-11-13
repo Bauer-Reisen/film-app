@@ -100,8 +100,78 @@ Big Little Lies|Liane Moriarty; The Girl on the Train|Paula Hawkins|Girl on the 
 The Nightingale|Kristin Hannah|Die Nachtigall; All the Light We Cannot See|Anthony Doerr|Alles Licht, das wir nicht sehen; The Midnight Library|Matt Haig|Die Mitternachtsbibliothek;
 Howl's Moving Castle|Diana Wynne Jones|Sophie im Schloss des Zauberers; The Thursday Murder Club|Richard Osman|Der Donnerstagsmordclub; Lessons in Chemistry|Bonnie Garmus|Eine Frage der Chemie;
 Shōgun|James Clavell; The Lord of the Rings|J. R. R. Tolkien|Der Herr der Ringe; The Body|Stephen King; Kindred|Octavia E. Butler; The Remarkable Journey of Coyote Sunrise|Dan Gemeinhart;
-Wonder|R. J. Palacio|Wunder; Hyperion|Dan Simmons; Solaris|Stanisław Lem; Roadside Picnic|Arkady Strugatsky|Picknick am Wegesrand; The Long Way to a Small, Angry Planet|Becky Chambers|Der lange Weg zu einem kleinen zornigen Planeten
+Wonder|R. J. Palacio|Wunder; Hyperion|Dan Simmons; Solaris|Stanisław Lem; Roadside Picnic|Arkady Strugatsky|Picknick am Wegesrand; The Long Way to a Small, Angry Planet|Becky Chambers|Der lange Weg zu einem kleinen zornigen Planeten;
+Harry Potter and the Chamber of Secrets|J. K. Rowling|Harry Potter und die Kammer des Schreckens; Harry Potter and the Prisoner of Azkaban|J. K. Rowling|Harry Potter und der Gefangene von Askaban;
+Harry Potter and the Goblet of Fire|J. K. Rowling|Harry Potter und der Feuerkelch; Harry Potter and the Order of the Phoenix|J. K. Rowling|Harry Potter und der Orden des Phönix;
+Harry Potter and the Half-Blood Prince|J. K. Rowling|Harry Potter und der Halbblutprinz; Harry Potter and the Deathly Hallows|J. K. Rowling|Harry Potter und die Heiligtümer des Todes;
+Catching Fire|Suzanne Collins|Gefährliche Liebe; Mockingjay|Suzanne Collins|Flammender Zorn; The Two Towers|J. R. R. Tolkien|Die zwei Türme; The Return of the King|J. R. R. Tolkien|Die Rückkehr des Königs;
+The Physician|Noah Gordon|Der Medicus; Me Before You|Jojo Moyes|Ein ganzes halbes Jahr; The Seven Sisters|Lucinda Riley|Die sieben Schwestern; Fifty Shades of Grey|E. L. James|Shades of Grey;
+Twilight|Stephenie Meyer|Bis(s) zum Morgengrauen; The Thorn Birds|Colleen McCullough|Die Dornenvögel; Angels & Demons|Dan Brown|Illuminati; Inferno|Dan Brown;
+Fall of Giants|Ken Follett|Sturz der Titanen; The Keeper of Lost Causes|Jussi Adler-Olsen|Erbarmen; Faceless Killers|Henning Mankell|Mörder ohne Gesicht;
+The Chemistry of Death|Simon Beckett|Die Chemie des Todes; The Boy in the Striped Pyjamas|John Boyne|Der Junge im gestreiften Pyjama; Sophie's World|Jostein Gaarder|Sofies Welt;
+The Wave|Morton Rhue|Die Welle; The Why Café|John Strelecky|Das Café am Rande der Welt; Hector and the Search for Happiness|François Lelord|Hectors Reise;
+The Shell Seekers|Rosamunde Pilcher|Die Muschelsucher; Diary of a Wimpy Kid|Jeff Kinney|Gregs Tagebuch; Ronia, the Robber's Daughter|Astrid Lindgren|Ronja Räubertochter;
+The Brothers Lionheart|Astrid Lindgren|Die Brüder Löwenherz; Eat, Pray, Love|Elizabeth Gilbert; It Ends with Us|Colleen Hoover|Nur noch ein einziges Mal; Verity|Colleen Hoover;
+The Silent Patient|Alex Michaelides|Die stumme Patientin; The Snowman|Jo Nesbø|Schneemann;
+Inkheart|Cornelia Funke|Tintenherz; The Thief Lord|Cornelia Funke|Herr der Diebe; Ruby Red|Kerstin Gier|Rubinrot; The Swarm|Frank Schätzing|Der Schwarm;
+Look Who's Back|Timur Vermes|Er ist wieder da; Die Känguru-Chroniken|Marc-Uwe Kling; QualityLand|Marc-Uwe Kling; Therapy|Sebastian Fitzek|Die Therapie;
+The Eye Collector|Sebastian Fitzek|Der Augensammler; Passenger 23|Sebastian Fitzek|Passagier 23; Das Paket|Sebastian Fitzek; Snow White Must Die|Nele Neuhaus|Schneewittchen muss sterben;
+Altes Land|Dörte Hansen; What You Can See from Here|Mariana Leky|Was man von hier aus sehen kann; Unterleuten|Juli Zeh; Über Menschen|Juli Zeh;
+Tyll|Daniel Kehlmann; The End of Loneliness|Benedict Wells|Vom Ende der Einsamkeit; Herr Lehmann|Sven Regener; Crime|Ferdinand von Schirach|Verbrechen;
+Blackout|Marc Elsberg; Das Jesus-Video|Andreas Eschbach; The 13½ Lives of Captain Bluebear|Walter Moers|Die 13½ Leben des Käpt'n Blaubär;
+The City of Dreaming Books|Walter Moers|Die Stadt der träumenden Bücher; Mieses Karma|David Safier; Vollidiot|Tommy Jaud; Dampfnudelblues|Rita Falk; Milchgeld|Volker Klüpfel;
+Das Boot|Lothar-Günther Buchheim; The Wall|Marlen Haushofer|Die Wand; The Tobacconist|Robert Seethaler|Der Trafikant; A Whole Life|Robert Seethaler|Ein ganzes Leben;
+The Wandering Whore|Iny Lorentz|Die Wanderhure; Gut|Giulia Enders|Darm mit Charme; Erebos|Ursula Poznanski;
+Krabat|Otfried Preußler; The Robber Hotzenplotz|Otfried Preußler|Der Räuber Hotzenplotz;
+Jim Button and Luke the Engine Driver|Michael Ende|Jim Knopf und Lukas der Lokomotivführer; Emil and the Detectives|Erich Kästner|Emil und die Detektive;
+Lisa and Lottie|Erich Kästner|Das doppelte Lottchen; The Flying Classroom|Erich Kästner|Das fliegende Klassenzimmer;
+The Sorrows of Young Werther|Johann Wolfgang von Goethe|Die Leiden des jungen Werthers; Faust|Johann Wolfgang von Goethe; Effi Briest|Theodor Fontane;
+Chess Story|Stefan Zweig|Schachnovelle; Homo Faber|Max Frisch; Andorra|Max Frisch; The Fire Raisers|Max Frisch|Biedermann und die Brandstifter;
+The Visit|Friedrich Dürrenmatt|Der Besuch der alten Dame; The Physicists|Friedrich Dürrenmatt|Die Physiker; The Judge and His Hangman|Friedrich Dürrenmatt|Der Richter und sein Henker;
+The Pledge|Friedrich Dürrenmatt|Das Versprechen; Intrigue and Love|Friedrich Schiller|Kabale und Liebe; The Robbers|Friedrich Schiller|Die Räuber; William Tell|Friedrich Schiller|Wilhelm Tell;
+Nathan the Wise|Gotthold Ephraim Lessing|Nathan der Weise; Emilia Galotti|Gotthold Ephraim Lessing; Woyzeck|Georg Büchner; The Rider on the White Horse|Theodor Storm|Der Schimmelreiter;
+The Sandman|E. T. A. Hoffmann|Der Sandmann; The Jew's Beech|Annette von Droste-Hülshoff|Die Judenbuche; The Broken Jug|Heinrich von Kleist|Der zerbrochne Krug;
+Michael Kohlhaas|Heinrich von Kleist; The Captain of Köpenick|Carl Zuckmayer|Der Hauptmann von Köpenick; The Man Outside|Wolfgang Borchert|Draußen vor der Tür;
+Mother Courage and Her Children|Bertolt Brecht|Mutter Courage und ihre Kinder; The Good Person of Szechwan|Bertolt Brecht|Der gute Mensch von Sezuan;
+The Threepenny Opera|Bertolt Brecht|Die Dreigroschenoper; Beneath the Wheel|Hermann Hesse|Unterm Rad; The Lost Honour of Katharina Blum|Heinrich Böll|Die verlorene Ehre der Katharina Blum;
+The Clown|Heinrich Böll|Ansichten eines Clowns; Flight to Afar|Alfred Andersch|Sansibar oder der letzte Grund; Clothes Make the Man|Gottfried Keller|Kleider machen Leute;
+The Loyal Subject|Heinrich Mann|Der Untertan; Berlin Alexanderplatz|Alfred Döblin; Youth Without God|Ödön von Horváth|Jugend ohne Gott; Agnes|Peter Stamm;
+Corpus Delicti|Juli Zeh; Fall-Out|Gudrun Pausewang|Die Wolke; Friedrich|Hans Peter Richter|Damals war es Friedrich;
+Ben Loves Anna|Peter Härtling|Ben liebt Anna; The Center of the World|Andreas Steinhöfel|Die Mitte der Welt; Rico, Oscar and the Deepest Shadows|Andreas Steinhöfel|Rico, Oskar und die Tieferschatten;
+Romeo and Juliet|William Shakespeare|Romeo und Julia; Hamlet|William Shakespeare; Macbeth|William Shakespeare
 `.split(';').map((s) => s.trim()).filter(Boolean).map((s) => { const [t, a, de] = s.split('|').map((x) => x.trim()); return { t, a, de }; });
+
+// In Deutschland bekannt (englische Titel aus der Liste oben) – stehen unter „Geschmack“ weiter oben.
+// Alles ab „Harry Potter and the Chamber of Secrets“ ist ohnehin für Deutschland ausgesucht.
+const split = (x) => new Set(x.split(';').map((y) => y.trim()).filter(Boolean));
+const DE_KNOWN = split(`Pride and Prejudice; Dracula; The Metamorphosis; The Trial; The Magic Mountain; Steppenwolf; Siddhartha; All Quiet on the Western Front;
+The Great Gatsby; Brave New World; Nineteen Eighty-Four; Animal Farm; The Little Prince; The Hobbit; The Fellowship of the Ring; The Lord of the Rings;
+Lord of the Flies; The Name of the Rose; Perfume; The Neverending Story; Momo; The Reader; The Tin Drum; Measuring the World; Why We Took the Car;
+The Hitchhiker's Guide to the Galaxy; The Shadow of the Wind; The Alchemist; The Kite Runner; The Book Thief; Harry Potter and the Philosopher's Stone;
+The Da Vinci Code; The Girl with the Dragon Tattoo; The Hunger Games; The Fault in Our Stars; A Game of Thrones; It; The Shining; The Godfather;
+Bridget Jones's Diary; Pippi Longstocking; Charlie and the Chocolate Factory; The Lion, the Witch and the Wardrobe; The Diary of a Young Girl;
+The Pillars of the Earth; Where the Crawdads Sing; The Midnight Library; The Little Paris Bookshop; The Circle; A Man Called Ove; Alice's Adventures in Wonderland;
+Treasure Island; Around the World in Eighty Days; Twenty Thousand Leagues Under the Sea; The Adventures of Sherlock Holmes; Murder on the Orient Express;
+Sapiens; Gone Girl; Wonder; The Martian; Life of Pi; The Hundred-Year-Old Man Who Climbed Out of the Window and Disappeared; Man's Search for Meaning;
+The Curious Incident of the Dog in the Night-Time; Matilda; Outlander; The Girl on the Train; Eleanor Oliphant Is Completely Fine`);
+// Ursprünglich auf Deutsch geschrieben – wer auf Englisch liest, bekommt sie nicht nach oben
+const GERMAN_AUTHORS = split(`Franz Kafka; Thomas Mann; Hermann Hesse; Erich Maria Remarque; Patrick Süskind; Michael Ende; Bernhard Schlink; Günter Grass; Daniel Kehlmann;
+Wolfgang Herrndorf; Nina George; Viktor Frankl; Cornelia Funke; Kerstin Gier; Frank Schätzing; Timur Vermes; Marc-Uwe Kling; Sebastian Fitzek; Nele Neuhaus; Dörte Hansen;
+Mariana Leky; Juli Zeh; Benedict Wells; Sven Regener; Ferdinand von Schirach; Marc Elsberg; Andreas Eschbach; Walter Moers; David Safier; Tommy Jaud; Rita Falk;
+Volker Klüpfel; Stefan Zweig; Max Frisch; Friedrich Dürrenmatt; Theodor Fontane; Johann Wolfgang von Goethe; Erich Kästner; Otfried Preußler; Lothar-Günther Buchheim;
+Marlen Haushofer; Robert Seethaler; Iny Lorentz; Giulia Enders; Ursula Poznanski; Andreas Steinhöfel; Gudrun Pausewang; Hans Peter Richter; Friedrich Schiller;
+Gotthold Ephraim Lessing; Georg Büchner; Theodor Storm; E. T. A. Hoffmann; Annette von Droste-Hülshoff; Heinrich von Kleist; Carl Zuckmayer; Wolfgang Borchert;
+Bertolt Brecht; Heinrich Böll; Alfred Andersch; Gottfried Keller; Heinrich Mann; Alfred Döblin; Ödön von Horváth; Peter Stamm; Peter Härtling`);
+// Typische Schullektüre (Deutschland) – eigene Ansicht „Schullektüre abhaken“
+const SCHOOL = split(`The Sorrows of Young Werther; Faust; Effi Briest; Chess Story; Homo Faber; Andorra; The Fire Raisers; The Visit; The Physicists; The Judge and His Hangman;
+The Pledge; Intrigue and Love; The Robbers; William Tell; Nathan the Wise; Emilia Galotti; Woyzeck; The Rider on the White Horse; The Sandman; The Jew's Beech; The Broken Jug;
+Michael Kohlhaas; The Captain of Köpenick; The Man Outside; Mother Courage and Her Children; The Good Person of Szechwan; The Threepenny Opera; Beneath the Wheel;
+The Lost Honour of Katharina Blum; The Clown; Flight to Afar; Clothes Make the Man; The Loyal Subject; Berlin Alexanderplatz; Youth Without God; Agnes; Corpus Delicti;
+Fall-Out; Friedrich; Ben Loves Anna; The Wave; Krabat; Emil and the Detectives; The Metamorphosis; The Trial; Siddhartha; Steppenwolf; All Quiet on the Western Front;
+Perfume; The Reader; Why We Took the Car; The Tin Drum; Measuring the World; The Diary of a Young Girl; The Boy in the Striped Pyjamas; Sophie's World;
+Romeo and Juliet; Hamlet; Macbeth; Nineteen Eighty-Four; Animal Farm; Brave New World; Lord of the Flies; Fahrenheit 451; The Catcher in the Rye; Of Mice and Men;
+To Kill a Mockingbird; The Great Gatsby; The Old Man and the Sea; The Curious Incident of the Dog in the Night-Time; The Little Prince; Momo; The Neverending Story`);
+const DE_FROM = BOOKS.findIndex((b) => b.t === 'Harry Potter and the Chamber of Secrets');
 
 // ---------- Autor·innen (für „Geschmack → Autor·innen“) ----------
 const AUTHORS = `Stephen King; J. K. Rowling; Jane Austen; Agatha Christie; Haruki Murakami; Terry Pratchett; Neil Gaiman; Margaret Atwood;
@@ -221,6 +291,9 @@ for (const [i, b] of BOOKS.entries()) {
   const x = await findBook(b);
   if (!x) { console.log(`FEHLT  ${b.t} – ${b.a}`); continue; }
   if (books.some((y) => y.id === x.id)) { console.log(`DOPPELT ${b.t}`); continue; }
+  if (DE_KNOWN.has(b.t) || i >= DE_FROM) x.d = 1; // in Deutschland bekannt
+  if (GERMAN_AUTHORS.has(b.a)) x.o = 'de'; // ursprünglich deutsch
+  if (SCHOOL.has(b.t)) x.k = 1; // Schullektüre
   books.push(x);
   if (i % 10 === 0) console.log(`${i + 1}/${BOOKS.length} ${x.t.en}${x.t.de ? ` / ${x.t.de}` : ''} · ${x.g.join(',')} ${x.alt ? `(+${x.alt.join(',')})` : ''}`);
 }
@@ -246,7 +319,8 @@ for (const [md, id, expect, bookTitle] of PAIRS) {
 const out = `// Automatisch erzeugt von scripts/make-seeds-books.js – nicht von Hand ändern (außer PAIRS im Skript).
 // Daten: Open Library (openlibrary.org). id = Werk-Nummer (alle Ausgaben eines Buchs), alt = doppelt angelegte Werk-Nummern,
 // t/c = Titel und Cover-Nummer der englischen bzw. deutschen Ausgabe, a/ak = Autor·in, y = Erstausgabe, pg = Seiten,
-// g = Genres (book-genres.js), s = Schlagwörter, r = Leser·innen bei Open Library (Beliebtheit).
+// g = Genres (book-genres.js), s = Schlagwörter, r = Leser·innen bei Open Library (Beliebtheit),
+// d = in Deutschland bekannt, o = 'de' ursprünglich auf Deutsch, k = Schullektüre.
 export const SEED_BOOKS = ${JSON.stringify(books)};
 export const SEED_AUTHORS = ${JSON.stringify(authors)};
 // Film/Serie → Buch, das sich ähnlich anfühlt: [m = Film | t = Serie, TMDB-Nummer, Werk-Nummer]
