@@ -1,13 +1,13 @@
 // Buch-Vorschläge berechnen – nachvollziehbar wie bei Filmen:
 // Ausgangspunkte → Kandidaten (Open Library) → Punkte → Vielfalt → Begründung.
 // Brücke: Romanvorlagen gemochter Filme und Serien, feste Paare (seeds-books.js), Autor·innen aus Filmen.
-import * as books from './books.js?v=1.21.0';
-import { tierOf } from './store.js?v=1.21.0';
-import { themeById } from './themes.js?v=1.21.0';
-import { BOOK_GENRES, bookGenreById } from './book-genres.js?v=1.21.0';
-import { PAIRS } from './seeds-books.js?v=1.21.0';
-import { likedTitles, novelOf, authorsFromFilms } from './bridge-books.js?v=1.21.0';
-import { markedTitle } from './recommend.js?v=1.21.0';
+import * as books from './books.js?v=1.22.0';
+import { tierOf } from './store.js?v=1.22.0';
+import { themeById } from './themes.js?v=1.22.0';
+import { BOOK_GENRES, bookGenreById } from './book-genres.js?v=1.22.0';
+import { PAIRS } from './seeds-books.js?v=1.22.0';
+import { likedTitles, novelOf, authorsFromFilms } from './bridge-books.js?v=1.22.0';
+import { markedTitle } from './recommend.js?v=1.22.0';
 
 // Punkte je Grund (Stufe 2 = ★ Liebe, 1 = ♥ Gern) und Obergrenzen
 export const BOOK_POINTS = {
@@ -27,6 +27,7 @@ export const BOOK_POINTS = {
 const P = BOOK_POINTS;
 const LIKED = new Set(['liked', 'loved']);
 const FAV = new Set(['author', 'sameAuthor', 'novel', 'pair', 'filmAuthor']);
+const person = (n) => String(n || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z]/g, '');
 const akOf = (id) => String(id || '').replace('/authors/', '');
 // Schlagwörter, die fast jedes Buch hat – zählen nicht als Gemeinsamkeit
 const GENERIC = /(fiction|literature|novel|general|bestseller|reviewed|english|american|german|englisch|award|adaptation|large_type|accessible|protected|lending|in_library|reading|translation|chang_pian|xiao_shuo|literary|classic|contemporary|drama|belletrist|roman|juvenile|children|staff_picks|open_library|nyt|_\d|\d{4}|stories|books|fictitious|history_and_criticism|criticism|study|guides|manners_and_customs|social_life|man-woman)/;
@@ -164,10 +165,11 @@ function reasonsOf(b, src) {
   const out = [];
   const ak = akOf(b.ak);
   const s = new Set(b.s || []);
-  for (const a of src.authors) if (a.ak === ak) out.push({ kind: 'author', ref: a, p: P.author[tierOf(a)] || 0 });
+  const who = person(b.a); // Open Library führt manche Autor·innen doppelt – dann zählt der Name
+  for (const a of src.authors) if (a.ak === ak || (who && person(a.n) === who)) out.push({ kind: 'author', ref: a, p: P.author[tierOf(a)] || 0 });
   for (const l of src.liked) {
     if (l.id === b.id) continue;
-    if (ak && akOf(l.ak) === ak) out.push({ kind: 'sameAuthor', ref: l, p: P.sameAuthor });
+    if ((ak && akOf(l.ak) === ak) || (who && person(l.a) === who)) out.push({ kind: 'sameAuthor', ref: l, p: P.sameAuthor });
     const common = l.subj.filter((x) => s.has(x)).length;
     if (common >= 2) out.push({ kind: 'subjects', ref: l, p: P.subjects[l.s] * Math.min(1, common / 4) });
   }

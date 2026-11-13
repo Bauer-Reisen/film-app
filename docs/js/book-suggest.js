@@ -1,13 +1,14 @@
 // Seite „Vorschläge“ bei Büchern: Liste mit Begründung, Rückmeldungen, Rückgängig, „Mehr“,
 // „Heute Lust auf …“ und „Aus welcher Zeit“.
-import * as store from './store.js?v=1.21.0';
-import * as books from './books.js?v=1.21.0';
-import { esc, toast } from './ui.js?v=1.21.0';
-import { THEMES, themeById } from './themes.js?v=1.21.0';
-import { MEDIA, stateLabel } from './media.js?v=1.21.0';
-import { computeBooks, visibleBooks, hasBookSources, BOOK_ERAS, bookEraById, BOOK_POINTS } from './book-recommend.js?v=1.21.0';
-import { coverImg, bookMeta, rememberBooks } from './book-taste.js?v=1.21.0';
-import { movieHint } from './book-extra.js?v=1.21.0';
+import * as store from './store.js?v=1.22.0';
+import * as books from './books.js?v=1.22.0';
+import { esc, toast } from './ui.js?v=1.22.0';
+import { THEMES, themeById } from './themes.js?v=1.22.0';
+import { MEDIA, stateLabel } from './media.js?v=1.22.0';
+import { computeBooks, visibleBooks, hasBookSources, BOOK_ERAS, bookEraById, BOOK_POINTS } from './book-recommend.js?v=1.22.0';
+import { coverImg, bookMeta, rememberBooks } from './book-taste.js?v=1.22.0';
+import { movieHint } from './book-extra.js?v=1.22.0';
+import { fillSeriesSlots } from './book-series.js?v=1.22.0';
 
 const FEEDBACK = [
   ['want', '+', 'Merken'],
@@ -108,7 +109,10 @@ export async function mount(p) {
     <p class="muted small">${head} Tipp aufs Cover = ★ ${W.fav}.</p>
     <div class="suggestions">${first.map(card).join('')}</div>
     <div class="row center-row"><button class="btn btn-primary" type="button" data-bsg="more">Mehr Vorschläge</button></div>`;
+  slots();
 }
+// Reihe? Dann „Band 5 · alle Bände“ und ob man die Bände davor kennt
+const slots = () => fillSeriesSlots(box(), profile, { back: '#/vorschlaege', earlier: true });
 
 const errorBox = (msg) => `<div class="card center"><p>${esc(msg)}</p><button class="btn" type="button" data-bsg="retry">Nochmal versuchen</button></div>`;
 
@@ -125,6 +129,7 @@ function card(x) {
         <h3 class="film-title">${esc(b.title)}</h3>
         <p class="book-meta muted small">${esc(bookMeta(b))}</p>
         <p class="reason">${esc(x.text)}</p>
+        <p class="series-slot small" data-bseries-for="${esc(b.id)}"></p>
         <p class="rating muted small">${rating}${(b.r || 0).toLocaleString('de-DE')} Leser·innen bei Open Library</p>
         <div class="film-extra"><details class="overview" data-bdesc="${esc(b.id)}"><summary>Worum geht's?</summary><p class="muted">Lädt …</p></details></div>
         ${movieHint(b.id, b.title, b.a)}
@@ -145,6 +150,7 @@ function append(items) {
   if (!list || !items.length) return;
   items.forEach((x) => shown.push(x.book.id));
   list.insertAdjacentHTML('beforeend', items.map(card).join(''));
+  slots();
 }
 
 async function refreshPool() {

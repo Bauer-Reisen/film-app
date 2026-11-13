@@ -1,9 +1,9 @@
 // Buchdaten von Open Library (frei, ohne Schlüssel).
 // Erst über unseren Worker (/ol/…). Kennt der Worker die Adressen noch nicht, direkt bei Open Library
 // (die Seite erlaubt das ausdrücklich). Merkt sich Antworten für die Sitzung, höchstens 4 Anfragen gleichzeitig.
-import { WORKER_URL } from './config.js?v=1.21.0';
-import { SEED_BOOKS } from './seeds-books.js?v=1.21.0';
-import { genresOf } from './book-genres.js?v=1.21.0';
+import { WORKER_URL } from './config.js?v=1.22.0';
+import { SEED_BOOKS } from './seeds-books.js?v=1.22.0';
+import { genresOf } from './book-genres.js?v=1.22.0';
 
 const OL = 'https://openlibrary.org';
 const COVERS = 'https://covers.openlibrary.org';
@@ -216,11 +216,14 @@ export function bookKey(b) {
 const sameAuthor = (x, y) => (x.ak && y.ak && x.ak === y.ak) || (x.last && y.last && (x.last === y.last || (Math.min(x.last.length, y.last.length) >= 5 && lev(x.last, y.last) <= 1)));
 export function sameKey(x, y) {
   if (!x.core || !y.core || !sameAuthor(x, y)) return false;
-  if (x.digits !== y.digits) return false;
-  if (x.core === y.core) return true;
-  if (Math.min(x.core.length, y.core.length) >= 5 && lev(x.core, y.core) <= 2) return true;
+  if (x.digits && y.digits && x.digits !== y.digits) return false; // Band 1 / Band 2
   const [s, l] = x.words.size <= y.words.size ? [x.words, y.words] : [y.words, x.words];
   const shared = [...s].filter((w) => l.has(w)).length;
+  // lange Titel, anders geschrieben („Hundredyearold Man …“ / „The 100-Year-Old Man …“)
+  if (shared >= 4 && shared / s.size >= 0.75) return true;
+  if (x.digits !== y.digits) return false; // „Panem“ / „Panem 2“
+  if (x.core === y.core) return true;
+  if (Math.min(x.core.length, y.core.length) >= 5 && lev(x.core, y.core) <= 2) return true;
   if (s.size >= 2 && shared === s.size && s.size / l.size >= 0.6) return true;
   return !!(x.y && x.y === y.y && shared >= 1);
 }

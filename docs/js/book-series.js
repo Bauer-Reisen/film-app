@@ -1,7 +1,7 @@
 // Buchreihen (z. B. Harry Potter 1–7) von Wikidata – frei, ohne Schlüssel.
 // Wikidata kennt zu vielen Büchern die Open-Library-Werk-Nummer (P648), die Reihe (P179) und den Band (P1545).
 // Gesendet werden nur Werk-Nummern bzw. die Nummer der Reihe – keine Namen, keine Markierungen.
-import * as books from './books.js?v=1.21.0';
+import * as books from './books.js?v=1.22.0';
 
 const SPARQL = 'https://query.wikidata.org/sparql';
 const MAX_MEMBERS = 40; // mehr Bände = eher eine Verlagsreihe („Penguin Classics“) als eine Lesereihe
@@ -104,4 +104,40 @@ export async function seriesBooks(series, lang = 'en') {
     out.push({ ...b, why: m.ord != null && Number.isInteger(m.ord) ? `Band ${m.ord}` : '' });
   }
   return out;
+}
+
+// ---------- Reihen-Zeile auf Buchkarten (Geschmack, Vorschläge, Leseliste) ----------
+// Platzhalter im Kartentext: <p class="series-slot small" data-bseries-for="OL…W"></p>
+// back: wohin „← Zurück“ in der Reihen-Ansicht führt (leer = Geschmack selbst)
+// earlier: bei Band 2+ sagen, ob man die Bände davor schon kennt (für Vorschläge und Leseliste)
+const READ = new Set(['seen', 'liked', 'loved', 'disliked', 'dropped', 'paused']);
+const escHtml = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+export async function fillSeriesSlots(root, profile, { back = '', earlier = false } = {}) {
+  const slots = [...(root || document).querySelectorAll('[data-bseries-for]:not([data-done])')];
+  if (!slots.length || !profile) return;
+  slots.forEach((x) => { x.dataset.done = '1'; });
+  const lang = books.readLang(profile);
+  const map = await seriesOf(slots.map((x) => x.dataset.bseriesFor), lang);
+  for (const slot of slots) {
+    const id = slot.dataset.bseriesFor;
+    const ser = map.get(id);
+    if (!ser || !slot.isConnected) continue;
+    const ord = ser.ord && /^\d+$/.test(ser.ord) ? Number(ser.ord) : null;
+    const link = `<a href="#/geschmack" data-seriesopen="${escHtml(ser.id)}" data-seriesname="${escHtml(ser.n)}" data-seriesback="${escHtml(back)}">📚 Reihe „${escHtml(ser.n)}“: alle Bände</a>`;
+    slot.innerHTML = `${ord ? `Band ${ord} · ` : ''}${link}`;
+    if (!earlier || !ord || ord < 2) continue;
+    // Welche Bände davor kennst du noch nicht?
+    members(ser.id, lang).then((list) => {
+      if (!list || !slot.isConnected) return;
+      const marks = profile.books || {};
+      const isRead = (m) => m.ids.some((x) => READ.has(marks[books.canonical(x)]?.s));
+      const before = list.filter((m) => m.ord != null && m.ord < ord && m.ids.length);
+      const open = before.filter((m) => !isRead(m)).map((m) => m.ord);
+      if (!open.length) return;
+      const text = open.length === before.length
+        ? `Die Bände davor hast du noch nicht markiert – vielleicht erst mit Band ${open[0]} anfangen?`
+        : `Davor fehlt dir noch: Band ${open.join(', ')}.`;
+      slot.insertAdjacentHTML('beforeend', `<br><span class="muted">${escHtml(text)}</span>`);
+    }).catch(() => {});
+  }
 }

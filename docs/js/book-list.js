@@ -1,11 +1,12 @@
 // Seite „Leseliste“: alle Bücher mit „Merken“ oder „Weiterlesen“ (liegen geblieben), neueste zuerst.
 // Titel und Cover in der Lesesprache des Profils.
-import * as store from './store.js?v=1.21.0';
-import * as books from './books.js?v=1.21.0';
-import { esc, toast } from './ui.js?v=1.21.0';
-import { stateLabel, amazonBookUrl, shopLink } from './media.js?v=1.21.0';
-import { coverImg, bookMeta } from './book-taste.js?v=1.21.0';
-import { movieHint } from './book-extra.js?v=1.21.0';
+import * as store from './store.js?v=1.22.0';
+import * as books from './books.js?v=1.22.0';
+import { esc, toast } from './ui.js?v=1.22.0';
+import { stateLabel, amazonBookUrl, shopLink } from './media.js?v=1.22.0';
+import { coverImg, bookMeta } from './book-taste.js?v=1.22.0';
+import { movieHint } from './book-extra.js?v=1.22.0';
+import { fillSeriesSlots } from './book-series.js?v=1.22.0';
 
 const ACTIONS = [
   ['seen', '✓', 'Gelesen'],
@@ -51,6 +52,7 @@ export async function mount(p) {
     <p class="muted small" id="watch-count"></p>
     <div class="suggestions">${list.map(card).join('')}</div>`;
   updateCount();
+  fillSeriesSlots(box(), profile, { back: '#/merkliste', earlier: true });
 }
 
 function updateCount() {
@@ -69,6 +71,7 @@ function card(m) {
       <div class="film-info">
         <h3 class="film-title">${esc(x.title)}</h3>
         <p class="book-meta muted small">${esc(bookMeta(x))}</p>
+        <p class="series-slot small" data-bseries-for="${esc(m.id)}"></p>
         ${m.s === 'paused' ? '<p class="small">⏸ Angefangen – liegt bereit zum Weiterlesen</p>' : ''}
         <div class="film-extra"><details class="overview" data-bdesc="${esc(m.id)}"><summary>Worum geht's?</summary><p class="muted">Lädt …</p></details>${movieHint(m.id, x.title, x.a)}</div>
         <p class="shop-links">${(profile.shelf || []).some((s) => s.id === m.id) ? '📚 Steht bei euch im Regal' : shopLink(esc(amazonBookUrl(x.title, x.a, profile.language)), '🛒 Bei Amazon ansehen')}</p>

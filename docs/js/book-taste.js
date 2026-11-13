@@ -1,16 +1,16 @@
 // Seite „Geschmack“ bei Büchern: Autor·innen, Themen und Genres in Stufen, Bücher markieren, Suche (auch ISBN), Scannen.
-import * as store from './store.js?v=1.21.0';
-import * as books from './books.js?v=1.21.0';
-import { esc, toast } from './ui.js?v=1.21.0';
-import { SEED_BOOKS, SEED_AUTHORS } from './seeds-books.js?v=1.21.0';
-import { THEMES, themeById } from './themes.js?v=1.21.0';
-import { BOOK_GENRES, bookGenreById } from './book-genres.js?v=1.21.0';
-import { MEDIA, stateLabel, pressed } from './media.js?v=1.21.0';
-import { TASTE_HINT_AFTER } from './config.js?v=1.21.0';
-import { authorsFromFilms } from './bridge-books.js?v=1.21.0';
-import { unrated } from './book-rate.js?v=1.21.0';
-import { requestPaste } from './book-share.js?v=1.21.0';
-import { seriesOf, seriesBooks } from './book-series.js?v=1.21.0';
+import * as store from './store.js?v=1.22.0';
+import * as books from './books.js?v=1.22.0';
+import { esc, toast } from './ui.js?v=1.22.0';
+import { SEED_BOOKS, SEED_AUTHORS } from './seeds-books.js?v=1.22.0';
+import { THEMES, themeById } from './themes.js?v=1.22.0';
+import { BOOK_GENRES, bookGenreById } from './book-genres.js?v=1.22.0';
+import { MEDIA, stateLabel, pressed } from './media.js?v=1.22.0';
+import { TASTE_HINT_AFTER } from './config.js?v=1.22.0';
+import { authorsFromFilms } from './bridge-books.js?v=1.22.0';
+import { unrated } from './book-rate.js?v=1.22.0';
+import { requestPaste } from './book-share.js?v=1.22.0';
+import { seriesBooks, fillSeriesSlots as seriesSlots } from './book-series.js?v=1.22.0';
 
 const STEP = 20;
 const SCAN = true; // Knopf „Bücher scannen“
@@ -37,6 +37,8 @@ let searchRun = 0;
 
 const marks = () => profile.books || {};
 const lang = () => books.readLang(profile);
+// Wer auf Englisch liest, sieht nur Bücher, die es auf Englisch gibt (keine französische oder spanische Ausgabe als eigenes Buch)
+const fitsLang = (b) => !(lang() === 'en' && b.edLang === false) || !!marks()[b.id];
 const remember = (list) => { list.forEach((b) => known.set(b.id, b)); return list; };
 export const rememberBooks = remember;
 
@@ -211,7 +213,7 @@ const fame = (b) => (b.o === 'de' && lang() === 'de' ? b.r * 8 : b.r);
 const seedList = () => [...SEED_BOOKS].sort((a, b) => germanFirst(b) - germanFirst(a) || fame(b) - fame(a)).map((b) => books.fromSeed(b, lang()));
 const allBooks = () => {
   const seen = new Set();
-  return remember(books.dedupe([...L.personal, ...seedList(), ...L.extra].filter((b) => !seen.has(b.id) && seen.add(b.id))));
+  return remember(books.dedupe([...L.personal, ...seedList(), ...L.extra].filter((b) => fitsLang(b) && !seen.has(b.id) && seen.add(b.id))));
 };
 const candidates = () => (L.showAll ? allBooks() : allBooks().filter((b) => !L.done.has(b.id) && !L.doneMatch(b)));
 function snapshotDone() {
@@ -220,19 +222,28 @@ function snapshotDone() {
   L.shown = STEP;
 }
 
+// Open Library führt manche Autor·innen doppelt (zwei Nummern, gleicher Name) – wir fassen nach Namen zusammen
+const personKey = (n) => String(n || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z]/g, '');
+
+// Suche nach Nummer und Name – Open Library führt manche Autor·innen unter mehreren Nummern
+const authorQ = (id, n) => `author_key:${String(id).replace('/authors/', '')}${n && n !== 'Unbekannt' ? ` OR author_name:"${String(n).replace(/"/g, '')}"` : ''}`;
+
 // Autor·innen deiner markierten Bücher (gescannt oder angetippt), ★ und ♥ zählen mehr, nicht gemochte gar nicht
 function ownAuthors() {
   const found = new Map();
   const W8 = { loved: 3, liked: 2, seen: 1.5, want: 1 };
   for (const [id, m] of Object.entries(marks())) {
     if (!W8[m.s] || !m.ak) continue;
-    const e = found.get(m.ak) || { id: m.ak, n: m.a || 'Unbekannt', score: 0, title: m.n, ids: [] };
+    const key = personKey(m.a) || m.ak;
+    const e = found.get(key) || { id: m.ak, n: m.a || 'Unbekannt', score: 0, title: m.n, ids: [], per: {} };
     e.score += W8[m.s]; e.ids.push(id);
+    e.per[m.ak] = (e.per[m.ak] || 0) + 1;
+    e.id = Object.entries(e.per).sort((a, b) => b[1] - a[1])[0][0];
     if (m.s === 'loved' || m.s === 'liked') e.title = m.n;
-    found.set(m.ak, e);
+    found.set(key, e);
   }
   // Wer insgesamt nicht gemocht wird, kommt nicht
-  for (const m of Object.values(marks())) if (m.s === 'disliked' && found.has(m.ak)) found.get(m.ak).score -= 2;
+  for (const m of Object.values(marks())) if (m.s === 'disliked' && found.has(personKey(m.a) || m.ak)) found.get(personKey(m.a) || m.ak).score -= 2;
   return [...found.values()].filter((e) => e.score > 0).sort((a, b) => b.score - a.score);
 }
 
@@ -246,10 +257,10 @@ async function loadPersonal() {
   const key = JSON.stringify([lang(), own.map((x) => [x.id, x.score]), auths.map((x) => [x.id, x.w]), genres.map((x) => [x.id, x.w]), themes.map((x) => [x.id, x.w])]);
   if (key === L.personalKey) return;
   const subj = (list) => list.map((s) => `subject_key:${s}`).join(' OR ');
-  const byAuthor = (id) => books.search({ q: `author_key:${id.replace('/authors/', '')}`, sort: 'readinglog' }, lang(), 30);
+  const byAuthor = (id, n) => books.search({ q: authorQ(id, n), sort: 'readinglog' }, lang(), 30);
   const jobs = [
-    ...own.map((x) => byAuthor(x.id).then((list) => ({ w: 2 + Math.min(x.score, 4) / 2, why: `Mehr von ${x.n} – du hast „${x.title}“`, list }))),
-    ...auths.map((x) => byAuthor(x.id).then((list) => ({ w: store.tierOf(x) * 1.5, why: `Lieblingsautor·in: ${x.n}`, list }))),
+    ...own.map((x) => byAuthor(x.id, x.n).then((list) => ({ w: 2 + Math.min(x.score, 4) / 2, why: `Mehr von ${x.n} – du hast „${x.title}“`, list }))),
+    ...auths.map((x) => byAuthor(x.id, x.n).then((list) => ({ w: store.tierOf(x) * 1.5, why: `Lieblingsautor·in: ${x.n}`, list }))),
     ...genres.map((x) => books.search({ q: subj(bookGenreById.get(x.id).q), sort: 'readinglog' }, lang(), 30).then((list) => ({ w: store.tierOf(x), why: `Lieblingsgenre: ${bookGenreById.get(x.id).n}`, list }))),
     ...themes.map((x) => books.search({ q: subj(themeById.get(x.id).b), sort: 'readinglog' }, lang(), 30).then((list) => ({ w: store.tierOf(x), why: `Thema: ${themeById.get(x.id).n}`, list }))),
   ];
@@ -270,17 +281,20 @@ async function loadPersonal() {
 
 // ----- Abhak-Listen: „Bücher von …“, „Reihe …“, „Schullektüre“ -----
 async function viewList(v) {
-  if (v.kind === 'series') return seriesBooks(v.id, lang());
+  if (v.kind === 'series') return (await seriesBooks(v.id, lang()))?.filter(fitsLang) ?? null;
   if (v.kind === 'school') {
     // Ursprünglich deutsche Schullektüre zuerst, dann die übrigen; je die bekanntesten oben
     const list = SEED_BOOKS.filter((b) => b.k).sort((a, b) => (b.o === 'de') - (a.o === 'de') || b.r - a.r);
     return list.map((b) => books.fromSeed(b, lang()));
   }
-  const list = await books.search({ q: `author_key:${v.id.replace('/authors/', '')}`, sort: 'readinglog' }, lang(), 100);
+  const list = await books.search({ q: authorQ(v.id, v.n), sort: 'readinglog' }, lang(), 100);
   // Doppelt angelegte Bücher nur einmal; markierte zuerst behalten, Doppel von Markierten weglassen
   const known = books.knownMatcher(profile);
-  const ok = list.filter((b) => (b.cover || b.r >= 5 || marks()[b.id]) && !books.BUNDLE.test(b.title) && (marks()[b.id] || !known(b)));
-  return books.dedupe([...ok.filter((b) => marks()[b.id]), ...ok.filter((b) => !marks()[b.id])]).sort((x, y) => (y.r || 0) - (x.r || 0));
+  const ok = list.filter((b) => fitsLang(b) && (b.cover || b.r >= 5 || marks()[b.id]) && !books.BUNDLE.test(b.title) && (marks()[b.id] || !known(b)));
+  // Name in fremder Schrift (z. B. 川口俊和)? Dann den lateinischen Namen der Ansicht nehmen
+  const latin = /[a-z]/i.test(v.n || '') ? v.n : null;
+  const fixed = ok.map((b) => (latin && !/[a-z]/i.test(b.a || '') ? { ...b, a: latin } : b));
+  return books.dedupe([...fixed.filter((b) => marks()[b.id]), ...fixed.filter((b) => !marks()[b.id])]).sort((x, y) => (y.r || 0) - (x.r || 0));
 }
 const VIEW_TEXT = {
   author: (v) => [`Bücher von ${v.n}`, 'Tipp an, was du gelesen hast – auch die, die du nicht im Regal hast. Die bekanntesten stehen oben.'],
@@ -308,22 +322,9 @@ async function fillListView() {
   box.innerHTML = shown.length
     ? `<div class="films">${shown.map(bookCard).join('')}</div>`
     : `<p class="muted center">${v.kind === 'series' ? 'Zu dieser Reihe kennt Wikidata keine einzelnen Bände.' : 'Keine Bücher gefunden.'}</p>`;
-  if (v.kind !== 'series') fillSeriesSlots(box);
+  if (v.kind !== 'series') seriesSlots(box, profile);
 }
 
-// Reihen-Knopf auf Buchkarten: einmal nachschlagen, welche Bücher zu einer Reihe gehören
-async function fillSeriesSlots(root) {
-  const slots = [...(root || document).querySelectorAll('[data-bseries-for]:not([data-done])')];
-  if (!slots.length) return;
-  slots.forEach((x) => { x.dataset.done = '1'; });
-  const map = await seriesOf(slots.map((x) => x.dataset.bseriesFor), lang());
-  for (const slot of slots) {
-    const ser = map.get(slot.dataset.bseriesFor);
-    if (!ser || !slot.isConnected) continue;
-    const band = ser.ord && /^\d+$/.test(ser.ord) ? `Band ${ser.ord} · ` : '';
-    slot.innerHTML = `${band}<button type="button" class="link-btn" data-bseriesview="${esc(ser.id)}" data-bseriesname="${esc(ser.n)}">📚 Reihe „${esc(ser.n)}“: alle Bände</button>`;
-  }
-}
 
 // Kleine Leiste über der Bücherliste: deine Autor·innen zum Abhaken
 function authorChips() {
@@ -381,7 +382,7 @@ async function fillBooks() {
     ${doneInfo}
     <div class="films">${candidates().slice(0, L.shown).map(bookCard).join('')}</div>
     <div class="row center-row"><button class="btn btn-primary" type="button" data-btaste="more">Weitere laden</button></div>`;
-  fillSeriesSlots(el);
+  seriesSlots(el, profile);
 }
 
 async function loadMore(btn) {
@@ -395,7 +396,7 @@ async function loadMore(btn) {
   btn.disabled = false; btn.textContent = 'Weitere laden';
   const have = new Set(present);
   grid.insertAdjacentHTML('beforeend', candidates().slice(0, L.shown).filter((b) => !have.has(b.id)).map(bookCard).join(''));
-  fillSeriesSlots(grid);
+  seriesSlots(grid, profile);
 }
 
 // ----- Autor·innen -----
@@ -404,13 +405,14 @@ function fillAuthors() {
   const el = body();
   const rated = [...(profile.authors || [])].sort(byTier).map((e) => seedAuthor.get(e.id) || { id: e.id, n: e.n || 'Unbekannt', k: e.k || '' });
   const ratedIds = new Set((profile.authors || []).map((x) => x.id));
+  rated.forEach((x) => ratedIds.add(personKey(x.n)));
   el.innerHTML = `
     <p class="muted small"><strong>★ Liebe</strong> = lese ich auf jeden Fall, <strong>♥ Gern</strong> = lese ich gern, nichts gewählt = egal. Nochmal tippen nimmt die Wahl zurück.</p>
     ${rated.length ? `<h2>Deine Lieblinge</h2><div class="tiles">${rated.map(authorCard).join('')}</div>` : ''}
     <div id="from-liked"></div>
     <div id="from-films"></div>
     <h2>Bekannte Namen</h2>
-    <div class="tiles" id="known-people">${SEED_AUTHORS.filter((x) => !ratedIds.has(x.id)).map(authorCard).join('')}</div>`;
+    <div class="tiles" id="known-people">${SEED_AUTHORS.filter((x) => !ratedIds.has(x.id) && !ratedIds.has(personKey(x.n))).map(authorCard).join('')}</div>`;
   fromLiked(ratedIds);
   fromFilms(ratedIds);
 }
@@ -419,27 +421,39 @@ function fillAuthors() {
 function fromLiked(skip) {
   const found = new Map();
   for (const m of Object.values(marks())) {
-    if (!['liked', 'loved'].includes(m.s) || !m.ak || skip.has(m.ak)) continue;
-    const e = found.get(m.ak) || { ...(seedAuthor.get(m.ak) || {}), id: m.ak, n: m.a || seedAuthor.get(m.ak)?.n || 'Unbekannt', count: 0, score: 0 };
+    if (!['liked', 'loved'].includes(m.s) || !m.ak || skip.has(m.ak) || skip.has(personKey(m.a))) continue;
+    const key = personKey(m.a) || m.ak;
+    const e = found.get(key) || { ...(seedAuthor.get(m.ak) || {}), id: m.ak, n: m.a || seedAuthor.get(m.ak)?.n || 'Unbekannt', count: 0, score: 0, per: {} };
     e.count++; e.score += m.s === 'loved' ? 2 : 1;
-    found.set(m.ak, e);
+    e.per[m.ak] = (e.per[m.ak] || 0) + 1;
+    const best = Object.entries(e.per).sort((a, b) => b[1] - a[1])[0][0];
+    if (best !== e.id) Object.assign(e, seedAuthor.get(best) || {}, { id: best });
+    found.set(key, e);
   }
   const list = [...found.values()].sort((a, b) => b.score - a.score).slice(0, 12);
   const box = document.getElementById('from-liked');
   if (!box || !list.length) return;
   box.innerHTML = `<h2>Aus deinen Büchern</h2><div class="tiles">${list.map(authorCard).join('')}</div>`;
-  list.forEach((x) => document.querySelector(`#known-people [data-author="${x.id}"]`)?.remove());
+  list.forEach((x) => removeKnown(x));
+}
+// Kachel unter „Bekannte Namen“ entfernen – auch wenn sie dort unter einer anderen Nummer steht
+function removeKnown(x) {
+  document.querySelectorAll('#known-people [data-author]').forEach((t) => {
+    if (t.dataset.author === x.id || personKey(t.querySelector('.tile-name')?.textContent) === personKey(x.n)) t.remove();
+  });
 }
 
 // Brücke: Wer hat die Vorlagen deiner Lieblingsfilme und -serien geschrieben? (z. B. Stephen King)
 async function fromFilms(skip) {
   let list = [];
-  try { list = (await authorsFromFilms(profile)).filter((x) => !skip.has(x.id)); } catch { return; }
+  try { list = (await authorsFromFilms(profile)).filter((x) => !skip.has(x.id) && !skip.has(personKey(x.n))); } catch { return; }
+  const shown = new Set([...document.querySelectorAll('#from-liked .tile-name')].map((t) => personKey(t.textContent)));
+  list = list.filter((x) => !shown.has(personKey(x.n)));
   const box = document.getElementById('from-films');
   if (!box || !list.length || ui.sub !== 'autoren' || searching()) return;
   box.innerHTML = `<h2>Aus deinen Filmen und Serien</h2><p class="muted small">Sie haben die Bücher zu Filmen und Serien geschrieben, die du magst.</p>
     <div class="tiles">${list.map((x) => authorCard({ ...x, fromFilms: true })).join('')}</div>`;
-  list.forEach((x) => document.querySelector(`#known-people [data-author="${x.id}"]`)?.remove());
+  list.forEach((x) => removeKnown(x));
 }
 
 // ----- Themen und Genres -----
@@ -488,7 +502,7 @@ async function runSearch() {
       ${auths.length ? `<h2>Autor·innen</h2><div class="tiles">${auths.map(authorCard).join('')}</div>` : ''}
       ${genreList.length ? `<h2>Genres</h2><div class="tiles">${genreList.map(genreCard).join('')}</div>` : ''}
       ${themeList.length ? `<h2>Themen</h2><div class="tiles">${themeList.map(themeCard).join('')}</div>` : ''}`;
-    fillSeriesSlots(el);
+    seriesSlots(el, profile);
   } catch (err) {
     if (run === searchRun && body()) el.innerHTML = `<div class="card center"><p>${esc(err.message)}</p><button class="btn" type="button" data-btaste="search">Nochmal versuchen</button></div>`;
   }
