@@ -1,6 +1,6 @@
 // Kurzer Rundgang für neue Profile: fünf Karten nacheinander, jederzeit überspringbar.
 // Danach (oder beim Überspringen) gilt er als gesehen; unter „Profil“ lässt er sich nochmal ansehen.
-import { dialog, esc } from './ui.js?v=1.14.0';
+import { dialog, esc } from './ui.js?v=1.15.0';
 
 const STEPS = [
   {

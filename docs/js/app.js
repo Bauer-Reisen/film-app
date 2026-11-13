@@ -1,25 +1,27 @@
 // Oberfläche: Seitenwechsel über die Adresse (#/vorschlaege usw.)
-import { VERSION, LANGUAGES } from './config.js?v=1.14.0';
-import * as store from './store.js?v=1.14.0';
-import { saveBackup, readBackup, findSameName, importAsNew, mergeInto } from './backup.js?v=1.14.0';
-import { esc, dialog, toast, formatDate } from './ui.js?v=1.14.0';
-import * as platform from './platform.js?v=1.14.0';
-import * as taste from './taste.js?v=1.14.0';
-import * as suggest from './suggest.js?v=1.14.0';
-import * as watchlist from './watchlist.js?v=1.14.0';
-import * as sneak from './sneak.js?v=1.14.0';
-import * as group from './group.js?v=1.14.0';
-import * as kids from './kids.js?v=1.14.0';
-import * as rewatch from './rewatch.js?v=1.14.0';
-import * as trailer from './trailer.js?v=1.14.0';
-import { initRuntimes } from './runtime.js?v=1.14.0';
-import { mediaOf } from './media.js?v=1.14.0';
-import { runTour } from './tour.js?v=1.14.0';
-import * as bookTaste from './book-taste.js?v=1.14.0';
-import * as bookList from './book-list.js?v=1.14.0';
-import * as scan from './scan.js?v=1.14.0';
-import * as bookSuggest from './book-suggest.js?v=1.14.0';
-import { initBookExtras } from './book-extra.js?v=1.14.0';
+import { VERSION, LANGUAGES } from './config.js?v=1.15.0';
+import * as store from './store.js?v=1.15.0';
+import { saveBackup, readBackup, findSameName, importAsNew, mergeInto } from './backup.js?v=1.15.0';
+import { esc, dialog, toast, formatDate } from './ui.js?v=1.15.0';
+import * as platform from './platform.js?v=1.15.0';
+import * as taste from './taste.js?v=1.15.0';
+import * as suggest from './suggest.js?v=1.15.0';
+import * as watchlist from './watchlist.js?v=1.15.0';
+import * as sneak from './sneak.js?v=1.15.0';
+import * as group from './group.js?v=1.15.0';
+import * as kids from './kids.js?v=1.15.0';
+import * as rewatch from './rewatch.js?v=1.15.0';
+import * as trailer from './trailer.js?v=1.15.0';
+import { initRuntimes } from './runtime.js?v=1.15.0';
+import { mediaOf } from './media.js?v=1.15.0';
+import { runTour } from './tour.js?v=1.15.0';
+import * as bookTaste from './book-taste.js?v=1.15.0';
+import * as bookList from './book-list.js?v=1.15.0';
+import * as scan from './scan.js?v=1.15.0';
+import * as bookSuggest from './book-suggest.js?v=1.15.0';
+import * as bookSneak from './book-sneak.js?v=1.15.0';
+import * as bookRewatch from './book-rewatch.js?v=1.15.0';
+import { initBookExtras } from './book-extra.js?v=1.15.0';
 
 const view = document.getElementById('view');
 const APP_URL = 'https://bauer-reisen.github.io/film-app/';
@@ -94,12 +96,6 @@ const fileInput = Object.assign(document.createElement('input'), { type: 'file',
 document.body.append(fileInput);
 
 // ---------- Bücher: eigene Seiten unter denselben Reitern ----------
-const soon = (title, text) => ({
-  mount: null,
-  render: () => `<h1>${title}</h1><div class="card placeholder"><p><strong>${text}</strong></p>
-    <p class="muted">Markiere schon mal unter „Geschmack“ Bücher, die du gelesen hast – oder scanne dein Regal.</p>
-    <p><a class="btn btn-primary btn-big" href="#/geschmack">Zum Geschmack</a></p></div>`,
-});
 const notForBooks = (title) => ({
   mount: null,
   render: () => `<p class="back"><a href="#/vorschlaege">← Vorschläge</a></p><h1>${title}</h1>
@@ -108,8 +104,8 @@ const notForBooks = (title) => ({
 });
 const BOOK_PAGES = {
   vorschlaege: { render: () => installTipCard() + bookSuggest.render(current()), mount: () => bookSuggest.mount(current()), click: bookSuggest.handleClick },
-  ueberrasch: soon('Überrasch mich', 'Überrasch mich mit Büchern kommt in Kürze.'),
-  liebling: soon('Lieblingsbuch', 'Das Lieblingsbuch kommt in Kürze.'),
+  ueberrasch: { render: () => bookSneak.render(current()), mount: () => bookSneak.mount(current()), click: bookSneak.handleClick },
+  liebling: { title: 'Lieblingsbuch', render: () => bookRewatch.render(current()), mount: () => bookRewatch.mount(current()), click: bookRewatch.handleClick },
   gruppe: notForBooks('Gruppenabend'),
   kinder: notForBooks('Kinderfilme'),
   geschmack: { render: () => bookTaste.render(current()), mount: () => bookTaste.mount(view, current()), click: bookTaste.handleClick },
