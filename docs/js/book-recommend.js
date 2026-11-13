@@ -1,13 +1,13 @@
 // Buch-Vorschläge berechnen – nachvollziehbar wie bei Filmen:
 // Ausgangspunkte → Kandidaten (Open Library) → Punkte → Vielfalt → Begründung.
 // Brücke: Romanvorlagen gemochter Filme und Serien, feste Paare (seeds-books.js), Autor·innen aus Filmen.
-import * as books from './books.js?v=1.26.0';
-import { tierOf } from './store.js?v=1.26.0';
-import { themeById } from './themes.js?v=1.26.0';
-import { BOOK_GENRES, bookGenreById } from './book-genres.js?v=1.26.0';
-import { PAIRS } from './seeds-books.js?v=1.26.0';
-import { likedTitles, novelOf, authorsFromFilms } from './bridge-books.js?v=1.26.0';
-import { markedTitle } from './recommend.js?v=1.26.0';
+import * as books from './books.js?v=1.27.0';
+import { tierOf } from './store.js?v=1.27.0';
+import { themeById } from './themes.js?v=1.27.0';
+import { BOOK_GENRES, bookGenreById } from './book-genres.js?v=1.27.0';
+import { PAIRS } from './seeds-books.js?v=1.27.0';
+import { likedTitles, novelOf, authorsFromFilms } from './bridge-books.js?v=1.27.0';
+import { markedTitle } from './recommend.js?v=1.27.0';
 
 // Punkte je Grund (Stufe 2 = ★ Liebe, 1 = ♥ Gern) und Obergrenzen
 export const BOOK_POINTS = {
@@ -242,7 +242,7 @@ export async function computeBooks(profile, page = 1, filter = {}) {
   for (const c of cands.values()) {
     const b = c.book;
     const own = shelf.has(b.id) || !!onShelf(b);
-    if (marks[b.id] || waiting.has(b.id) || (!b.cover && !own) || BUNDLE.test(b.title) || isKnown(b)) continue;
+    if ((marks[b.id] && marks[b.id].s !== 'want') || waiting.has(b.id) || (!b.cover && !own) || BUNDLE.test(b.title) || isKnown(b)) continue;
     if (lang === 'en' && b.edLang === false && !own) continue; // keine englische Ausgabe bekannt
     if ((b.g || []).includes('kinder') && !kids && ge?.id !== 'kinder') continue; // Kinderbücher nur, wenn man selbst welche mag (oder sie ausdrücklich will)
     // Genre-Filter: mindestens zwei passende Schlagwörter (ein einzelnes „mystery“ macht Harry Potter noch nicht zum Krimi)
@@ -298,5 +298,7 @@ function diversify(list) {
 
 export function visibleBooks(profile, list) {
   const isKnown = books.knownMatcher(profile);
-  return list.filter((x) => !(profile.books || {})[x.book.id] && !(profile.pendingBooks || []).some((w) => w.id === x.book.id) && !isKnown(x.book));
+  const m = profile.books || {};
+  // Auf der Leseliste = noch nicht gelesen, darf also vorkommen (1.27.0)
+  return list.filter((x) => (!m[x.book.id] || m[x.book.id].s === 'want') && !(profile.pendingBooks || []).some((w) => w.id === x.book.id) && (m[x.book.id]?.s === 'want' || !isKnown(x.book)));
 }

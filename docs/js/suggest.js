@@ -1,20 +1,21 @@
 // Seite „Vorschläge“: Liste mit Begründung, fünf Rückmeldungen, Rückgängig, „Mehr“.
-import * as store from './store.js?v=1.26.0';
-import * as tmdb from './tmdb.js?v=1.26.0';
-import { esc, toast } from './ui.js?v=1.26.0';
-import { runtimeSlot, titleText } from './runtime.js?v=1.26.0';
-import { trailerBtn } from './trailer.js?v=1.26.0';
-import { compute, computeFiltered, visible, hasSources, erasFor, eraById } from './recommend.js?v=1.26.0';
-import { MEDIA, mediaOf, askStarted, stateLabel } from './media.js?v=1.26.0';
-import { THEMES, themeById } from './themes.js?v=1.26.0';
-import { RECOMMEND } from './config.js?v=1.26.0';
-import { GENRES, GENRES_TV } from './surprise.js?v=1.26.0';
-import { bookSlot } from './book-extra.js?v=1.26.0';
-import { peopleSlot, fillPeopleSlots } from './people.js?v=1.26.0';
-import { markButtons, moreBox, filterBox } from './cards.js?v=1.26.0';
+import * as store from './store.js?v=1.27.0';
+import * as tmdb from './tmdb.js?v=1.27.0';
+import { esc, toast } from './ui.js?v=1.27.0';
+import { runtimeSlot, titleText } from './runtime.js?v=1.27.0';
+import { trailerBtn } from './trailer.js?v=1.27.0';
+import { compute, computeFiltered, visible, hasSources, erasFor, eraById } from './recommend.js?v=1.27.0';
+import { MEDIA, mediaOf, marksOf, askStarted, stateLabel } from './media.js?v=1.27.0';
+import { THEMES, themeById } from './themes.js?v=1.27.0';
+import { RECOMMEND } from './config.js?v=1.27.0';
+import { GENRES, GENRES_TV } from './surprise.js?v=1.27.0';
+import { bookSlot } from './book-extra.js?v=1.27.0';
+import { peopleSlot, fillPeopleSlots } from './people.js?v=1.27.0';
+import { markButtons, moreBox, filterBox } from './cards.js?v=1.27.0';
 
 // Drei große Knöpfe; „Schon gesehen“ klappt die Bewertung auf
 const MAIN = [['known', '✓', 'Schon gesehen'], ['want', '+', 'Merken'], ['noInterest', '–', 'Nein danke']];
+const MAIN_LISTED = [['known', '✓', 'Schon gesehen'], ['noInterest', '–', 'Nein danke']]; // steht schon auf der Merkliste
 const KNOWN = [['liked', '♥', 'Mag ich'], ['seen', '✓', 'Ganz okay'], ['disliked', '✕', 'Mag ich nicht']];
 const KNOWN_TV = [...KNOWN, ['started', '⏸', 'Angefangen']];
 const label = (md, s) => stateLabel(md, s).replace(/^[^\p{L}]+/u, '');
@@ -133,6 +134,7 @@ const errorBox = (msg) => `<div class="card center"><p>${esc(msg)}</p><button cl
 
 function card(x) {
   const m = x.movie;
+  const listed = marksOf(profile, md)[m.id]?.s === 'want';
   const y = tmdb.year(m.release_date);
   return `
     <article class="film sg" data-sgfilm="${m.id}">
@@ -143,12 +145,12 @@ function card(x) {
       </button>
       <div class="film-info">
         <h3 class="film-title">${titleText(m.title, m.id, md) || esc(m.title)} <span class="year">${y || ''}${runtimeSlot(m.id, md)}</span></h3>
-        <p class="reason">${esc(x.text)}</p>
+        <p class="reason">${listed ? '🔖 Steht schon auf deiner Merkliste' : esc(x.text)}</p>
         <div class="film-extra">${moreBox(m.overview ? `<p>${esc(m.overview)}</p>` : '', `
           ${peopleSlot(m.id, md)}
           <p class="rating muted small">TMDB-Note ${m.vote_average.toFixed(1).replace('.', ',')}</p>
           ${bookSlot(m.id, md, m.original_title || m.original_name || m.title)}`)}${trailerBtn(m.id, m.title, false, md)}</div>
-        ${markButtons('data-fb', m.title, MAIN, md === 'tv' ? KNOWN_TV : KNOWN)}
+        ${markButtons('data-fb', m.title, listed ? MAIN_LISTED : MAIN, md === 'tv' ? KNOWN_TV : KNOWN)}
       </div>
     </article>`;
 }

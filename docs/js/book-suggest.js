@@ -1,19 +1,20 @@
 // Seite „Vorschläge“ bei Büchern: Liste mit Begründung, Rückmeldungen, Rückgängig, „Mehr“,
 // „Heute Lust auf …“ und „Aus welcher Zeit“.
-import * as store from './store.js?v=1.26.0';
-import * as books from './books.js?v=1.26.0';
-import { esc, toast } from './ui.js?v=1.26.0';
-import { THEMES, themeById } from './themes.js?v=1.26.0';
-import { MEDIA, stateLabel } from './media.js?v=1.26.0';
-import { computeBooks, visibleBooks, hasBookSources, BOOK_ERAS, bookEraById, BOOK_POINTS } from './book-recommend.js?v=1.26.0';
-import { coverImg, bookMetaHtml, rememberBooks } from './book-taste.js?v=1.26.0';
-import { movieHint } from './book-extra.js?v=1.26.0';
-import { fillSeriesSlots } from './book-series.js?v=1.26.0';
-import { markButtons, moreBox, filterBox } from './cards.js?v=1.26.0';
-import { BOOK_GENRES, bookGenreById } from './book-genres.js?v=1.26.0';
+import * as store from './store.js?v=1.27.0';
+import * as books from './books.js?v=1.27.0';
+import { esc, toast } from './ui.js?v=1.27.0';
+import { THEMES, themeById } from './themes.js?v=1.27.0';
+import { MEDIA, stateLabel } from './media.js?v=1.27.0';
+import { computeBooks, visibleBooks, hasBookSources, BOOK_ERAS, bookEraById, BOOK_POINTS } from './book-recommend.js?v=1.27.0';
+import { coverImg, bookMetaHtml, rememberBooks } from './book-taste.js?v=1.27.0';
+import { movieHint } from './book-extra.js?v=1.27.0';
+import { fillSeriesSlots } from './book-series.js?v=1.27.0';
+import { markButtons, moreBox, filterBox } from './cards.js?v=1.27.0';
+import { BOOK_GENRES, bookGenreById } from './book-genres.js?v=1.27.0';
 
 // Drei große Knöpfe; „Schon gelesen“ klappt die Bewertung auf
 const MAIN = [['known', '✓', 'Schon gelesen'], ['want', '+', 'Merken'], ['noInterest', '–', 'Nein danke']];
+const MAIN_LISTED = [['known', '✓', 'Schon gelesen'], ['noInterest', '–', 'Nein danke']]; // steht schon auf der Leseliste
 const KNOWN = [['liked', '♥', 'Mag ich'], ['seen', '✓', 'Ganz okay'], ['disliked', '✕', 'Mag ich nicht']];
 const W = MEDIA.book.w;
 const BLOCK = BOOK_POINTS.blockSize;
@@ -129,6 +130,7 @@ const errorBox = (msg) => `<div class="card center"><p>${esc(msg)}</p><button cl
 
 function card(x) {
   const b = x.book;
+  const listed = (profile.books || {})[b.id]?.s === 'want';
   const rating = b.rating ? `Bewertung ${b.rating.toFixed(1).replace('.', ',')} von 5 · ` : '';
   return `
     <article class="film sg book" data-sgbook="${esc(b.id)}">
@@ -139,12 +141,12 @@ function card(x) {
       <div class="film-info">
         <h3 class="film-title">${esc(b.title)}</h3>
         <p class="book-meta muted small">${bookMetaHtml(b)}</p>
-        <p class="reason">${esc(x.text)}</p>
+        <p class="reason">${listed ? '🔖 Steht schon auf deiner Leseliste' : esc(x.text)}</p>
         <div class="film-extra">${moreBox('<p class="muted">Lädt …</p>', `
           <p class="series-slot small" data-bseries-for="${esc(b.id)}"></p>
           <p class="rating muted small">${rating}${(b.r || 0).toLocaleString('de-DE')} Leser·innen bei Open Library</p>
           ${movieHint(b.id, b.title, b.a)}`, b.id)}</div>
-        ${markButtons('data-bfb', b.title, MAIN, KNOWN)}
+        ${markButtons('data-bfb', b.title, listed ? MAIN_LISTED : MAIN, KNOWN)}
       </div>
     </article>`;
 }

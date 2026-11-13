@@ -1,7 +1,7 @@
 // Buchreihen (z. B. Harry Potter 1–7) von Wikidata – frei, ohne Schlüssel.
 // Wikidata kennt zu vielen Büchern die Open-Library-Werk-Nummer (P648), die Reihe (P179) und den Band (P1545).
 // Gesendet werden nur Werk-Nummern bzw. die Nummer der Reihe – keine Namen, keine Markierungen.
-import * as books from './books.js?v=1.26.0';
+import * as books from './books.js?v=1.27.0';
 
 const SPARQL = 'https://query.wikidata.org/sparql';
 const MAX_MEMBERS = 40; // mehr Bände = eher eine Verlagsreihe („Penguin Classics“) als eine Lesereihe

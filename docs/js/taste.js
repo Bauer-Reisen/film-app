@@ -1,14 +1,14 @@
 // Seite „Geschmack“: Personen, Studios/Sender und Themen in Stufen wählen, Filme oder Serien markieren, Suche.
-import * as store from './store.js?v=1.26.0';
-import * as tmdb from './tmdb.js?v=1.26.0';
-import { esc, toast } from './ui.js?v=1.26.0';
-import { runtimeSlot, titleText } from './runtime.js?v=1.26.0';
-import { SEED_MOVIES, SEED_PEOPLE, SEED_STUDIOS } from './seeds.js?v=1.26.0';
-import { SEED_SHOWS, SEED_TV_PEOPLE, SEED_NETWORKS } from './seeds-tv.js?v=1.26.0';
-import { THEMES, themeById, themeQuery } from './themes.js?v=1.26.0';
-import { MEDIA, mediaOf, marksOf, excludedGenre, askStarted, stateLabel, STARTED, creditsOf, pressed } from './media.js?v=1.26.0';
-import { TASTE_HINT_AFTER } from './config.js?v=1.26.0';
-import { personLink } from './people.js?v=1.26.0';
+import * as store from './store.js?v=1.27.0';
+import * as tmdb from './tmdb.js?v=1.27.0';
+import { esc, toast } from './ui.js?v=1.27.0';
+import { runtimeSlot, titleText } from './runtime.js?v=1.27.0';
+import { SEED_MOVIES, SEED_PEOPLE, SEED_STUDIOS } from './seeds.js?v=1.27.0';
+import { SEED_SHOWS, SEED_TV_PEOPLE, SEED_NETWORKS } from './seeds-tv.js?v=1.27.0';
+import { THEMES, themeById, themeQuery } from './themes.js?v=1.27.0';
+import { MEDIA, mediaOf, marksOf, excludedGenre, askStarted, stateLabel, STARTED, creditsOf, pressed } from './media.js?v=1.27.0';
+import { TASTE_HINT_AFTER } from './config.js?v=1.27.0';
+import { personLink } from './people.js?v=1.27.0';
 
 const STEP = 20;
 const MARKS = [
@@ -233,10 +233,13 @@ const allFilms = () => {
   const list = [...L().personal, ...SEEDS[media()].map(fromSeed), ...L().extra].filter((f) => !seen.has(f.id) && seen.add(f.id));
   return remember([...list.filter((f) => !f.x), ...list.filter((f) => f.x)]);
 };
-const candidates = () => (L().showAll ? allFilms() : allFilms().filter((f) => !L().done.has(f.id)));
+// Was auf der Merkliste steht, kommt hier nie (auch nicht bei „Alle zeigen“) – es wartet ja schon (1.27.0)
+const onList = (id) => marks()[id]?.s === 'want';
+const candidates = () => (L().showAll ? allFilms() : allFilms().filter((f) => !L().done.has(f.id))).filter((f) => !onList(f.id) || L().justMarked?.has(f.id));
 const passedList = () => (media() === 'tv' ? profile.passedTv : profile.passed) || [];
 
 function snapshotDone() {
+  L().justMarked = new Set();
   L().done = new Set([...Object.keys(marks()).map(Number), ...passedList()]);
   L().shown = STEP;
 }
@@ -460,6 +463,7 @@ async function fillPersonView() {
     .filter((m) => !m.adult && m.poster_path && m.release_date && m.release_date <= today && !(m.genre_ids || []).includes(99))
     .filter((m) => md !== 'tv' || !excludedGenre(m))
     .filter((m) => !seen.has(m.id) && seen.add(m.id))
+    .filter((m) => !onList(m.id)) // schon auf der Merkliste
     .sort((a, b) => (b.vote_count || 0) - (a.vote_count || 0))
     .slice(0, 60);
   box.innerHTML = list.length
@@ -595,6 +599,7 @@ async function mark(card, status) {
   else if (status === 'started') { now = await askStarted(f.title || ''); if (!now) return; }
   else now = status;
   store.setMark(profile.id, md, id, now, { g: f.g, l: f.l, y: f.y, n: f.title });
+  if (now === 'want') (per[md].justMarked ||= new Set()).add(id);
   document.querySelectorAll(`[data-film="${id}"]`).forEach((c) => updateFilmCard(c, id));
   // Grenze gerade erreicht? Dann den Hinweis oben einblenden
   const grid = body()?.querySelector('.films');

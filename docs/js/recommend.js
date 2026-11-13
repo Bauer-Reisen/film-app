@@ -1,13 +1,13 @@
 // Vorschläge berechnen – nachvollziehbar, ohne „Lernen“:
 // Ausgangspunkte holen → Kandidaten sammeln → Punkte vergeben → Vielfalt → Begründung.
 // Gilt für Filme und Serien (media = 'movie' | 'tv'). Alle Zahlen stehen in config.js.
-import { RECOMMEND as R, RECOMMEND_TV as RT, BRIDGE as B } from './config.js?v=1.26.0';
-import * as tmdb from './tmdb.js?v=1.26.0';
-import { SEED_MOVIES, SEED_STUDIOS } from './seeds.js?v=1.26.0';
-import { SEED_SHOWS } from './seeds-tv.js?v=1.26.0';
-import { tierOf } from './store.js?v=1.26.0';
-import { themeById, themeQuery } from './themes.js?v=1.26.0';
-import { MEDIA, mediaOf, marksOf, other, excludedGenre, creditsOf, mapGenres } from './media.js?v=1.26.0';
+import { RECOMMEND as R, RECOMMEND_TV as RT, BRIDGE as B } from './config.js?v=1.27.0';
+import * as tmdb from './tmdb.js?v=1.27.0';
+import { SEED_MOVIES, SEED_STUDIOS } from './seeds.js?v=1.27.0';
+import { SEED_SHOWS } from './seeds-tv.js?v=1.27.0';
+import { tierOf } from './store.js?v=1.27.0';
+import { themeById, themeQuery } from './themes.js?v=1.27.0';
+import { MEDIA, mediaOf, marksOf, other, excludedGenre, creditsOf, mapGenres } from './media.js?v=1.27.0';
 
 const seedById = { movie: new Map(SEED_MOVIES.map((m) => [m.id, m])), tv: new Map(SEED_SHOWS.map((m) => [m.id, m])) };
 const studioName = new Map(SEED_STUDIOS.map((s) => [s.id, s.n]));
@@ -34,6 +34,9 @@ export function markedTitle(profile, id, md = mediaOf(profile)) {
 }
 
 // Ausgangspunkte aus dem Profil
+// Schon markiert = kein Vorschlag mehr – außer „Merken“: noch nicht gesehen, darf also vorkommen (1.27.0)
+const blocked = (mark) => !!mark && mark.s !== 'want';
+
 function sourcesOf(profile, md) {
   const films = Object.entries(marksOf(profile, md)).map(([id, m]) => ({ id: Number(id), ...m }));
   const otherFilms = Object.entries(marksOf(profile, other(md))).map(([id, m]) => ({ id: Number(id), ...m }));
@@ -249,7 +252,7 @@ export async function compute(profile, page = 1, md = mediaOf(profile)) {
   for (const c of cands.values()) {
     const m = c.movie;
     // Harte Ausschlüsse – laufen bei jeder Ausgabe erneut (siehe visible())
-    if (m.adult || !m.poster_path || !m.release_date || m.release_date > now || marks[m.id]) continue;
+    if (m.adult || !m.poster_path || !m.release_date || m.release_date > now || blocked(marks[m.id])) continue;
     if ((md === 'tv' && excludedGenre(m)) || kidsBlocked(profile, md, m)) continue;
     const fav = c.reasons.some((r) => FAV.has(r.kind));
     const minVote = fav ? L.favMinVote : L.minVote;
@@ -291,7 +294,7 @@ function diversify(list) {
 }
 
 // Endfilter bei jeder Ausgabe: nichts, was schon markiert ist
-export const visible = (profile, list, md = mediaOf(profile)) => list.filter((x) => !marksOf(profile, md)[x.movie.id]);
+export const visible = (profile, list, md = mediaOf(profile)) => list.filter((x) => !blocked(marksOf(profile, md)[x.movie.id]));
 
 // ---------- „Heute Lust auf …“ und „Aus welcher Zeit?“ ----------
 const isoDaysAgo = (days) => new Date(Date.now() - days * 864e5).toISOString().slice(0, 10);
@@ -379,7 +382,7 @@ export async function computeFiltered(profile, { theme = '', era = '', genre = '
   const inRange = (m) => m.release_date && m.release_date <= to && (!from || m.release_date >= from);
   const cands = new Map();
   const put = (m, kind, ref) => {
-    if (m.adult || !m.poster_path || !inRange(m) || marks[m.id]) return;
+    if (m.adult || !m.poster_path || !inRange(m) || blocked(marks[m.id])) return;
     if (gid && !(m.genre_ids || (m.genres || []).map((g) => g.id)).includes(gid)) return;
     if ((md === 'tv' && excludedGenre(m)) || kidsBlocked(profile, md, m)) return;
     if (!cands.has(m.id)) cands.set(m.id, { movie: m, reasons: [] });
