@@ -1,13 +1,13 @@
 // Vorschläge berechnen – nachvollziehbar, ohne „Lernen“:
 // Ausgangspunkte holen → Kandidaten sammeln → Punkte vergeben → Vielfalt → Begründung.
 // Gilt für Filme und Serien (media = 'movie' | 'tv'). Alle Zahlen stehen in config.js.
-import { RECOMMEND as R, RECOMMEND_TV as RT, BRIDGE as B } from './config.js?v=1.24.0';
-import * as tmdb from './tmdb.js?v=1.24.0';
-import { SEED_MOVIES, SEED_STUDIOS } from './seeds.js?v=1.24.0';
-import { SEED_SHOWS } from './seeds-tv.js?v=1.24.0';
-import { tierOf } from './store.js?v=1.24.0';
-import { themeById, themeQuery } from './themes.js?v=1.24.0';
-import { MEDIA, mediaOf, marksOf, other, excludedGenre, creditsOf, mapGenres } from './media.js?v=1.24.0';
+import { RECOMMEND as R, RECOMMEND_TV as RT, BRIDGE as B } from './config.js?v=1.25.0';
+import * as tmdb from './tmdb.js?v=1.25.0';
+import { SEED_MOVIES, SEED_STUDIOS } from './seeds.js?v=1.25.0';
+import { SEED_SHOWS } from './seeds-tv.js?v=1.25.0';
+import { tierOf } from './store.js?v=1.25.0';
+import { themeById, themeQuery } from './themes.js?v=1.25.0';
+import { MEDIA, mediaOf, marksOf, other, excludedGenre, creditsOf, mapGenres } from './media.js?v=1.25.0';
 
 const seedById = { movie: new Map(SEED_MOVIES.map((m) => [m.id, m])), tv: new Map(SEED_SHOWS.map((m) => [m.id, m])) };
 const studioName = new Map(SEED_STUDIOS.map((s) => [s.id, s.n]));
@@ -193,7 +193,7 @@ function reasonText(profile, reasons, md) {
   const film = (kind, verb) => {
     const list = by(kind);
     if (!list.length) return null;
-    return `${verb.before}${list.slice(0, 2).map(title).join(' und ')}${verb.after}`;
+    return `${verb.before}${title(list[0])}${verb.after}`;
   };
   const crossTitle = (r) => `${r.ref.from === 'tv' ? 'die Serie' : 'den Film'} „${r.ref.n}“`;
   const crossVerb = (r) => (r.ref.s === 'loved' ? 'liebst' : 'mochtest');
@@ -219,12 +219,8 @@ function reasonText(profile, reasons, md) {
   const weight = (kind) => Math.min(by(kind).reduce((sum, r) => sum + pts(r), 0), CAP[kind] ?? Infinity);
   const kinds = PRIORITY.filter((k) => by(k).length).sort((a, b) => weight(b) - weight(a) || PRIORITY.indexOf(a) - PRIORITY.indexOf(b));
   // Geliebt und gemocht zusammen: ein Satz statt zwei
-  if (kinds[0] === 'loved' && kinds[1] === 'liked') {
-    return `Weil du ${title(by('loved')[0])} liebst und ${title(by('liked')[0])} mochtest`;
-  }
   for (const k of kinds) {
-    if (parts.length === 2) break;
-    if (parts.length === 1 && weight(k) < 3) break; // zweiter Grund nur, wenn er zählt
+    if (parts.length) break; // nur ein Grund – kurz und klar (1.25.0)
     const t = texts[k]();
     if (t && !parts.includes(t)) parts.push(t);
   }

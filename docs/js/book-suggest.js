@@ -1,22 +1,19 @@
 // Seite „Vorschläge“ bei Büchern: Liste mit Begründung, Rückmeldungen, Rückgängig, „Mehr“,
 // „Heute Lust auf …“ und „Aus welcher Zeit“.
-import * as store from './store.js?v=1.24.0';
-import * as books from './books.js?v=1.24.0';
-import { esc, toast } from './ui.js?v=1.24.0';
-import { THEMES, themeById } from './themes.js?v=1.24.0';
-import { MEDIA, stateLabel } from './media.js?v=1.24.0';
-import { computeBooks, visibleBooks, hasBookSources, BOOK_ERAS, bookEraById, BOOK_POINTS } from './book-recommend.js?v=1.24.0';
-import { coverImg, bookMetaHtml, rememberBooks } from './book-taste.js?v=1.24.0';
-import { movieHint } from './book-extra.js?v=1.24.0';
-import { fillSeriesSlots } from './book-series.js?v=1.24.0';
+import * as store from './store.js?v=1.25.0';
+import * as books from './books.js?v=1.25.0';
+import { esc, toast } from './ui.js?v=1.25.0';
+import { THEMES, themeById } from './themes.js?v=1.25.0';
+import { MEDIA, stateLabel } from './media.js?v=1.25.0';
+import { computeBooks, visibleBooks, hasBookSources, BOOK_ERAS, bookEraById, BOOK_POINTS } from './book-recommend.js?v=1.25.0';
+import { coverImg, bookMetaHtml, rememberBooks } from './book-taste.js?v=1.25.0';
+import { movieHint } from './book-extra.js?v=1.25.0';
+import { fillSeriesSlots } from './book-series.js?v=1.25.0';
+import { markButtons, moreBox, filterBox } from './cards.js?v=1.25.0';
 
-const FEEDBACK = [
-  ['want', '+', 'Merken'],
-  ['seen', '✓', 'Gelesen'],
-  ['liked', '♥', 'Mag ich'],
-  ['disliked', '✕', 'Mag ich nicht'],
-  ['noInterest', '–', 'Kein Interesse'],
-];
+// Drei große Knöpfe; „Schon gelesen“ klappt die Bewertung auf
+const MAIN = [['known', '✓', 'Schon gelesen'], ['want', '+', 'Merken'], ['noInterest', '–', 'Nein danke']];
+const KNOWN = [['liked', '♥', 'Mag ich'], ['seen', '✓', 'Ganz okay'], ['disliked', '✕', 'Mag ich nicht']];
 const W = MEDIA.book.w;
 const BLOCK = BOOK_POINTS.blockSize;
 const label = (s) => stateLabel('book', s).replace(/^[^\p{L}]+/u, '');
@@ -31,6 +28,7 @@ let mood = '';
 let era = '';
 const calc = () => computeBooks(profile, page, { theme: mood, era });
 const box = () => document.getElementById('suggest-list');
+const active = () => [mood && themeById.get(mood)?.n, era && bookEraById.get(era)?.n].filter(Boolean).join(' · ');
 
 function pickers() {
   const withB = THEMES.filter((t) => t.b?.length);
@@ -57,10 +55,11 @@ export function render(p) {
   profile = p;
   return `
     <h1>Vorschläge</h1>
-    <nav class="modes" aria-label="Besondere Vorschläge">
-      <a class="mode" href="#/liebling"><span aria-hidden="true">★</span> ${W.fav}</a>
-    </nav>
-    ${pickers()}
+    ${filterBox(active(), `
+      ${pickers()}
+      <nav class="modes" aria-label="Besondere Vorschläge">
+        <a class="mode" href="#/liebling"><span aria-hidden="true">★</span> ${W.fav}</a>
+      </nav>`)}
     <div id="suggest-list" aria-live="polite"><p class="muted center">Suche passende Bücher …</p></div>`;
 }
 
@@ -74,6 +73,8 @@ export async function mount(p) {
   if (sel && selEra) sel.onchange = selEra.onchange = () => {
     mood = sel.value;
     era = selEra.value;
+    const now = document.querySelector('.filters-now');
+    if (now) now.textContent = active() || 'alles, was zu dir passt';
     box().innerHTML = '<p class="muted center">Suche passende Bücher …</p>';
     mount(profile);
   };
@@ -129,13 +130,11 @@ function card(x) {
         <h3 class="film-title">${esc(b.title)}</h3>
         <p class="book-meta muted small">${bookMetaHtml(b)}</p>
         <p class="reason">${esc(x.text)}</p>
-        <p class="series-slot small" data-bseries-for="${esc(b.id)}"></p>
-        <p class="rating muted small">${rating}${(b.r || 0).toLocaleString('de-DE')} Leser·innen bei Open Library</p>
-        <div class="film-extra"><details class="overview" data-bdesc="${esc(b.id)}"><summary>Worum geht's?</summary><p class="muted">Lädt …</p></details></div>
-        ${movieHint(b.id, b.title, b.a)}
-        <div class="marks marks-5" role="group" aria-label="Rückmeldung zu ${esc(b.title)}">
-          ${FEEDBACK.map(([key, icon, text]) => `<button type="button" class="mark mark-${key}" data-bfb="${key}"><span aria-hidden="true">${icon}</span> ${text}</button>`).join('')}
-        </div>
+        <div class="film-extra">${moreBox('<p class="muted">Lädt …</p>', `
+          <p class="series-slot small" data-bseries-for="${esc(b.id)}"></p>
+          <p class="rating muted small">${rating}${(b.r || 0).toLocaleString('de-DE')} Leser·innen bei Open Library</p>
+          ${movieHint(b.id, b.title, b.a)}`, b.id)}</div>
+        ${markButtons('data-bfb', b.title, MAIN, KNOWN)}
       </div>
     </article>`;
 }

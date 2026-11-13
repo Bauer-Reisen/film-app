@@ -1,24 +1,21 @@
 // Seite „Vorschläge“: Liste mit Begründung, fünf Rückmeldungen, Rückgängig, „Mehr“.
-import * as store from './store.js?v=1.24.0';
-import * as tmdb from './tmdb.js?v=1.24.0';
-import { esc, toast } from './ui.js?v=1.24.0';
-import { runtimeSlot, titleText } from './runtime.js?v=1.24.0';
-import { trailerBtn } from './trailer.js?v=1.24.0';
-import { compute, computeFiltered, visible, hasSources, erasFor, eraById } from './recommend.js?v=1.24.0';
-import { MEDIA, mediaOf, askStarted, stateLabel } from './media.js?v=1.24.0';
-import { THEMES, themeById } from './themes.js?v=1.24.0';
-import { RECOMMEND } from './config.js?v=1.24.0';
-import { bookSlot } from './book-extra.js?v=1.24.0';
-import { peopleSlot, fillPeopleSlots } from './people.js?v=1.24.0';
+import * as store from './store.js?v=1.25.0';
+import * as tmdb from './tmdb.js?v=1.25.0';
+import { esc, toast } from './ui.js?v=1.25.0';
+import { runtimeSlot, titleText } from './runtime.js?v=1.25.0';
+import { trailerBtn } from './trailer.js?v=1.25.0';
+import { compute, computeFiltered, visible, hasSources, erasFor, eraById } from './recommend.js?v=1.25.0';
+import { MEDIA, mediaOf, askStarted, stateLabel } from './media.js?v=1.25.0';
+import { THEMES, themeById } from './themes.js?v=1.25.0';
+import { RECOMMEND } from './config.js?v=1.25.0';
+import { bookSlot } from './book-extra.js?v=1.25.0';
+import { peopleSlot, fillPeopleSlots } from './people.js?v=1.25.0';
+import { markButtons, moreBox, filterBox } from './cards.js?v=1.25.0';
 
-const FEEDBACK = [
-  ['want', '+', 'Merken'],
-  ['seen', '✓', 'Gesehen'],
-  ['liked', '♥', 'Mag ich'],
-  ['disliked', '✕', 'Mag ich nicht'],
-  ['noInterest', '–', 'Kein Interesse'],
-];
-const FEEDBACK_TV = [...FEEDBACK.slice(0, 4), ['started', '⏸', 'Angefangen'], FEEDBACK[4]];
+// Drei große Knöpfe; „Schon gesehen“ klappt die Bewertung auf
+const MAIN = [['known', '✓', 'Schon gesehen'], ['want', '+', 'Merken'], ['noInterest', '–', 'Nein danke']];
+const KNOWN = [['liked', '♥', 'Mag ich'], ['seen', '✓', 'Ganz okay'], ['disliked', '✕', 'Mag ich nicht']];
+const KNOWN_TV = [...KNOWN, ['started', '⏸', 'Angefangen']];
 const label = (md, s) => stateLabel(md, s).replace(/^[^\p{L}]+/u, '');
 
 let profile = null;
@@ -61,12 +58,13 @@ export function render(p) {
   if (era && !eraById(md).has(era)) era = '';
   return `
     <h1>Vorschläge</h1>
-    <nav class="modes" aria-label="Besondere Vorschläge">
-      <a class="mode" href="#/gruppe"><span aria-hidden="true">🍿</span> Gruppenabend</a>
-      <a class="mode" href="#/kinder"><span aria-hidden="true">🧸</span> ${W().kids}</a>
-      <a class="mode" href="#/liebling"><span aria-hidden="true">★</span> ${W().fav}</a>
-    </nav>
-    ${moodPicker()}
+    ${filterBox([mood && themeById.get(mood)?.n, era && eraById(md).get(era)?.n].filter(Boolean).join(' · '), `
+      ${moodPicker()}
+      <nav class="modes" aria-label="Besondere Vorschläge">
+        <a class="mode" href="#/gruppe"><span aria-hidden="true">🍿</span> Gruppenabend</a>
+        <a class="mode" href="#/kinder"><span aria-hidden="true">🧸</span> ${W().kids}</a>
+        <a class="mode" href="#/liebling"><span aria-hidden="true">★</span> ${W().fav}</a>
+      </nav>`)}
     <div id="suggest-list" aria-live="polite"><p class="muted center">Suche passende ${W().many} …</p></div>`;
 }
 
@@ -81,6 +79,8 @@ export async function mount(p) {
   if (sel && selEra) sel.onchange = selEra.onchange = () => {
     mood = sel.value;
     era = selEra.value;
+    const now = document.querySelector('.filters-now');
+    if (now) now.textContent = [mood && themeById.get(mood)?.n, era && eraById(md).get(era)?.n].filter(Boolean).join(' · ') || 'alles, was zu dir passt';
     box().innerHTML = `<p class="muted center">Suche passende ${W().many} …</p>`;
     mount(profile);
   };
@@ -120,7 +120,6 @@ const errorBox = (msg) => `<div class="card center"><p>${esc(msg)}</p><button cl
 function card(x) {
   const m = x.movie;
   const y = tmdb.year(m.release_date);
-  const overview = m.overview ? `<details class="overview"><summary>Worum geht's?</summary><p>${esc(m.overview)}</p></details>` : '';
   return `
     <article class="film sg" data-sgfilm="${m.id}">
       <button type="button" class="poster-btn" data-fb="loved" aria-label="${esc(m.title)} als ${W().fav}">
@@ -129,15 +128,13 @@ function card(x) {
         <span class="poster-star" aria-hidden="true">☆</span>
       </button>
       <div class="film-info">
-        <h3 class="film-title">${titleText(m.title, m.id, md) || esc(m.title)}${y ? ` <span class="year">${y}</span>` : ''}</h3>
+        <h3 class="film-title">${titleText(m.title, m.id, md) || esc(m.title)} <span class="year">${y || ''}${runtimeSlot(m.id, md)}</span></h3>
         <p class="reason">${esc(x.text)}</p>
-        ${peopleSlot(m.id, md)}
-        <p class="rating muted small">TMDB-Note ${m.vote_average.toFixed(1).replace('.', ',')}${runtimeSlot(m.id, md)}</p>
-        <div class="film-extra">${overview}${trailerBtn(m.id, m.title, false, md)}</div>
-        ${bookSlot(m.id, md, m.original_title || m.original_name || m.title)}
-        <div class="marks marks-5" role="group" aria-label="Rückmeldung zu ${esc(m.title)}">
-          ${(md === 'tv' ? FEEDBACK_TV : FEEDBACK).map(([key, icon, label]) => `<button type="button" class="mark mark-${key}" data-fb="${key}"><span aria-hidden="true">${icon}</span> ${label}</button>`).join('')}
-        </div>
+        <div class="film-extra">${moreBox(m.overview ? `<p>${esc(m.overview)}</p>` : '', `
+          ${peopleSlot(m.id, md)}
+          <p class="rating muted small">TMDB-Note ${m.vote_average.toFixed(1).replace('.', ',')}</p>
+          ${bookSlot(m.id, md, m.original_title || m.original_name || m.title)}`)}${trailerBtn(m.id, m.title, false, md)}</div>
+        ${markButtons('data-fb', m.title, MAIN, md === 'tv' ? KNOWN_TV : KNOWN)}
       </div>
     </article>`;
 }

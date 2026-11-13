@@ -1,6 +1,6 @@
 // Filme oder Serien: alles, was sich zwischen beiden unterscheidet, steht hier.
 // Die Seiten fragen hier nach (Adressen, Wörter, Profilfelder), statt alles doppelt zu bauen.
-import { dialog, esc } from './ui.js?v=1.24.0';
+import { dialog, esc } from './ui.js?v=1.25.0';
 
 // Serien-Genres, die nie vorgeschlagen werden: Nachrichten, Reality, Seifenoper, Talkshow
 export const TV_EXCLUDE = [10763, 10764, 10766, 10767];
@@ -92,6 +92,8 @@ export const STARTED = new Set(['paused', 'dropped']);
 // Ein Tipp auf einen leuchtenden Knopf nimmt die Markierung ganz zurück.
 const SEEN_TOO = new Set(['liked', 'loved', 'disliked']);
 export const pressed = (s, key) => s === key || (s === 'loved' && key === 'liked') || (key === 'seen' && SEEN_TOO.has(s)) || (key === 'started' && STARTED.has(s));
+// Für die aufgeklappte Bewertung: nur genau die gewählte Antwort leuchtet („Mag ich“ ist nicht zugleich „Ganz okay“)
+export const pressedExact = (s, key) => s === key || (s === 'loved' && key === 'liked') || (key === 'started' && STARTED.has(s));
 export async function askStarted(title) {
   const res = await dialog({
     title: 'Angefangen',

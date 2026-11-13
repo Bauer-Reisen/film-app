@@ -1,20 +1,17 @@
 // Seite „Überrasch mich“: Vorhang → Aufdecken → Rückmeldung oder anderer Film.
-import * as store from './store.js?v=1.24.0';
-import * as tmdb from './tmdb.js?v=1.24.0';
-import { esc, toast } from './ui.js?v=1.24.0';
-import { trailerBtn } from './trailer.js?v=1.24.0';
-import { draw, genreName } from './surprise.js?v=1.24.0';
-import { currentIds } from './suggest.js?v=1.24.0';
-import { MEDIA, mediaOf, marksOf, tvLength, askStarted, stateLabel, STARTED, pressed } from './media.js?v=1.24.0';
+import * as store from './store.js?v=1.25.0';
+import * as tmdb from './tmdb.js?v=1.25.0';
+import { esc, toast } from './ui.js?v=1.25.0';
+import { markButtons } from './cards.js?v=1.25.0';
+import { trailerBtn } from './trailer.js?v=1.25.0';
+import { draw, genreName } from './surprise.js?v=1.25.0';
+import { currentIds } from './suggest.js?v=1.25.0';
+import { MEDIA, mediaOf, marksOf, tvLength, askStarted, stateLabel, STARTED, pressed, pressedExact } from './media.js?v=1.25.0';
 
-const FEEDBACK = [
-  ['want', '+', 'Merken'],
-  ['seen', '✓', 'Gesehen'],
-  ['liked', '♥', 'Mag ich'],
-  ['disliked', '✕', 'Mag ich nicht'],
-  ['noInterest', '–', 'Kein Interesse'],
-];
-const FEEDBACK_TV = [...FEEDBACK.slice(0, 4), ['started', '⏸', 'Angefangen'], FEEDBACK[4]];
+// Drei große Knöpfe; „Schon gesehen“ klappt die Bewertung auf
+const MAIN = [['known', '✓', 'Schon gesehen'], ['want', '+', 'Merken'], ['noInterest', '–', 'Nein danke']];
+const KNOWN = [['liked', '♥', 'Mag ich'], ['seen', '✓', 'Ganz okay'], ['disliked', '✕', 'Mag ich nicht']];
+const KNOWN_TV = [...KNOWN, ['started', '⏸', 'Angefangen']];
 
 let profile = null;
 let cur = null; // { profileId, media, movie, genre, revealed }
@@ -77,9 +74,7 @@ function paint() {
         <p>${m.overview ? esc(m.overview) : '<span class="muted">Keine Inhaltsangabe.</span>'}</p>
         <p>${trailerBtn(m.id, m.title, false, md)}</p>
         <p class="film-state">${s ? esc(stateLabel(md, s)) : ''}</p>
-        <div class="marks marks-5" role="group" aria-label="Rückmeldung zu ${esc(m.title)}">
-          ${(md === 'tv' ? FEEDBACK_TV : FEEDBACK).map(([key, icon, label]) => `<button type="button" class="mark mark-${key}" data-snfb="${key}" aria-pressed="${pressed(s, key)}"><span aria-hidden="true">${icon}</span> ${label}</button>`).join('')}
-        </div>
+        ${markButtons('data-snfb', m.title, MAIN, md === 'tv' ? KNOWN_TV : KNOWN, { s, pressed: pressedExact })}
         <p class="center"><button class="btn btn-primary btn-big" type="button" data-sn="draw">${other()}</button></p>
       </div>
     </article>`;
@@ -119,7 +114,7 @@ async function feedback(key) {
   const old = marksOf(profile, mine)[m.id]?.s || null;
   let now;
   if (key === 'loved') now = old === 'loved' ? 'liked' : 'loved';
-  else if (pressed(old, key)) now = null;
+  else if (pressedExact(old, key)) now = null;
   else if (key === 'started') { now = await askStarted(m.title); if (!now) return; }
   else now = key;
   // Eine Überraschung, die man mag, wird ein ganz normaler gemochter Titel

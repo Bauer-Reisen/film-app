@@ -1,20 +1,17 @@
 // Seite „Leseliste“: alle Bücher mit „Merken“ oder „Weiterlesen“ (liegen geblieben), neueste zuerst.
 // Titel und Cover in der Lesesprache des Profils.
-import * as store from './store.js?v=1.24.0';
-import * as books from './books.js?v=1.24.0';
-import { esc, toast } from './ui.js?v=1.24.0';
-import { stateLabel, amazonBookUrl, shopLink } from './media.js?v=1.24.0';
-import { coverImg, bookMetaHtml } from './book-taste.js?v=1.24.0';
-import { movieHint } from './book-extra.js?v=1.24.0';
-import { fillSeriesSlots } from './book-series.js?v=1.24.0';
+import * as store from './store.js?v=1.25.0';
+import * as books from './books.js?v=1.25.0';
+import { esc, toast } from './ui.js?v=1.25.0';
+import { stateLabel, amazonBookUrl, shopLink } from './media.js?v=1.25.0';
+import { coverImg, bookMetaHtml } from './book-taste.js?v=1.25.0';
+import { markButtons, moreBox } from './cards.js?v=1.25.0';
+import { movieHint } from './book-extra.js?v=1.25.0';
+import { fillSeriesSlots } from './book-series.js?v=1.25.0';
 
-const ACTIONS = [
-  ['seen', '✓', 'Gelesen'],
-  ['liked', '♥', 'Mag ich'],
-  ['disliked', '✕', 'Mag ich nicht'],
-  ['dropped', '⏹', 'Abgebrochen'],
-  ['remove', '–', 'Entfernen'],
-];
+// Zwei große Knöpfe; „Gelesen“ klappt die Bewertung auf
+const MAIN = [['known', '✓', 'Gelesen'], ['remove', '–', 'Entfernen']];
+const KNOWN = [['liked', '♥', 'Mag ich'], ['seen', '✓', 'Ganz okay'], ['disliked', '✕', 'Mag ich nicht'], ['dropped', '⏹', 'Abgebrochen']];
 
 let profile = null;
 let run = 0;
@@ -71,13 +68,13 @@ function card(m) {
       <div class="film-info">
         <h3 class="film-title">${esc(x.title)}</h3>
         <p class="book-meta muted small">${bookMetaHtml(x)}</p>
-        <p class="series-slot small" data-bseries-for="${esc(m.id)}"></p>
         ${m.s === 'paused' ? '<p class="small">⏸ Angefangen – liegt bereit zum Weiterlesen</p>' : ''}
-        <div class="film-extra"><details class="overview" data-bdesc="${esc(m.id)}"><summary>Worum geht's?</summary><p class="muted">Lädt …</p></details>${movieHint(m.id, x.title, x.a)}</div>
-        <p class="shop-links">${(profile.shelf || []).some((s) => s.id === m.id) ? '📚 Steht bei euch im Regal' : shopLink(esc(amazonBookUrl(x.title, x.a, profile.language)), '🛒 Bei Amazon ansehen')}</p>
-        <div class="marks marks-5" role="group" aria-label="${esc(x.title)}">
-          ${ACTIONS.map(([key, icon, label]) => `<button type="button" class="mark mark-${key}" data-wbl="${key}"><span aria-hidden="true">${icon}</span> ${label}</button>`).join('')}
-        </div>
+        ${(profile.shelf || []).some((s) => s.id === m.id) ? '<p class="small">📚 Steht bei euch im Regal</p>' : ''}
+        <div class="film-extra">${moreBox('<p class="muted">Lädt …</p>', `
+          <p class="series-slot small" data-bseries-for="${esc(m.id)}"></p>
+          ${movieHint(m.id, x.title, x.a)}
+          ${(profile.shelf || []).some((s) => s.id === m.id) ? '' : `<p class="shop-links">${shopLink(esc(amazonBookUrl(x.title, x.a, profile.language)), '🛒 Bei Amazon ansehen')}</p>`}`, m.id)}</div>
+        ${markButtons('data-wbl', x.title, MAIN, KNOWN)}
       </div>
     </article>`;
 }

@@ -1,28 +1,30 @@
 // Oberfläche: Seitenwechsel über die Adresse (#/vorschlaege usw.)
-import { VERSION, LANGUAGES } from './config.js?v=1.24.0';
-import * as store from './store.js?v=1.24.0';
-import { saveBackup, readBackup, findSameName, importAsNew, mergeInto } from './backup.js?v=1.24.0';
-import { esc, dialog, toast, formatDate } from './ui.js?v=1.24.0';
-import * as platform from './platform.js?v=1.24.0';
-import * as taste from './taste.js?v=1.24.0';
-import * as suggest from './suggest.js?v=1.24.0';
-import * as watchlist from './watchlist.js?v=1.24.0';
-import * as sneak from './sneak.js?v=1.24.0';
-import * as group from './group.js?v=1.24.0';
-import * as kids from './kids.js?v=1.24.0';
-import * as rewatch from './rewatch.js?v=1.24.0';
-import * as trailer from './trailer.js?v=1.24.0';
-import { initRuntimes } from './runtime.js?v=1.24.0';
-import { mediaOf } from './media.js?v=1.24.0';
-import { runTour } from './tour.js?v=1.24.0';
-import * as bookTaste from './book-taste.js?v=1.24.0';
-import * as bookList from './book-list.js?v=1.24.0';
-import * as scan from './scan.js?v=1.24.0';
-import * as bookRate from './book-rate.js?v=1.24.0';
-import * as bookSuggest from './book-suggest.js?v=1.24.0';
-import * as bookSneak from './book-sneak.js?v=1.24.0';
-import * as bookRewatch from './book-rewatch.js?v=1.24.0';
-import { initBookExtras } from './book-extra.js?v=1.24.0';
+import { VERSION, LANGUAGES } from './config.js?v=1.25.0';
+import * as store from './store.js?v=1.25.0';
+import { saveBackup, readBackup, findSameName, importAsNew, mergeInto } from './backup.js?v=1.25.0';
+import { esc, dialog, toast, formatDate } from './ui.js?v=1.25.0';
+import * as platform from './platform.js?v=1.25.0';
+import * as taste from './taste.js?v=1.25.0';
+import * as suggest from './suggest.js?v=1.25.0';
+import * as watchlist from './watchlist.js?v=1.25.0';
+import * as sneak from './sneak.js?v=1.25.0';
+import * as group from './group.js?v=1.25.0';
+import * as kids from './kids.js?v=1.25.0';
+import * as rewatch from './rewatch.js?v=1.25.0';
+import * as trailer from './trailer.js?v=1.25.0';
+import { handleKnown } from './cards.js?v=1.25.0';
+import { initRuntimes } from './runtime.js?v=1.25.0';
+import { mediaOf } from './media.js?v=1.25.0';
+import { runTour } from './tour.js?v=1.25.0';
+import { unseen, showNews, LATEST } from './news.js?v=1.25.0';
+import * as bookTaste from './book-taste.js?v=1.25.0';
+import * as bookList from './book-list.js?v=1.25.0';
+import * as scan from './scan.js?v=1.25.0';
+import * as bookRate from './book-rate.js?v=1.25.0';
+import * as bookSuggest from './book-suggest.js?v=1.25.0';
+import * as bookSneak from './book-sneak.js?v=1.25.0';
+import * as bookRewatch from './book-rewatch.js?v=1.25.0';
+import { initBookExtras } from './book-extra.js?v=1.25.0';
 
 const view = document.getElementById('view');
 const APP_URL = 'https://bauer-reisen.github.io/film-app/';
@@ -416,6 +418,7 @@ fileInput.addEventListener('change', async () => {
 });
 
 view.addEventListener('click', async (e) => {
+  if (handleKnown(e)) return; // „Schon gesehen“ / „Gelesen“ klappt die Bewertung auf
   // Autor·in auf einer Buchkarte angetippt: „Bücher von …“ unter Geschmack
   const ao = e.target.closest('[data-authoropen]');
   if (ao) {
@@ -552,6 +555,21 @@ function show() {
   whoBtn.textContent = p ? p.name : 'Wer schaut?';
   whoBtn.setAttribute('aria-label', p ? `Profil ${p.name} – Profil wechseln` : 'Profil wählen');
   window.scrollTo(0, 0);
+  if (p && !page.noTabs) maybeNews(p);
+}
+
+// Nach einem Update: einmal „Was ist neu?“ (wer neu ist, bekommt den Rundgang und keine alten Neuigkeiten)
+let newsOpen = false;
+async function maybeNews(p) {
+  if (newsOpen) return;
+  const seen = () => store.updateProfile(p.id, { settings: { ...(store.getProfile(p.id).settings || {}), newsSeen: LATEST } });
+  if (!p.settings?.tourDone) { seen(); return; }
+  const list = unseen(p);
+  if (!list.length) return;
+  newsOpen = true;
+  await showNews(list);
+  seen();
+  newsOpen = false;
 }
 
 window.addEventListener('hashchange', show);

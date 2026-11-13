@@ -1,26 +1,23 @@
 // „Überrasch mich“ bei Büchern: ein viel gelesenes, gut bewertetes Buch aus einem Genre, das du sonst nicht liest.
 // Vorhang (nur Genre, Zeit, Seitenzahl) → Aufdecken → Rückmeldung oder anderes Buch.
-import * as store from './store.js?v=1.24.0';
-import * as books from './books.js?v=1.24.0';
-import { esc, toast } from './ui.js?v=1.24.0';
-import { SURPRISE } from './config.js?v=1.24.0';
-import { BOOK_GENRES, bookGenreById } from './book-genres.js?v=1.24.0';
-import { MEDIA, stateLabel, pressed } from './media.js?v=1.24.0';
-import { coverImg, bookMetaHtml, nextStatus } from './book-taste.js?v=1.24.0';
-import { movieHint } from './book-extra.js?v=1.24.0';
-import { currentBookIds } from './book-suggest.js?v=1.24.0';
+import * as store from './store.js?v=1.25.0';
+import * as books from './books.js?v=1.25.0';
+import { esc, toast } from './ui.js?v=1.25.0';
+import { markButtons } from './cards.js?v=1.25.0';
+import { SURPRISE } from './config.js?v=1.25.0';
+import { BOOK_GENRES, bookGenreById } from './book-genres.js?v=1.25.0';
+import { MEDIA, stateLabel, pressed, pressedExact } from './media.js?v=1.25.0';
+import { coverImg, bookMetaHtml, nextStatus } from './book-taste.js?v=1.25.0';
+import { movieHint } from './book-extra.js?v=1.25.0';
+import { currentBookIds } from './book-suggest.js?v=1.25.0';
 
-const FEEDBACK = [
-  ['want', '+', 'Merken'],
-  ['seen', '✓', 'Gelesen'],
-  ['liked', '♥', 'Mag ich'],
-  ['disliked', '✕', 'Mag ich nicht'],
-  ['noInterest', '–', 'Kein Interesse'],
-];
+// Drei große Knöpfe; „Schon gelesen“ klappt die Bewertung auf
+const MAIN = [['known', '✓', 'Schon gelesen'], ['want', '+', 'Merken'], ['noInterest', '–', 'Nein danke']];
+const KNOWN = [['liked', '♥', 'Mag ich'], ['seen', '✓', 'Ganz okay'], ['disliked', '✕', 'Mag ich nicht']];
 const W = MEDIA.book.w;
 const MIN_READERS = 150;  // viel gelesen
 const MIN_RATING = 3.8;   // gut bewertet (wenn es Bewertungen gibt)
-const BUNDLE = /( \/ |\b(complete|collected|omnibus|box(ed)? set|collection|study guide)\b)/i;
+const BUNDLE = books.BUNDLE; // Sammelbände, Boxen, Lernhilfen (gemeinsam in books.js)
 const pickRandom = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
 let profile = null;
@@ -125,9 +122,7 @@ function paint() {
         <details class="overview" data-bdesc="${esc(b.id)}" open><summary>Worum geht's?</summary><p class="muted">Lädt …</p></details>
         ${movieHint(b.id, b.title, b.a)}
         <p class="film-state">${s ? esc(stateLabel('book', s)) : ''}</p>
-        <div class="marks marks-5" role="group" aria-label="Rückmeldung zu ${esc(b.title)}">
-          ${FEEDBACK.map(([key, icon, label]) => `<button type="button" class="mark mark-${key}" data-bsnfb="${key}" aria-pressed="${pressed(s, key)}"><span aria-hidden="true">${icon}</span> ${label}</button>`).join('')}
-        </div>
+        ${markButtons('data-bsnfb', b.title, MAIN, KNOWN, { s, pressed: pressedExact })}
         <p class="center"><button class="btn btn-primary btn-big" type="button" data-bsn="draw">Anderes Buch</button></p>
       </div>
     </article>`;

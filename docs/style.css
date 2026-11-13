@@ -178,6 +178,11 @@ body:has(.toast.show) .to-top, .no-tabs .to-top { display: none; } /* nicht mit 
 .tour { text-align: center; }
 .tour-icon { font-size: 40px; line-height: 1; margin: 4px 0 12px; color: var(--accent); }
 .tour h3 { margin: 0 0 8px; }
+/* „Was ist neu?“ nach Updates */
+.news h3 { margin: 12px 0 4px; font-size: 1.05rem; }
+.news h3:first-child { margin-top: 0; }
+.news ul { margin: 0 0 4px; padding-left: 1.2em; }
+.news li { margin: 4px 0; }
 .tour p { text-align: left; }
 .tour-dots { display: flex; justify-content: center; gap: 8px; margin: 14px 0 0 !important; }
 .tour-dots span { width: 8px; height: 8px; border-radius: 50%; background: var(--line); }
@@ -351,6 +356,22 @@ body:has(.toast.show) .to-top, .no-tabs .to-top { display: none; } /* nicht mit 
 .marks-5 .mark-noInterest:nth-child(odd) { grid-column: 1 / -1; }
 /* Ungerade Zahl an Knöpfen: der letzte geht über die ganze Breite */
 .marks-5 > .mark:last-child:nth-child(odd) { grid-column: 1 / -1; }
+/* Vorschläge oben: „Filter & mehr“ zugeklappt */
+.filters { margin: 0 0 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+.filters summary { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 10px; min-height: 48px; padding: 6px 14px; cursor: pointer; }
+.filters-label { font-weight: 700; }
+.filters-now { color: var(--muted); font-size: 14px; }
+.filters-body { padding: 4px 14px 6px; }
+.filters-body .modes { padding-bottom: 6px; }
+/* Wenige große Knöpfe: „Schon gesehen“ über die ganze Breite, darunter Merken | Nein danke */
+.marks-3 > .mark-known { grid-column: 1 / -1; }
+.mark-known.is-open { border-color: var(--accent); }
+.known-row { margin-top: 6px; padding: 6px; border-radius: 12px; background: var(--surface); }
+.known-row[hidden] { display: none; }
+.known-row > .mark:last-child:nth-child(odd) { grid-column: 1 / -1; }
+/* „Mehr dazu“: alles Weitere zugeklappt */
+.more .more-body { padding: 2px 0 4px; }
+.more .more-body > p { margin: 6px 0 0; }
 .mark-started[aria-pressed="true"] { background: #a1a1aa; border-color: #a1a1aa; }
 .sg[hidden] { display: none; }
 @media (min-width: 768px) {
@@ -516,6 +537,13 @@ ul.plain { list-style: none; padding: 0; margin: 0; display: flex; flex-directio
 .rate-choices .btn { width: 100%; min-width: 0; padding-left: 8px; padding-right: 8px; }
 .author-chips { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 8px 0 12px; }
 .chip { min-height: 44px; padding: 6px 14px; border-radius: 999px; border: 2px solid var(--line); background: var(--surface); color: inherit; font: inherit; cursor: pointer; max-width: 100%; overflow-wrap: anywhere; }
+/* Eine Zeile zum Wischen statt mehrerer Zeilen voller Knöpfe */
+.chip-scroll { display: flex; align-items: center; gap: 8px; margin: 6px 0 10px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+.chip-scroll::-webkit-scrollbar { display: none; }
+.chip-scroll > * { flex: 0 0 auto; white-space: nowrap; }
+.chip-scroll .chip { min-height: 40px; padding: 4px 12px; }
+.scan-row { align-items: center; gap: 8px 16px; }
+.scan-row .btn { flex: 1 1 auto; width: auto; }
 .chip:hover, .chip:focus-visible { border-color: var(--accent); }
 .tile .link-btn.small { font-size: 13px; min-height: 32px; }
 .scan-first .btn { margin-top: 4px; }

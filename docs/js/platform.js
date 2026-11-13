@@ -1,5 +1,5 @@
 // Erkennt das Gerät und kümmert sich um „Auf den Home-Bildschirm“.
-import { device, updateDevice } from './store.js?v=1.24.0';
+import { device, updateDevice } from './store.js?v=1.25.0';
 
 export const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) ||
   (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
@@ -38,8 +38,10 @@ export function dismissHomeHint() {
 }
 
 // Android: einmal ein freundlicher Tipp
+// Erster Besuch auf diesem Gerät? Dann noch keinen Tipp – erst einmal die App kennenlernen
+const firstVisit = (() => { try { const d = device(); if (d.firstSeen) return false; updateDevice({ firstSeen: Date.now() }); return true; } catch { return false; } })();
 export function shouldShowInstallTip() {
-  return isAndroid && !isStandalone && !device().installTipShown;
+  return isAndroid && !isStandalone && !firstVisit && !device().installTipShown;
 }
 export function dismissInstallTip() { updateDevice({ installTipShown: true }); }
 

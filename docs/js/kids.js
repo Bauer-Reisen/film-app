@@ -1,22 +1,19 @@
 // Seite „Kinderfilme“ bzw. „Kinderserien“: gute Titel mit passender Altersfreigabe.
 // Es zählt vor allem Bewertung und Beliebtheit – Kinder haben ihren eigenen Geschmack.
-import { KIDS, KIDS_TV } from './config.js?v=1.24.0';
-import * as store from './store.js?v=1.24.0';
-import * as tmdb from './tmdb.js?v=1.24.0';
-import { esc, toast } from './ui.js?v=1.24.0';
-import { runtimeSlot } from './runtime.js?v=1.24.0';
-import { trailerBtn } from './trailer.js?v=1.24.0';
-import { ageOk } from './age.js?v=1.24.0';
-import { MEDIA, mediaOf, marksOf, askStarted, stateLabel, STARTED, pressed } from './media.js?v=1.24.0';
+import { KIDS, KIDS_TV } from './config.js?v=1.25.0';
+import * as store from './store.js?v=1.25.0';
+import * as tmdb from './tmdb.js?v=1.25.0';
+import { esc, toast } from './ui.js?v=1.25.0';
+import { markButtons, moreBox } from './cards.js?v=1.25.0';
+import { runtimeSlot } from './runtime.js?v=1.25.0';
+import { trailerBtn } from './trailer.js?v=1.25.0';
+import { ageOk } from './age.js?v=1.25.0';
+import { MEDIA, mediaOf, marksOf, askStarted, stateLabel, STARTED, pressed, pressedExact } from './media.js?v=1.25.0';
 
-const FEEDBACK = [
-  ['want', '+', 'Merken'],
-  ['seen', '✓', 'Gesehen'],
-  ['liked', '♥', 'Mag ich'],
-  ['disliked', '✕', 'Mag ich nicht'],
-  ['noInterest', '–', 'Kein Interesse'],
-];
-const FEEDBACK_TV = [...FEEDBACK.slice(0, 4), ['started', '⏸', 'Angefangen'], FEEDBACK[4]];
+// Drei große Knöpfe; „Schon gesehen“ klappt die Bewertung auf
+const MAIN = [['known', '✓', 'Schon gesehen'], ['want', '+', 'Merken'], ['noInterest', '–', 'Nein danke']];
+const KNOWN = [['liked', '♥', 'Mag ich'], ['seen', '✓', 'Ganz okay'], ['disliked', '✕', 'Mag ich nicht']];
+const KNOWN_TV = [...KNOWN, ['started', '⏸', 'Angefangen']];
 const HIDE = new Set(['disliked', 'noInterest', 'dropped']);
 const SEEN = new Set(['seen', 'liked', 'loved']);
 
@@ -150,7 +147,6 @@ function card(x) {
   const y = tmdb.year(m.release_date);
   const s = marks()[m.id]?.s || null;
   const hint = SEEN.has(s) ? 'Schon gesehen' : s === 'paused' ? '⏸ Angefangen – willst du weiterschauen' : x.studio ? (md === 'tv' ? 'Von einem deiner Lieblingssender' : 'Von einem deiner Lieblingsstudios') : '';
-  const overview = m.overview ? `<details class="overview"><summary>Worum geht's?</summary><p>${esc(m.overview)}</p></details>` : '';
   return `
     <article class="film sg ${s === 'loved' ? 'is-loved' : ''}" data-kidfilm="${m.id}">
       <button type="button" class="poster-btn" data-kfb="loved" aria-pressed="${s === 'loved'}" aria-label="${esc(m.title)} als ${W().fav}">
@@ -159,13 +155,12 @@ function card(x) {
         <span class="poster-star" aria-hidden="true">${s === 'loved' ? '★' : '☆'}</span>
       </button>
       <div class="film-info">
-        <h3 class="film-title">${esc(m.title)}${y ? ` <span class="year">${y}</span>` : ''}</h3>
+        <h3 class="film-title">${esc(m.title)} <span class="year">${y || ''}${runtimeSlot(m.id, md)}</span></h3>
         ${hint ? `<p class="reason">${hint}</p>` : ''}
-        <p class="rating muted small">TMDB-Note ${(m.vote_average || 0).toFixed(1).replace('.', ',')}${runtimeSlot(m.id, md)}</p>
-        <div class="film-extra">${overview}${trailerBtn(m.id, m.title, false, md)}${flimmoLink(x.de || m.title)}</div>
-        <div class="marks marks-5" role="group" aria-label="Rückmeldung zu ${esc(m.title)}">
-          ${(md === 'tv' ? FEEDBACK_TV : FEEDBACK).map(([key, icon, label]) => `<button type="button" class="mark mark-${key}" data-kfb="${key}" aria-pressed="${pressed(s, key)}"><span aria-hidden="true">${icon}</span> ${label}</button>`).join('')}
-        </div>
+        <div class="film-extra">${moreBox(m.overview ? `<p>${esc(m.overview)}</p>` : '', `
+          <p class="rating muted small">TMDB-Note ${(m.vote_average || 0).toFixed(1).replace('.', ',')}</p>
+          <p>${flimmoLink(x.de || m.title)}</p>`)}${trailerBtn(m.id, m.title, false, md)}</div>
+        ${markButtons('data-kfb', m.title, MAIN, md === 'tv' ? KNOWN_TV : KNOWN, { s, pressed: pressedExact })}
       </div>
     </article>`;
 }
@@ -179,7 +174,7 @@ async function feedback(cardEl, key) {
   const old = marks()[id]?.s || null;
   let now;
   if (key === 'loved') now = old === 'loved' ? 'liked' : 'loved';
-  else if (pressed(old, key)) now = null;
+  else if (pressedExact(old, key)) now = null;
   else if (key === 'started') { now = await askStarted(m.title); if (!now) return; }
   else now = key;
   const prev = store.setMark(profile.id, mine, id, now, { g: m.genre_ids, l: m.original_language, y: tmdb.year(m.release_date), n: m.title });

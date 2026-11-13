@@ -1,16 +1,16 @@
 // Seite „Geschmack“ bei Büchern: Autor·innen, Themen und Genres in Stufen, Bücher markieren, Suche (auch ISBN), Scannen.
-import * as store from './store.js?v=1.24.0';
-import * as books from './books.js?v=1.24.0';
-import { esc, toast } from './ui.js?v=1.24.0';
-import { SEED_BOOKS, SEED_AUTHORS } from './seeds-books.js?v=1.24.0';
-import { THEMES, themeById } from './themes.js?v=1.24.0';
-import { BOOK_GENRES, bookGenreById } from './book-genres.js?v=1.24.0';
-import { MEDIA, stateLabel, pressed } from './media.js?v=1.24.0';
-import { TASTE_HINT_AFTER } from './config.js?v=1.24.0';
-import { authorsFromFilms } from './bridge-books.js?v=1.24.0';
-import { unrated } from './book-rate.js?v=1.24.0';
-import { requestPaste } from './book-share.js?v=1.24.0';
-import { seriesBooks, fillSeriesSlots as seriesSlots } from './book-series.js?v=1.24.0';
+import * as store from './store.js?v=1.25.0';
+import * as books from './books.js?v=1.25.0';
+import { esc, toast } from './ui.js?v=1.25.0';
+import { SEED_BOOKS, SEED_AUTHORS } from './seeds-books.js?v=1.25.0';
+import { THEMES, themeById } from './themes.js?v=1.25.0';
+import { BOOK_GENRES, bookGenreById } from './book-genres.js?v=1.25.0';
+import { MEDIA, stateLabel, pressed } from './media.js?v=1.25.0';
+import { TASTE_HINT_AFTER } from './config.js?v=1.25.0';
+import { authorsFromFilms } from './bridge-books.js?v=1.25.0';
+import { unrated } from './book-rate.js?v=1.25.0';
+import { requestPaste } from './book-share.js?v=1.25.0';
+import { seriesBooks, fillSeriesSlots as seriesSlots } from './book-series.js?v=1.25.0';
 
 const STEP = 20;
 const SCAN = true; // Knopf „Bücher scannen“
@@ -154,12 +154,12 @@ function scanBox() {
   const btn = '<a class="btn btn-primary btn-big" href="#/scannen"><span aria-hidden="true">📷</span> Bücher scannen</a>';
   const rate = open ? `<div class="card hint"><p><strong>${open} ${open === 1 ? 'Buch wartet' : 'Bücher warten'} auf deine Bewertung.</strong> Wie fandst du ${open === 1 ? 'es' : 'sie'}? Geht schnell: ein Tipp pro Buch.</p>
     <p><a class="btn btn-primary" href="#/bewerten">Jetzt bewerten</a></p></div>` : '';
-  const paste = '<p class="small"><a href="#/scannen" data-btaste="paste">Bücherliste von jemandem bekommen? Hier einfügen</a></p>';
-  if (n >= 10) return `<p class="row scan-row">${btn}</p>${paste}${rate}`;
+  // Später nur noch ein Knopf, die Liste zum Einfügen als kleiner Link daneben
+  if (n >= 10) return `<p class="row scan-row">${btn}<a class="small" href="#/scannen" data-btaste="paste">Liste einfügen</a></p>${rate}`;
   return `<div class="card hint scan-first">
     <p><strong>Am besten fängst du mit deinem Bücherregal an.</strong></p>
-    <p>Scanne die Bücher, die du zu Hause hast: Strichcode hinten auf dem Buch, eins nach dem anderen – die Kamera bleibt an. Danach fragt die App kurz, wie du sie fandst, und zeigt dir hier zuerst weitere Bücher deiner Autor·innen und Reihen.</p>
-    <p>${btn}</p>${paste}</div>${rate}`;
+    <p>Strichcode hinten auf dem Buch scannen, eins nach dem anderen. Danach fragt die App kurz, wie du sie fandst.</p>
+    <p class="row scan-row">${btn}<a class="small" href="#/scannen" data-btaste="paste">Liste einfügen</a></p></div>${rate}`;
 }
 
 // ---------- Seite ----------
@@ -368,12 +368,12 @@ async function fillAuthorInfo(v) {
   }
 }
 
-// Kleine Leiste über der Bücherliste: deine Autor·innen zum Abhaken
+// Eine schmale Leiste zum Wischen über der Bücherliste: Schullektüre und deine Autor·innen schnell abhaken
 function authorChips() {
   const list = ownAuthors().slice(0, 8);
-  const school = '<div class="author-chips"><button type="button" class="chip" data-bschool>🎓 Schullektüre abhaken</button></div>';
-  if (!list.length) return school;
-  return `${school}<div class="author-chips"><span class="muted small">Alle Bücher abhaken von:</span>
+  return `<div class="chip-scroll" role="group" aria-label="Schnell abhaken">
+    <span class="muted small">Schnell abhaken:</span>
+    <button type="button" class="chip" data-bschool>🎓 Schullektüre</button>
     ${list.map((x) => `<button type="button" class="chip" data-bauthorview="${esc(x.id)}" data-bauthorname="${esc(x.n)}">${esc(x.n)}</button>`).join('')}</div>`;
 }
 
@@ -415,10 +415,10 @@ async function fillBooks() {
   const doneInfo = L.showAll
     ? '<p class="muted small">Du siehst alle Bücher, auch die schon markierten. <button class="btn btn-small" type="button" data-btaste="toggle-all">Nur neue zeigen</button></p>'
     : L.done.size
-      ? `<p class="muted small">${marked} markiert${passed ? `, ${passed} übersprungen` : ''} – die sind ausgeblendet, hier kommen nur neue. <button class="btn btn-small" type="button" data-btaste="toggle-all">Alle zeigen</button></p>`
+      ? `<p class="muted small">${marked} schon markiert${passed ? `, ${passed} übersprungen` : ''} (ausgeblendet). <button class="btn btn-small" type="button" data-btaste="toggle-all">Alle zeigen</button></p>`
       : '';
   el.innerHTML = `
-    <p class="muted small">Tipp an, was du gelesen hast. Unbekannte einfach überscrollen. Nochmal tippen nimmt die Markierung zurück. „Abgebrochen“ = nicht zu Ende gelesen. <strong>Aufs Cover tippen = ★ ${W.fav}.</strong></p>
+    <p class="muted small">Tipp an, was du gelesen hast – Unbekannte einfach überscrollen. <strong>Cover = ★ ${W.fav}.</strong></p>
     ${authorChips()}
     ${nothingRated() && !Object.keys(marks()).length ? tip() : suggestHint()}
     ${doneInfo}
