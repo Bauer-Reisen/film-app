@@ -1,13 +1,13 @@
 // Seite „Kinderfilme“ bzw. „Kinderserien“: gute Titel mit passender Altersfreigabe.
 // Es zählt vor allem Bewertung und Beliebtheit – Kinder haben ihren eigenen Geschmack.
-import { KIDS, KIDS_TV } from './config.js?v=1.11.0';
-import * as store from './store.js?v=1.11.0';
-import * as tmdb from './tmdb.js?v=1.11.0';
-import { esc, toast } from './ui.js?v=1.11.0';
-import { runtimeSlot } from './runtime.js?v=1.11.0';
-import { trailerBtn } from './trailer.js?v=1.11.0';
-import { ageOk } from './age.js?v=1.11.0';
-import { MEDIA, mediaOf, marksOf, askStarted, stateLabel, STARTED, pressed } from './media.js?v=1.11.0';
+import { KIDS, KIDS_TV } from './config.js?v=1.11.1';
+import * as store from './store.js?v=1.11.1';
+import * as tmdb from './tmdb.js?v=1.11.1';
+import { esc, toast } from './ui.js?v=1.11.1';
+import { runtimeSlot } from './runtime.js?v=1.11.1';
+import { trailerBtn } from './trailer.js?v=1.11.1';
+import { ageOk } from './age.js?v=1.11.1';
+import { MEDIA, mediaOf, marksOf, askStarted, stateLabel, STARTED, pressed } from './media.js?v=1.11.1';
 
 const FEEDBACK = [
   ['want', '+', 'Merken'],
@@ -101,7 +101,12 @@ export function render(p) {
     <div class="segmented ages" role="group" aria-label="Altersfreigabe">
       ${K.ages.map((x) => `<button type="button" class="seg" data-kid-age="${x}" aria-pressed="${x === a}">ab ${x}</button>`).join('')}
     </div>
-    <p class="muted small">Nach deutscher FSK, sonst nach US-Freigabe. Ob ein Titel wirklich zum Alter passt, sagt dir der Elternratgeber FLIMMO – Link auf jeder Karte. Vor allem gut bewertete und beliebte ${W().many}.</p>
+    <p class="muted small">Nach deutscher FSK, sonst nach US-Freigabe. Vor allem gut bewertete und beliebte ${W().many}.</p>
+    <details class="flimmo-info">
+      <summary>Was ist FLIMMO? <span aria-hidden="true">▾</span></summary>
+      <p>FLIMMO ist ein kostenloser Ratgeber für Eltern. Fachleute schauen sich Filme und Serien an und schreiben, ab welchem Alter sie wirklich passen – und was Kinder vielleicht ängstigen oder überfordern könnte. Die FSK sagt nur, was erlaubt ist; FLIMMO sagt, was gut passt.</p>
+      <p>Auf jeder Karte führt „Bei FLIMMO nachsehen ↗“ direkt zur Suche dort.</p>
+    </details>
     <div id="kids-list" aria-live="polite"><p class="muted center">Suche ${W().kids} …</p></div>`;
 }
 

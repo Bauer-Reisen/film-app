@@ -461,4 +461,9 @@ body:has(.toast.show) .to-top, .no-tabs .to-top { display: none; } /* nicht mit 
 .mood span { min-width: 9.5em; }
 .mood select { flex: 1 1 220px; max-width: 420px; min-height: 48px; padding: 0 12px; font-size: 17px; border-radius: var(--radius);
   background: var(--surface-2); color: inherit; border: 1px solid var(--line); }
+.flimmo-info { margin: 0 0 12px; color: var(--muted); font-size: 14px; }
+.flimmo-info summary { cursor: pointer; list-style: none; min-height: 44px; display: inline-flex; align-items: center; gap: 4px; color: var(--accent); font-weight: 600; }
+.flimmo-info summary::-webkit-details-marker { display: none; }
+.flimmo-info[open] summary span { transform: rotate(180deg); }
+.flimmo-info p { margin: 0 0 8px; }
 .flimmo-link { min-height: 44px; display: inline-flex; align-items: center; text-decoration: none; }

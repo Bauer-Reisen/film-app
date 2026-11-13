@@ -1,6 +1,6 @@
 // Kurzer Rundgang für neue Profile: fünf Karten nacheinander, jederzeit überspringbar.
 // Danach (oder beim Überspringen) gilt er als gesehen; unter „Profil“ lässt er sich nochmal ansehen.
-import { dialog, esc } from './ui.js?v=1.11.0';
+import { dialog, esc } from './ui.js?v=1.11.1';
 
 const STEPS = [
   {
@@ -17,7 +17,7 @@ const STEPS = [
   },
   {
     icon: '🍿', title: 'Noch mehr',
-    text: '<strong>Überrasch mich</strong>: ein richtig guter Titel abseits deines Geschmacks, verdeckt wie in der Sneak Preview. Oben bei den Vorschlägen: <strong>Gruppenabend</strong>, <strong>Kinderfilme</strong> und dein <strong>Lieblingsfilm</strong>. In der <strong>Merkliste</strong> steht alles Gemerkte.',
+    text: '<strong>Überrasch mich</strong>: ein richtig guter Titel abseits deines Geschmacks, verdeckt wie in der Sneak Preview. Oben bei den Vorschlägen: <strong>Gruppenabend</strong>, <strong>Kinderfilme</strong> und dein <strong>Lieblingsfilm</strong>. Bei den Kinderfilmen hilft ein Link zu <strong>FLIMMO</strong> – einem kostenlosen Elternratgeber, der sagt, ab welchem Alter ein Titel wirklich passt. In der <strong>Merkliste</strong> steht alles Gemerkte.',
   },
   {
     icon: '💾', title: 'Profil sichern',
