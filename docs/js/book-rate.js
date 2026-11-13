@@ -1,12 +1,12 @@
 // Seite „Wie fandst du sie?“: Bücher eins nach dem anderen kurz bewerten.
 // Kommt direkt nach dem Scannen oder dem Einfügen einer geteilten Liste; auch später über „Geschmack“ erreichbar.
 // Offen sind: Bücher auf der Warteliste (pendingBooks, noch gar nicht markiert) und ältere, nur als „Gelesen“ markierte.
-import * as store from './store.js?v=1.22.0';
-import { esc } from './ui.js?v=1.22.0';
-import { MEDIA } from './media.js?v=1.22.0';
-import { coverImg, bookMeta, openSub, openSeries } from './book-taste.js?v=1.22.0';
-import { seriesOf } from './book-series.js?v=1.22.0';
-import { readLang } from './books.js?v=1.22.0';
+import * as store from './store.js?v=1.23.0';
+import { esc } from './ui.js?v=1.23.0';
+import { MEDIA } from './media.js?v=1.23.0';
+import { coverImg, bookMetaHtml, openSub, openSeries } from './book-taste.js?v=1.23.0';
+import { seriesOf } from './book-series.js?v=1.23.0';
+import { readLang } from './books.js?v=1.23.0';
 
 const W = MEDIA.book.w;
 // Zu Ende gelesen → wie war's? Angefangen → abgebrochen oder liegen geblieben?
@@ -62,13 +62,13 @@ function paint() {
   if (pos >= queue.length) { el.innerHTML = summary(); return; }
   const id = queue[pos];
   const m = pendingOf(id) || profile.books[id];
-  const b = { title: m.n || 'Buch', a: m.a, y: m.y, pg: m.pg, cover: m.c };
+  const b = { title: m.n || 'Buch', a: m.a, ak: m.ak, y: m.y, pg: m.pg, cover: m.c };
   el.innerHTML = `
     <p class="muted small">Buch ${pos + 1} von ${queue.length} · Ein Tipp, dann kommt das nächste. Du kannst jederzeit aufhören – der Rest wartet unter „Geschmack“ auf dich.</p>
     <article class="rate-card">
       <div class="group-cover">${coverImg(b.cover, `Cover: ${b.title}`)}</div>
       <h2 class="group-title">${esc(b.title)}</h2>
-      <p class="group-meta">${esc(bookMeta(b))}</p>
+      <p class="group-meta">${bookMetaHtml(b)}</p>
       <p class="small" id="rate-series"></p>
       <details class="overview rate-desc" data-bdesc="${esc(id)}" open><summary>Worum ging's?</summary><p class="muted">Lädt …</p></details>
       <div class="rate-choices" role="group" aria-label="Wie fandst du ${esc(b.title)}?">

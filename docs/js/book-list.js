@@ -1,12 +1,12 @@
 // Seite „Leseliste“: alle Bücher mit „Merken“ oder „Weiterlesen“ (liegen geblieben), neueste zuerst.
 // Titel und Cover in der Lesesprache des Profils.
-import * as store from './store.js?v=1.22.0';
-import * as books from './books.js?v=1.22.0';
-import { esc, toast } from './ui.js?v=1.22.0';
-import { stateLabel, amazonBookUrl, shopLink } from './media.js?v=1.22.0';
-import { coverImg, bookMeta } from './book-taste.js?v=1.22.0';
-import { movieHint } from './book-extra.js?v=1.22.0';
-import { fillSeriesSlots } from './book-series.js?v=1.22.0';
+import * as store from './store.js?v=1.23.0';
+import * as books from './books.js?v=1.23.0';
+import { esc, toast } from './ui.js?v=1.23.0';
+import { stateLabel, amazonBookUrl, shopLink } from './media.js?v=1.23.0';
+import { coverImg, bookMetaHtml } from './book-taste.js?v=1.23.0';
+import { movieHint } from './book-extra.js?v=1.23.0';
+import { fillSeriesSlots } from './book-series.js?v=1.23.0';
 
 const ACTIONS = [
   ['seen', '✓', 'Gelesen'],
@@ -70,7 +70,7 @@ function card(m) {
       </button>
       <div class="film-info">
         <h3 class="film-title">${esc(x.title)}</h3>
-        <p class="book-meta muted small">${esc(bookMeta(x))}</p>
+        <p class="book-meta muted small">${bookMetaHtml(x)}</p>
         <p class="series-slot small" data-bseries-for="${esc(m.id)}"></p>
         ${m.s === 'paused' ? '<p class="small">⏸ Angefangen – liegt bereit zum Weiterlesen</p>' : ''}
         <div class="film-extra"><details class="overview" data-bdesc="${esc(m.id)}"><summary>Worum geht's?</summary><p class="muted">Lädt …</p></details>${movieHint(m.id, x.title, x.a)}</div>

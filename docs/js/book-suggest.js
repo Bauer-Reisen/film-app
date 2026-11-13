@@ -1,14 +1,14 @@
 // Seite „Vorschläge“ bei Büchern: Liste mit Begründung, Rückmeldungen, Rückgängig, „Mehr“,
 // „Heute Lust auf …“ und „Aus welcher Zeit“.
-import * as store from './store.js?v=1.22.0';
-import * as books from './books.js?v=1.22.0';
-import { esc, toast } from './ui.js?v=1.22.0';
-import { THEMES, themeById } from './themes.js?v=1.22.0';
-import { MEDIA, stateLabel } from './media.js?v=1.22.0';
-import { computeBooks, visibleBooks, hasBookSources, BOOK_ERAS, bookEraById, BOOK_POINTS } from './book-recommend.js?v=1.22.0';
-import { coverImg, bookMeta, rememberBooks } from './book-taste.js?v=1.22.0';
-import { movieHint } from './book-extra.js?v=1.22.0';
-import { fillSeriesSlots } from './book-series.js?v=1.22.0';
+import * as store from './store.js?v=1.23.0';
+import * as books from './books.js?v=1.23.0';
+import { esc, toast } from './ui.js?v=1.23.0';
+import { THEMES, themeById } from './themes.js?v=1.23.0';
+import { MEDIA, stateLabel } from './media.js?v=1.23.0';
+import { computeBooks, visibleBooks, hasBookSources, BOOK_ERAS, bookEraById, BOOK_POINTS } from './book-recommend.js?v=1.23.0';
+import { coverImg, bookMetaHtml, rememberBooks } from './book-taste.js?v=1.23.0';
+import { movieHint } from './book-extra.js?v=1.23.0';
+import { fillSeriesSlots } from './book-series.js?v=1.23.0';
 
 const FEEDBACK = [
   ['want', '+', 'Merken'],
@@ -127,7 +127,7 @@ function card(x) {
       </button>
       <div class="film-info">
         <h3 class="film-title">${esc(b.title)}</h3>
-        <p class="book-meta muted small">${esc(bookMeta(b))}</p>
+        <p class="book-meta muted small">${bookMetaHtml(b)}</p>
         <p class="reason">${esc(x.text)}</p>
         <p class="series-slot small" data-bseries-for="${esc(b.id)}"></p>
         <p class="rating muted small">${rating}${(b.r || 0).toLocaleString('de-DE')} Leser·innen bei Open Library</p>

@@ -1,9 +1,9 @@
 // Buchdaten von Open Library (frei, ohne Schlüssel).
 // Erst über unseren Worker (/ol/…). Kennt der Worker die Adressen noch nicht, direkt bei Open Library
 // (die Seite erlaubt das ausdrücklich). Merkt sich Antworten für die Sitzung, höchstens 4 Anfragen gleichzeitig.
-import { WORKER_URL } from './config.js?v=1.22.0';
-import { SEED_BOOKS } from './seeds-books.js?v=1.22.0';
-import { genresOf } from './book-genres.js?v=1.22.0';
+import { WORKER_URL } from './config.js?v=1.23.0';
+import { SEED_BOOKS } from './seeds-books.js?v=1.23.0';
+import { genresOf } from './book-genres.js?v=1.23.0';
 
 const OL = 'https://openlibrary.org';
 const COVERS = 'https://covers.openlibrary.org';
@@ -246,3 +246,35 @@ export function dedupe(list) {
 }
 
 export const pagesText = (pg) => (pg ? `${pg} Seiten` : '');
+
+// Kurz-Info zur Autor·in: Lebensdaten und Beschreibung von Open Library, dazu – falls bekannt –
+// die Kurzbeschreibung von Wikidata in der Lesesprache (z. B. „schwedischer Schriftsteller“)
+const infoMemo = new Map();
+export function authorInfo(id, lang = 'en') {
+  const key = `${lang}:${id}`;
+  if (!infoMemo.has(key)) {
+    const p = get(`/authors/${String(id).replace('/authors/', '')}.json`).then(async (a) => {
+      if (!a) return null;
+      const bio = typeof a.bio === 'string' ? a.bio : a.bio?.value || '';
+      let short = '';
+      const wd = a.remote_ids?.wikidata;
+      if (wd && /^Q\d+$/.test(wd)) {
+        try {
+          const res = await fetch(`https://www.wikidata.org/w/api.php?action=wbgetentities&format=json&origin=*&props=descriptions&languages=de|en&ids=${wd}`);
+          const d = (await res.json()).entities?.[wd]?.descriptions || {};
+          short = (lang === 'de' ? (d.de || d.en) : (d.en || d.de))?.value || '';
+        } catch { /* ohne Kurzbeschreibung */ }
+      }
+      return {
+        name: a.name || '',
+        born: a.birth_date || '', died: a.death_date || '',
+        short,
+        // Quellenangaben und Links am Ende weglassen
+        bio: bio.split(/\n\s*(-{3,}|\*{3,}|\(\[source\]|\[source\]|Source:)/i)[0].replace(/\[([^\]]+)\]\([^)]+\)/g, '$1').trim(),
+      };
+    });
+    infoMemo.set(key, p);
+    p.catch(() => infoMemo.delete(key));
+  }
+  return infoMemo.get(key);
+}

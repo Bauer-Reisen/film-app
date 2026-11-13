@@ -1,11 +1,11 @@
 // Seite „Lieblingsbuch“: eins deiner ★-Bücher zum Wiederlesen.
 // Bevorzugt Bücher, die hier am längsten nicht mehr kamen. Funktioniert auch ohne Netz (gespeicherte Angaben).
-import * as store from './store.js?v=1.22.0';
-import * as books from './books.js?v=1.22.0';
-import { esc, toast } from './ui.js?v=1.22.0';
-import { MEDIA } from './media.js?v=1.22.0';
-import { coverImg, bookMeta } from './book-taste.js?v=1.22.0';
-import { movieHint } from './book-extra.js?v=1.22.0';
+import * as store from './store.js?v=1.23.0';
+import * as books from './books.js?v=1.23.0';
+import { esc, toast } from './ui.js?v=1.23.0';
+import { MEDIA } from './media.js?v=1.23.0';
+import { coverImg, bookMetaHtml } from './book-taste.js?v=1.23.0';
+import { movieHint } from './book-extra.js?v=1.23.0';
 
 const W = MEDIA.book.w;
 let profile = null;
@@ -73,7 +73,7 @@ function paint() {
       <div class="group-cover">${coverImg(b.cover, `Cover: ${b.title}`)}</div>
       <div class="group-info">
         <h2 class="group-title">${esc(b.title)}</h2>
-        <p class="group-meta">${esc(bookMeta(b))}</p>
+        <p class="group-meta">${bookMetaHtml(b)}</p>
         <p class="known">${cur.onlyLiked ? '♥ Mag ich' : `★ Eins deiner ${W.favs}`}</p>
         <details class="overview" data-bdesc="${esc(b.id)}"><summary>Worum ging's nochmal?</summary><p class="muted">Lädt …</p></details>
         ${movieHint(b.id, b.title, b.a)}

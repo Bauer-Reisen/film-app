@@ -1,16 +1,16 @@
 // Seite „Geschmack“ bei Büchern: Autor·innen, Themen und Genres in Stufen, Bücher markieren, Suche (auch ISBN), Scannen.
-import * as store from './store.js?v=1.22.0';
-import * as books from './books.js?v=1.22.0';
-import { esc, toast } from './ui.js?v=1.22.0';
-import { SEED_BOOKS, SEED_AUTHORS } from './seeds-books.js?v=1.22.0';
-import { THEMES, themeById } from './themes.js?v=1.22.0';
-import { BOOK_GENRES, bookGenreById } from './book-genres.js?v=1.22.0';
-import { MEDIA, stateLabel, pressed } from './media.js?v=1.22.0';
-import { TASTE_HINT_AFTER } from './config.js?v=1.22.0';
-import { authorsFromFilms } from './bridge-books.js?v=1.22.0';
-import { unrated } from './book-rate.js?v=1.22.0';
-import { requestPaste } from './book-share.js?v=1.22.0';
-import { seriesBooks, fillSeriesSlots as seriesSlots } from './book-series.js?v=1.22.0';
+import * as store from './store.js?v=1.23.0';
+import * as books from './books.js?v=1.23.0';
+import { esc, toast } from './ui.js?v=1.23.0';
+import { SEED_BOOKS, SEED_AUTHORS } from './seeds-books.js?v=1.23.0';
+import { THEMES, themeById } from './themes.js?v=1.23.0';
+import { BOOK_GENRES, bookGenreById } from './book-genres.js?v=1.23.0';
+import { MEDIA, stateLabel, pressed } from './media.js?v=1.23.0';
+import { TASTE_HINT_AFTER } from './config.js?v=1.23.0';
+import { authorsFromFilms } from './bridge-books.js?v=1.23.0';
+import { unrated } from './book-rate.js?v=1.23.0';
+import { requestPaste } from './book-share.js?v=1.23.0';
+import { seriesBooks, fillSeriesSlots as seriesSlots } from './book-series.js?v=1.23.0';
 
 const STEP = 20;
 const SCAN = true; // Knopf „Bücher scannen“
@@ -49,6 +49,13 @@ export function coverImg(id, alt = '') {
     sizes="(min-width: 768px) 200px, 100px" width="100" height="150" loading="lazy" decoding="async" alt="${esc(alt)}">`;
 }
 export const bookMeta = (b) => [b.a, b.y, books.pagesText(b.pg)].filter(Boolean).join(' · ');
+// Dasselbe als HTML: die Autor·in ist antippbar und öffnet „Bücher von …“
+export const bookMetaHtml = (b, extra = []) => [
+  b.a ? (b.ak ? `<a href="#/geschmack" class="author-link" data-authoropen="${esc(String(b.ak).replace('/authors/', ''))}" data-authorname="${esc(b.a)}">${esc(b.a)}</a>` : esc(b.a)) : '',
+  esc(b.y || ''), esc(books.pagesText(b.pg)), ...extra.map(esc),
+].filter(Boolean).join(' · ');
+// Von außen (Autor·in auf einer Buchkarte angetippt): gleich „Bücher von …“ zeigen; „Zurück“ führt nach back
+export function openAuthor(id, n, back = '') { ui.sub = 'buecher'; ui.query = ''; ui.view = { kind: 'author', id, n, back }; }
 
 function bookCard(b) {
   const s = marks()[b.id]?.s || null;
@@ -60,7 +67,7 @@ function bookCard(b) {
       </button>
       <div class="film-info">
         <h3 class="film-title">${esc(b.title)}</h3>
-        <p class="book-meta muted small">${esc(bookMeta(b))}</p>
+        <p class="book-meta muted small">${bookMetaHtml(b)}</p>
         ${b.why ? `<p class="film-why">${esc(b.why)}</p>` : ''}
         <p class="series-slot small" data-bseries-for="${b.id}"></p>
         <p class="film-state">${s ? esc(stateLabel('book', s)) : ''}</p>
@@ -298,6 +305,7 @@ async function viewList(v) {
 }
 const VIEW_TEXT = {
   author: (v) => [`Bücher von ${v.n}`, 'Tipp an, was du gelesen hast – auch die, die du nicht im Regal hast. Die bekanntesten stehen oben.'],
+
   series: (v) => [`Reihe: ${v.n}`, 'Alle Bände in ihrer Reihenfolge. Tipp nur die an, die du wirklich gelesen hast – wer Band 7 kennt, kennt nicht automatisch alle davor.'],
   school: () => ['Schullektüre', 'Typische Schulbücher – tipp schnell an, was du kennst, und überscroll den Rest. Auch ✕ „Nicht gut“ hilft den Vorschlägen.'],
 };
@@ -307,10 +315,12 @@ async function fillListView() {
   const [title, hint] = VIEW_TEXT[v.kind](v);
   el.innerHTML = `
     <p><button class="btn btn-small" type="button" data-bviewback>← Zurück</button></p>
+    ${v.kind === 'author' ? authorHead(v) : ''}
     <h2>${esc(title)}</h2>
     <p class="muted small">${esc(hint)}</p>
     <div id="author-books"><p class="muted center">Lädt …</p></div>`;
   window.scrollTo({ top: Math.max(0, el.getBoundingClientRect().top + window.scrollY - 80) }); // gleich zur Liste, nicht zum Scan-Hinweis
+  if (v.kind === 'author') fillAuthorInfo(v);
   let list = [];
   try { list = await viewList(v); } catch (err) {
     if (ui.view === v && document.getElementById('author-books')) document.getElementById('author-books').innerHTML = `<p class="muted center">${esc(err.message)}</p>`;
@@ -325,6 +335,38 @@ async function fillListView() {
   if (v.kind !== 'series') seriesSlots(box, profile);
 }
 
+
+// Kopf der Autor·innen-Seite: Foto, Name, ★/♥ und eine kurze Info
+function authorHead(v) {
+  authorsSeen.set(v.id, { id: v.id, n: v.n, k: '' });
+  const w = tier('author', v.id);
+  return `
+    <div class="author-head w${w}" data-author="${esc(v.id)}">
+      <span class="face-wrap"><img class="face" src="${books.authorPhoto(v.id)}" alt="" width="96" height="96" data-initial="${esc((v.n || '?').slice(0, 1))}"></span>
+      <div class="author-head-text">
+        <p class="author-head-name">${esc(v.n)}</p>
+        <p class="muted small" id="author-dates"></p>
+        ${tierButtons(v.n, w)}
+      </div>
+      <div class="author-bio" id="author-bio"></div>
+    </div>`;
+}
+async function fillAuthorInfo(v) {
+  let a = null;
+  // Kurzbeschreibung in der Sprache der App (deutsch), die längere Beschreibung gibt es meist nur auf Englisch
+  try { a = await books.authorInfo(v.id, String(profile.language || 'de').startsWith('de') ? 'de' : 'en'); } catch { return; }
+  if (!a || ui.view !== v) return;
+  const dates = document.getElementById('author-dates');
+  const bio = document.getElementById('author-bio');
+  const year = (d) => (String(d).match(/\d{4}/) || [''])[0];
+  const life = year(a.born) ? (year(a.died) ? `${year(a.born)}–${year(a.died)}` : `geboren ${year(a.born)}`) : '';
+  const shortHasYear = year(a.born) && a.short.includes(year(a.born));
+  if (dates) dates.textContent = [a.short, shortHasYear ? '' : life].filter(Boolean).join(' · ');
+  if (bio && a.bio) {
+    bio.innerHTML = `<p class="clamp" lang="en">${esc(a.bio)}</p>`;
+    bio.querySelector('p').addEventListener('click', (e) => e.currentTarget.classList.toggle('full'));
+  }
+}
 
 // Kleine Leiste über der Bücherliste: deine Autor·innen zum Abhaken
 function authorChips() {

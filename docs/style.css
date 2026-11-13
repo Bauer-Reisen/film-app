@@ -528,3 +528,13 @@ ul.plain { list-style: none; padding: 0; margin: 0; display: flex; flex-directio
 .rate-choices .btn { white-space: normal; line-height: 1.2; }
 .series-slot:empty { display: none; }
 .series-slot { margin: 2px 0 6px; }
+/* Autor·innen-Seite (Bücher von …) */
+.author-head { display: grid; grid-template-columns: auto 1fr; gap: 12px 16px; align-items: center; margin: 8px 0 16px; padding: 14px; border-radius: 12px; background: var(--surface); }
+.author-head .face-wrap .face { width: 96px; height: 96px; }
+.author-head-name { font-size: 1.3rem; font-weight: 700; margin: 0 0 2px; }
+.author-head-text > * { margin: 0 0 6px; }
+.author-bio { grid-column: 1 / -1; }
+.author-bio p { margin: 0; }
+.author-bio .clamp { display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden; cursor: pointer; }
+.author-bio .clamp.full { display: block; }
+.author-link { color: inherit; text-decoration: underline; text-decoration-color: color-mix(in srgb, currentColor 40%, transparent); text-underline-offset: 2px; }
