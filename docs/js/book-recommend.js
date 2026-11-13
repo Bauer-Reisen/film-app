@@ -1,13 +1,13 @@
 // Buch-Vorschläge berechnen – nachvollziehbar wie bei Filmen:
 // Ausgangspunkte → Kandidaten (Open Library) → Punkte → Vielfalt → Begründung.
 // Brücke: Romanvorlagen gemochter Filme und Serien, feste Paare (seeds-books.js), Autor·innen aus Filmen.
-import * as books from './books.js?v=1.19.0';
-import { tierOf } from './store.js?v=1.19.0';
-import { themeById } from './themes.js?v=1.19.0';
-import { BOOK_GENRES, bookGenreById } from './book-genres.js?v=1.19.0';
-import { PAIRS } from './seeds-books.js?v=1.19.0';
-import { likedTitles, novelOf, authorsFromFilms } from './bridge-books.js?v=1.19.0';
-import { markedTitle } from './recommend.js?v=1.19.0';
+import * as books from './books.js?v=1.19.1';
+import { tierOf } from './store.js?v=1.19.1';
+import { themeById } from './themes.js?v=1.19.1';
+import { BOOK_GENRES, bookGenreById } from './book-genres.js?v=1.19.1';
+import { PAIRS } from './seeds-books.js?v=1.19.1';
+import { likedTitles, novelOf, authorsFromFilms } from './bridge-books.js?v=1.19.1';
+import { markedTitle } from './recommend.js?v=1.19.1';
 
 // Punkte je Grund (Stufe 2 = ★ Liebe, 1 = ♥ Gern) und Obergrenzen
 export const BOOK_POINTS = {
@@ -259,7 +259,7 @@ export async function computeBooks(profile, page = 1, filter = {}) {
     score += t + Math.log10(Math.max(b.r || 1, 1)) * 0.6 + (b.rating ? (b.rating - 3.5) : 0);
     const main = [...reasons].sort((x, y) => y.p - x.p)[0];
     const why = reasonText(reasons) || (t > 0.5 ? 'Passt zu deinen Lieblingsgenres' : 'Viel gelesen');
-    const head = [own ? '📚 Steht schon bei euch im Regal' : '', th && !why.includes(th.n) ? th.n : '', er?.short].filter(Boolean).join(' · ');
+    const head = [own ? '📚 Steht schon bei euch im Regal – nichts besorgen, einfach loslegen' : '', th && !why.includes(th.n) ? th.n : '', er?.short].filter(Boolean).join(' · ');
     const item = { book: b, score, reasons, source: main ? `${main.kind}:${main.kind === 'author' || main.kind === 'sameAuthor' ? akOf(b.ak) : main.ref.id}` : `a:${akOf(b.ak)}`, text: head ? `${head} · ${why}` : why };
     const key = `${norm(b.title)}|${lastName(b.a)}`;
     const prev = sameWork.get(key);

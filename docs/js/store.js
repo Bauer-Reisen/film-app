@@ -94,6 +94,15 @@ export function migrate(p) {
   const known = p.settings && 'tourDone' in p.settings;
   p.settings = { ...base.settings, ...(p.settings || {}) };
   if (!known) p.settings.tourDone = true; // bestehende Profile bekommen den Rundgang nicht
+  // Einmalig (1.19.1): In der Bewertungsrunde „Noch nicht gelesen“ landete früher auf der Leseliste – jetzt „im Regal“
+  if (!p.settings.shelfMoved) {
+    for (const [id, m] of Object.entries(p.books || {})) {
+      if (m.s !== 'want' || m.r !== 1) continue;
+      p.shelf.push({ id, n: m.n || '', a: m.a || '', ak: m.ak || null, c: m.c || null, y: m.y || null, pg: m.pg || null, g: m.g || [], t: m.t || Date.now() });
+      delete p.books[id];
+    }
+    p.settings.shelfMoved = true;
+  }
   return p;
 }
 

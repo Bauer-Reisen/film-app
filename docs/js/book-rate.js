@@ -1,14 +1,14 @@
 // Seite „Wie fandst du sie?“: Bücher eins nach dem anderen kurz bewerten.
 // Kommt direkt nach dem Scannen oder dem Einfügen einer geteilten Liste; auch später über „Geschmack“ erreichbar.
 // Offen sind: Bücher auf der Warteliste (pendingBooks, noch gar nicht markiert) und ältere, nur als „Gelesen“ markierte.
-import * as store from './store.js?v=1.19.0';
-import { esc } from './ui.js?v=1.19.0';
-import { MEDIA } from './media.js?v=1.19.0';
-import { coverImg, bookMeta, openSub } from './book-taste.js?v=1.19.0';
+import * as store from './store.js?v=1.19.1';
+import { esc } from './ui.js?v=1.19.1';
+import { MEDIA } from './media.js?v=1.19.1';
+import { coverImg, bookMeta, openSub } from './book-taste.js?v=1.19.1';
 
 const W = MEDIA.book.w;
 // Zu Ende gelesen → wie war's? Angefangen → abgebrochen oder liegen geblieben?
-// Noch gar nicht → nur „im Regal“ (taucht passend in Vorschlägen auf) oder gleich auf die Leseliste
+// Noch gar nicht → nur „im Regal“ (kommt NICHT auf die Leseliste; taucht passend in Vorschlägen mit Regal-Hinweis auf)
 const CHOICES = [
   ['loved', '★', 'Liebe ich', 'btn-primary'],
   ['liked', '♥', 'Gut', ''],
@@ -16,8 +16,7 @@ const CHOICES = [
   ['keep', '✓', 'Gelesen – weiß nicht mehr', ''],
   ['dropped', '⏹', 'Abgebrochen – passte nicht', ''],
   ['paused', '⏸', 'Liegen geblieben – weiterlesen', ''],
-  ['shelf', '📚', 'Ungelesen – steht im Regal', ''],
-  ['want', '+', 'Ungelesen – auf die Leseliste', ''],
+  ['shelf', '📚', 'Noch nicht gelesen', 'wide'],
 ];
 
 let profile = null;
@@ -89,7 +88,7 @@ function summary() {
     <div class="card placeholder">
       <p><strong>${answers.length ? `Fertig – danke! ${counted.length} ${counted.length === 1 ? 'Buch' : 'Bücher'} bewertet.` : 'Gerade gibt es nichts zu bewerten.'}</strong></p>
       <p class="muted">${liked ? 'Unter „Geschmack“ → Bücher kommen jetzt zuerst weitere Bücher deiner Autor·innen. Und die Vorschläge kennen deinen Lesegeschmack schon.' : 'Unter „Geschmack“ kannst du weitere Bücher markieren oder dein Regal scannen.'}</p>
-      ${shelved ? `<p class="muted">📚 ${shelved} ungelesene${shelved === 1 ? 's Buch steht' : ' Bücher stehen'} jetzt „im Regal“. Passt eins zu deinem Geschmack, taucht es in den Vorschlägen auf – mit dem Hinweis, dass ihr es schon habt.</p>` : ''}
+      ${shelved ? `<p class="muted">📚 ${shelved} ungelesene${shelved === 1 ? 's Buch steht' : ' Bücher stehen'} jetzt „im Regal“. Auf die Leseliste kommen sie nicht. Passt eins zu deinem Geschmack, taucht es in den Vorschlägen auf – mit dem Hinweis, dass es schon bei euch im Regal steht.</p>` : ''}
       <p><a class="btn btn-primary btn-big" href="#/scannen" data-rateact="scan"><span aria-hidden="true">📷</span> Weiter scannen</a></p>
       <div class="row center-row">
         <a class="btn" href="#/geschmack" data-rateact="more">Mehr von deinen Autor·innen</a>
