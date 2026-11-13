@@ -1,5 +1,6 @@
 // Themen für „Geschmack“ – jeweils TMDB-Stichwörter (keywords), geprüft mit scripts/check-themes.js.
 // k = Stichwort-Nummern (ODER-verknüpft), ex = Beispielfilme zur Orientierung (deutsch; exEn = englisch, falls anders),
+// kTv / noTv = eigene Stichwörter bzw. ausgeschlossene Genres für Serien (wenn die Film-Stichwörter dort Unpassendes bringen),
 // tv = Beispielserien (deutsch; tvEn = englisch, falls anders; leer = bei Serien kaum eingetragen)
 export const THEMES = [
   { id: 'underdog', n: 'Vom Underdog zum Helden', k: [240, 5626], ex: 'Rocky, Die Glücksritter', exEn: 'Rocky, Trading Places', tv: 'Ted Lasso, Cobra Kai' },
@@ -39,7 +40,21 @@ export const THEMES = [
   { id: 'essen', n: 'Kochen & Essen', k: [1918, 10637], ex: 'Ratatouille, The Menu', tv: 'The Bear' },
   { id: 'inspirierend', n: 'Inspirierend', k: [281585, 191446], ex: 'Rocky Balboa', tv: 'Ted Lasso' },
   { id: 'trauer', n: 'Trauer & Einsamkeit', k: [9872, 9957], ex: 'Aftersun, WALL·E', tv: 'After Life, Fleabag' },
-  { id: 'medien', n: 'Journalismus & Politik', k: [917, 6078], ex: 'Spotlight, Nightcrawler', tv: 'House of Cards, The Newsroom' },
+  // Das breite Stichwort „politics“ (6078) bringt Historienfilme, Palast-Dramen und Anime – deshalb genauere Stichwörter.
+  // Filme: Journalismus, Polit-Drama, Polit-Thriller, Polit-Satire, Wahl, Weißes Haus, investigativer Journalismus/Journalist/Reporter
+  // Serien zusätzlich: Journalist, Zeitung, Reporter, Politiker, Präsident, Premierminister, Parlament; ohne Zeichentrick
+  { id: 'medien', n: 'Journalismus & Politik', k: [917, 298528, 209817, 169086, 15134, 365774, 220362, 195240, 226594], ex: 'Spotlight, Nightcrawler',
+    kTv: [917, 736, 918, 12193, 298528, 209817, 169086, 6083, 8570, 15134, 2569, 6079, 365774, 220362, 195240, 226594], noTv: [16], tv: 'The Newsroom, Designated Survivor' },
   { id: 'weihnachten', n: 'Weihnachten', k: [207317], ex: 'Kevin – Allein zu Haus', exEn: 'Home Alone', tv: 'Dash & Lily' },
 ];
 export const themeById = new Map(THEMES.map((t) => [t.id, t]));
+
+// Abfrage-Teil für TMDB-Discover: Stichwörter des Themas, bei Serien ggf. eigene (kTv) und ausgeschlossene Genres (noTv).
+// without = die sonst ausgeschlossenen Genres, damit sie erhalten bleiben
+export function themeQuery(t, md, without) {
+  const tv = md === 'tv';
+  return {
+    with_keywords: ((tv && t.kTv) || t.k).join('|'),
+    ...(tv && t.noTv ? { without_genres: [without, ...t.noTv].filter(Boolean).join(',') } : {}),
+  };
+}

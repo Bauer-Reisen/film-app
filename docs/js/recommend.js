@@ -1,13 +1,13 @@
 // Vorschläge berechnen – nachvollziehbar, ohne „Lernen“:
 // Ausgangspunkte holen → Kandidaten sammeln → Punkte vergeben → Vielfalt → Begründung.
 // Gilt für Filme und Serien (media = 'movie' | 'tv'). Alle Zahlen stehen in config.js.
-import { RECOMMEND as R, RECOMMEND_TV as RT, BRIDGE as B } from './config.js?v=1.9.1';
-import * as tmdb from './tmdb.js?v=1.9.1';
-import { SEED_MOVIES, SEED_STUDIOS } from './seeds.js?v=1.9.1';
-import { SEED_SHOWS } from './seeds-tv.js?v=1.9.1';
-import { tierOf } from './store.js?v=1.9.1';
-import { themeById } from './themes.js?v=1.9.1';
-import { MEDIA, mediaOf, marksOf, other, excludedGenre, creditsOf, mapGenres } from './media.js?v=1.9.1';
+import { RECOMMEND as R, RECOMMEND_TV as RT, BRIDGE as B } from './config.js?v=1.9.2';
+import * as tmdb from './tmdb.js?v=1.9.2';
+import { SEED_MOVIES, SEED_STUDIOS } from './seeds.js?v=1.9.2';
+import { SEED_SHOWS } from './seeds-tv.js?v=1.9.2';
+import { tierOf } from './store.js?v=1.9.2';
+import { themeById, themeQuery } from './themes.js?v=1.9.2';
+import { MEDIA, mediaOf, marksOf, other, excludedGenre, creditsOf, mapGenres } from './media.js?v=1.9.2';
 
 const seedById = { movie: new Map(SEED_MOVIES.map((m) => [m.id, m])), tv: new Map(SEED_SHOWS.map((m) => [m.id, m])) };
 const studioName = new Map(SEED_STUDIOS.map((s) => [s.id, s.n]));
@@ -157,7 +157,7 @@ async function collect(profile, page, md) {
   }
   const minVotes = md === 'tv' ? 100 : 300;
   for (const th of src.themes) {
-    add('theme', th, disc({ with_keywords: themeById.get(th.id).k.join('|'), sort_by: 'vote_average.desc', 'vote_count.gte': minVotes, page }), (d) => d.results || []);
+    add('theme', th, disc({ ...themeQuery(themeById.get(th.id), md, c.without), sort_by: 'vote_average.desc', 'vote_count.gte': minVotes, page }), (d) => d.results || []);
   }
   for (const co of src.companies) {
     const ids = [co.id, ...(co.also || [])].join('|');
@@ -347,7 +347,7 @@ export async function computeFiltered(profile, { theme = '', era = '' } = {}, pa
   const sort = recent ? 'popularity.desc' : 'vote_count.desc';
   const without = md === 'tv' && !likesKids(profile) ? `${c.without},${KIDS_TV}` : c.without;
   const base = { language: lang, without_genres: without, 'vote_count.gte': minVotes, 'vote_average.gte': minVote, sort_by: sort, ...range };
-  const kw = th ? { with_keywords: th.k.join('|') } : {};
+  const kw = th ? themeQuery(th, md, without) : {};
 
   const own = new Map((await compute(profile, 1, md).catch(() => [])).map((x) => [x.movie.id, x]));
   const tilt = genreTilt(profile, md);
@@ -400,7 +400,9 @@ export async function computeFiltered(profile, { theme = '', era = '' } = {}, pa
     const score = (mine ? mine.score + 3 : 0) + favPts + t * 1.5 + ((m.vote_average || 0) - L.minVote)
       + Math.log10(Math.max(m.vote_count || 1, 1)) * 0.3 + (recent ? Math.log10(Math.max(m.popularity || 1, 1)) * 0.5 : 0);
     const why = mine ? mine.text : cand.reasons.length ? reasonText(profile, cand.reasons, md) : t > 0.5 ? 'passt zu deinen Lieblingsgenres' : recent ? 'gerade beliebt' : 'beliebt';
-    list.push({ movie: m, score, reasons: cand.reasons, source: cand.reasons[0] ? `${cand.reasons[0].kind}:${cand.reasons[0].ref.id}` : 'wide', strong: false, text: label ? `${label} · ${why}` : why });
+    // Thema nicht doppelt nennen, wenn die Begründung es schon enthält („Thema: …“)
+    const head = th && why.includes(th.n) ? er?.short : label;
+    list.push({ movie: m, score, reasons: cand.reasons, source: cand.reasons[0] ? `${cand.reasons[0].kind}:${cand.reasons[0].ref.id}` : 'wide', strong: false, text: head ? `${head} · ${why}` : why });
   }
   list.sort((a, b) => b.score - a.score);
   return diversify(list);

@@ -1,13 +1,13 @@
 // Seite „Vorschläge“: Liste mit Begründung, fünf Rückmeldungen, Rückgängig, „Mehr“.
-import * as store from './store.js?v=1.9.1';
-import * as tmdb from './tmdb.js?v=1.9.1';
-import { esc, toast } from './ui.js?v=1.9.1';
-import { runtimeSlot, titleText } from './runtime.js?v=1.9.1';
-import { trailerBtn } from './trailer.js?v=1.9.1';
-import { compute, computeFiltered, visible, hasSources, erasFor, eraById } from './recommend.js?v=1.9.1';
-import { MEDIA, mediaOf, askStarted, stateLabel } from './media.js?v=1.9.1';
-import { THEMES, themeById } from './themes.js?v=1.9.1';
-import { RECOMMEND } from './config.js?v=1.9.1';
+import * as store from './store.js?v=1.9.2';
+import * as tmdb from './tmdb.js?v=1.9.2';
+import { esc, toast } from './ui.js?v=1.9.2';
+import { runtimeSlot, titleText } from './runtime.js?v=1.9.2';
+import { trailerBtn } from './trailer.js?v=1.9.2';
+import { compute, computeFiltered, visible, hasSources, erasFor, eraById } from './recommend.js?v=1.9.2';
+import { MEDIA, mediaOf, askStarted, stateLabel } from './media.js?v=1.9.2';
+import { THEMES, themeById } from './themes.js?v=1.9.2';
+import { RECOMMEND } from './config.js?v=1.9.2';
 
 const FEEDBACK = [
   ['want', '+', 'Merken'],

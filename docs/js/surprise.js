@@ -1,9 +1,9 @@
 // „Überrasch mich“: ein guter Film abseits des eigenen Geschmacks.
 // Kern des Geschmacks bestimmen → fremdes Ziel wählen → bei TMDB suchen → stufenweise lockern.
-import { SURPRISE, SURPRISE_TV } from './config.js?v=1.9.1';
-import { MEDIA, mediaOf, marksOf } from './media.js?v=1.9.1';
-import * as tmdb from './tmdb.js?v=1.9.1';
-import * as store from './store.js?v=1.9.1';
+import { SURPRISE, SURPRISE_TV } from './config.js?v=1.9.2';
+import { MEDIA, mediaOf, marksOf } from './media.js?v=1.9.2';
+import * as tmdb from './tmdb.js?v=1.9.2';
+import * as store from './store.js?v=1.9.2';
 
 // TMDB-Genres (ohne „TV-Film“) mit deutschem und englischem Namen
 export const GENRES = {

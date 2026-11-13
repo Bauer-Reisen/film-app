@@ -1,6 +1,6 @@
 // Filme oder Serien: alles, was sich zwischen beiden unterscheidet, steht hier.
 // Die Seiten fragen hier nach (Adressen, Wörter, Profilfelder), statt alles doppelt zu bauen.
-import { dialog, esc } from './ui.js?v=1.9.1';
+import { dialog, esc } from './ui.js?v=1.9.2';
 
 // Serien-Genres, die nie vorgeschlagen werden: Nachrichten, Reality, Seifenoper, Talkshow
 export const TV_EXCLUDE = [10763, 10764, 10766, 10767];
