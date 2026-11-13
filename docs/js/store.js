@@ -77,6 +77,7 @@ export const newProfile = (name, language = 'de-DE') => ({
   surpriseLastGenreBook: {},
   rewatchShownBook: {},
   scanMissing: [], // gescannte ISBN, die Open Library nicht kannte [{ isbn, t }]
+  pendingBooks: [], // gescannt oder aus einer geteilten Liste, aber noch nicht bewertet [{ id, n, a, ak, c, y, pg, g, t }] (seit 1.18.0)
   // tourDone: kurzer Rundgang schon gesehen; hintDone: Hinweis „bei Vorschlägen weitermachen“ weggetippt (je movie/tv)
   settings: { groupHorror: false, groupWar: false, groupAge: null, kidsAge: 6, media: 'movie', tourDone: false, hintDone: {}, bookLang: 'en' },
 });
@@ -86,7 +87,7 @@ export function migrate(p) {
   const base = newProfile(p.name || 'Profil', p.language);
   for (const k of ['movies', 'people', 'companies', 'themes', 'passed', 'surpriseShown', 'surpriseLastGenre',
     'shows', 'networks', 'passedTv', 'surpriseShownTv', 'surpriseLastGenreTv', 'rewatchShownTv',
-    'books', 'authors', 'bookGenres', 'passedBook', 'surpriseShownBook', 'surpriseLastGenreBook', 'rewatchShownBook', 'scanMissing']) {
+    'books', 'authors', 'bookGenres', 'passedBook', 'surpriseShownBook', 'surpriseLastGenreBook', 'rewatchShownBook', 'scanMissing', 'pendingBooks']) {
     if (p[k] == null) p[k] = base[k];
   }
   const known = p.settings && 'tourDone' in p.settings;
@@ -183,6 +184,23 @@ export function setTier(listName, profileId, entry, w) {
     p[listName].push({ ...entry, w, t: Date.now() });
     p.marksSinceBackup = (p.marksSinceBackup || 0) + 1;
   }
+  save();
+}
+
+// Bücher, die noch auf ihre Bewertung warten (gescannt oder aus einer geteilten Liste)
+export function addPending(profileId, entries) {
+  const p = getProfile(profileId);
+  if (!p) return 0;
+  const have = new Set([...(p.pendingBooks || []).map((x) => x.id), ...Object.keys(p.books || {})]);
+  const fresh = entries.filter((x) => x?.id && !have.has(x.id) && have.add(x.id)).map((x) => ({ ...x, t: Date.now() }));
+  p.pendingBooks = [...(p.pendingBooks || []), ...fresh];
+  save();
+  return fresh.length;
+}
+export function removePending(profileId, id) {
+  const p = getProfile(profileId);
+  if (!p) return;
+  p.pendingBooks = (p.pendingBooks || []).filter((x) => x.id !== id);
   save();
 }
 

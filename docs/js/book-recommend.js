@@ -1,13 +1,13 @@
 // Buch-Vorschläge berechnen – nachvollziehbar wie bei Filmen:
 // Ausgangspunkte → Kandidaten (Open Library) → Punkte → Vielfalt → Begründung.
 // Brücke: Romanvorlagen gemochter Filme und Serien, feste Paare (seeds-books.js), Autor·innen aus Filmen.
-import * as books from './books.js?v=1.17.1';
-import { tierOf } from './store.js?v=1.17.1';
-import { themeById } from './themes.js?v=1.17.1';
-import { BOOK_GENRES, bookGenreById } from './book-genres.js?v=1.17.1';
-import { PAIRS } from './seeds-books.js?v=1.17.1';
-import { likedTitles, novelOf, authorsFromFilms } from './bridge-books.js?v=1.17.1';
-import { markedTitle } from './recommend.js?v=1.17.1';
+import * as books from './books.js?v=1.18.0';
+import { tierOf } from './store.js?v=1.18.0';
+import { themeById } from './themes.js?v=1.18.0';
+import { BOOK_GENRES, bookGenreById } from './book-genres.js?v=1.18.0';
+import { PAIRS } from './seeds-books.js?v=1.18.0';
+import { likedTitles, novelOf, authorsFromFilms } from './bridge-books.js?v=1.18.0';
+import { markedTitle } from './recommend.js?v=1.18.0';
 
 // Punkte je Grund (Stufe 2 = ★ Liebe, 1 = ♥ Gern) und Obergrenzen
 export const BOOK_POINTS = {
@@ -217,6 +217,7 @@ export async function computeBooks(profile, page = 1, filter = {}) {
   const er = filter.era ? bookEraById.get(filter.era) : null;
   const filtered = !!(th || er);
   // Titel, die man schon kennt (andere Werk-Nummer, gleicher Titel)
+  const waiting = new Set((profile.pendingBooks || []).map((x) => x.id)); // gescannt, noch nicht bewertet
   const kids = Object.values(marks).some((m) => LIKED.has(m.s) && (m.g || []).includes('kinder')) || (profile.bookGenres || []).some((g) => g.id === 'kinder');
   const knownTitles = new Set(Object.values(marks).map((m) => norm(m.n)).filter((t) => t.length > 3));
 
@@ -234,7 +235,7 @@ export async function computeBooks(profile, page = 1, filter = {}) {
   const sameWork = new Map(); // gleicher Titel + Autor·in → nur einmal
   for (const c of cands.values()) {
     const b = c.book;
-    if (marks[b.id] || !b.cover || knownTitles.has(norm(b.title)) || BUNDLE.test(b.title)) continue;
+    if (marks[b.id] || waiting.has(b.id) || !b.cover || knownTitles.has(norm(b.title)) || BUNDLE.test(b.title)) continue;
     if (lang === 'en' && b.edLang === false) continue; // keine englische Ausgabe bekannt
     if ((b.g || []).includes('kinder') && !kids) continue; // Kinderbücher nur, wenn man selbst welche mag
     if (th && !th.b.some((x) => (b.s || []).includes(x))) continue;
@@ -284,4 +285,4 @@ function diversify(list) {
   return out;
 }
 
-export const visibleBooks = (profile, list) => list.filter((x) => !(profile.books || {})[x.book.id]);
+export const visibleBooks = (profile, list) => list.filter((x) => !(profile.books || {})[x.book.id] && !(profile.pendingBooks || []).some((w) => w.id === x.book.id));

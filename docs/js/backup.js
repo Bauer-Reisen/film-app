@@ -1,6 +1,6 @@
 // Profil sichern (als Datei) und wieder laden – so zieht man auf ein
 // anderes Gerät oder in die Home-Bildschirm-App um.
-import { newProfile, getProfile, updateProfile, addProfile, profiles } from './store.js?v=1.17.1';
+import { newProfile, getProfile, updateProfile, addProfile, profiles } from './store.js?v=1.18.0';
 
 const FORMAT = 'filmapp-profil';
 
@@ -98,6 +98,7 @@ export function mergeInto(targetId, incoming) {
     surpriseShownBook: byId(t.surpriseShownBook || [], incoming.surpriseShownBook),
     surpriseLastGenreBook: latest(t.surpriseLastGenreBook, incoming.surpriseLastGenreBook),
     rewatchShownBook: latest(t.rewatchShownBook, incoming.rewatchShownBook),
+    pendingBooks: byId(t.pendingBooks || [], incoming.pendingBooks).filter((x) => !books[x.id]),
     scanMissing: [...new Map([...(t.scanMissing || []), ...(incoming.scanMissing || [])].map((x) => [x.isbn, x])).values()],
     shows,
     networks: byId(t.networks || [], incoming.networks),

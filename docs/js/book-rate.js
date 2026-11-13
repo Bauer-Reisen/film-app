@@ -1,9 +1,10 @@
-// Seite „Wie fandst du sie?“: gelesene Bücher eins nach dem anderen kurz bewerten.
-// Kommt direkt nach dem Scannen; auch später über „Geschmack“ erreichbar (alle nur als „Gelesen“ markierten).
-import * as store from './store.js?v=1.17.1';
-import { esc } from './ui.js?v=1.17.1';
-import { MEDIA } from './media.js?v=1.17.1';
-import { coverImg, bookMeta, openSub } from './book-taste.js?v=1.17.1';
+// Seite „Wie fandst du sie?“: Bücher eins nach dem anderen kurz bewerten.
+// Kommt direkt nach dem Scannen oder dem Einfügen einer geteilten Liste; auch später über „Geschmack“ erreichbar.
+// Offen sind: Bücher auf der Warteliste (pendingBooks, noch gar nicht markiert) und ältere, nur als „Gelesen“ markierte.
+import * as store from './store.js?v=1.18.0';
+import { esc } from './ui.js?v=1.18.0';
+import { MEDIA } from './media.js?v=1.18.0';
+import { coverImg, bookMeta, openSub } from './book-taste.js?v=1.18.0';
 
 const W = MEDIA.book.w;
 // Zu Ende gelesen → wie war's? Angefangen → abgebrochen oder liegen geblieben? Noch gar nicht → Leseliste
@@ -22,8 +23,16 @@ let queue = null;   // Werk-Nummern in Reihenfolge
 let pos = 0;
 let answers = [];   // { id, old, choice }
 
-// Nur als „Gelesen“ markiert und noch nie gefragt – neueste zuerst
-export const unrated = (p) => Object.entries(p.books || {}).filter(([, m]) => m.s === 'seen' && !m.r).sort((a, b) => b[1].t - a[1].t).map(([id]) => id);
+// Warteliste (in Reihenfolge) und nur als „Gelesen“ markierte, noch nie gefragte (neueste zuerst)
+export const unrated = (p) => [
+  ...(p.pendingBooks || []).map((x) => x.id),
+  ...Object.entries(p.books || {}).filter(([, m]) => m.s === 'seen' && !m.r).sort((a, b) => b[1].t - a[1].t).map(([id]) => id),
+];
+const pendingOf = (id) => (profile.pendingBooks || []).find((x) => x.id === id);
+const isOpen = (id) => !!pendingOf(id) || (profile.books?.[id]?.s === 'seen' && !profile.books[id].r);
+// Nach „Weiter scannen“: Kamera gleich starten
+let autoCamera = false;
+export const takeAutoCamera = () => { const a = autoCamera; autoCamera = false; return a; };
 
 // Vom Scannen aus: genau diese Bücher abfragen
 export function startRating(ids) { queue = [...ids]; pos = 0; answers = []; }
@@ -46,13 +55,13 @@ function paint() {
   const el = box();
   if (!el) return;
   // Inzwischen anderswo bewertet? Überspringen
-  while (pos < queue.length && profile.books?.[queue[pos]]?.s !== 'seen' && !answers.some((a) => a.id === queue[pos])) pos++;
+  while (pos < queue.length && !isOpen(queue[pos]) && !answers.some((a) => a.id === queue[pos])) pos++;
   if (pos >= queue.length) { el.innerHTML = summary(); return; }
   const id = queue[pos];
-  const m = profile.books[id];
+  const m = pendingOf(id) || profile.books[id];
   const b = { title: m.n || 'Buch', a: m.a, y: m.y, pg: m.pg, cover: m.c };
   el.innerHTML = `
-    <p class="muted small">Buch ${pos + 1} von ${queue.length} · Ein Tipp, dann kommt das nächste. Du kannst jederzeit aufhören – der Rest bleibt erst mal „Gelesen“ und lässt sich später unter „Geschmack“ bewerten.</p>
+    <p class="muted small">Buch ${pos + 1} von ${queue.length} · Ein Tipp, dann kommt das nächste. Du kannst jederzeit aufhören – der Rest wartet unter „Geschmack“ auf dich.</p>
     <article class="rate-card">
       <div class="group-cover">${coverImg(b.cover, `Cover: ${b.title}`)}</div>
       <h2 class="group-title">${esc(b.title)}</h2>
@@ -74,20 +83,23 @@ function summary() {
     <div class="card placeholder">
       <p><strong>${answers.length ? `Fertig – danke! ${counted.length} ${counted.length === 1 ? 'Buch' : 'Bücher'} bewertet.` : 'Gerade gibt es nichts zu bewerten.'}</strong></p>
       <p class="muted">${liked ? 'Unter „Geschmack“ → Bücher kommen jetzt zuerst weitere Bücher deiner Autor·innen. Und die Vorschläge kennen deinen Lesegeschmack schon.' : 'Unter „Geschmack“ kannst du weitere Bücher markieren oder dein Regal scannen.'}</p>
+      <p><a class="btn btn-primary btn-big" href="#/scannen" data-rateact="scan"><span aria-hidden="true">📷</span> Weiter scannen</a></p>
       <div class="row center-row">
-        <a class="btn btn-primary btn-big" href="#/geschmack" data-rateact="more">Mehr von deinen Autor·innen</a>
-        <a class="btn btn-big" href="#/vorschlaege">Zu den Vorschlägen</a>
+        <a class="btn" href="#/geschmack" data-rateact="more">Mehr von deinen Autor·innen</a>
+        <a class="btn" href="#/vorschlaege">Zu den Vorschlägen</a>
       </div>
     </div>`;
 }
 
 function answer(choice) {
   const id = queue[pos];
-  const old = profile.books[id];
+  const old = profile.books[id] ? { ...profile.books[id] } : null;
+  const pend = pendingOf(id);
   answers = answers.filter((a) => a.id !== id);
-  answers.push({ id, old: { ...old }, choice });
-  // „Weiß nicht mehr“ bleibt „Gelesen“, wird aber nicht nochmal gefragt
-  store.setMark(profile.id, 'book', id, choice === 'keep' ? 'seen' : choice, { r: 1 });
+  answers.push({ id, old, pend, choice });
+  // „Weiß nicht mehr“ = „Gelesen“, wird aber nicht nochmal gefragt
+  store.setMark(profile.id, 'book', id, choice === 'keep' ? 'seen' : choice, { ...(pend || {}), r: 1 });
+  if (pend) store.removePending(profile.id, id);
   profile = store.getProfile(profile.id);
   pos++;
   paint();
@@ -98,7 +110,12 @@ function back() {
   if (pos === 0) return;
   pos--;
   const a = answers.find((x) => x.id === queue[pos]);
-  if (a) { store.restoreMark(profile.id, 'book', a.id, a.old); answers = answers.filter((x) => x !== a); profile = store.getProfile(profile.id); }
+  if (a) {
+    store.restoreMark(profile.id, 'book', a.id, a.old);
+    if (a.pend) store.addPending(profile.id, [a.pend]);
+    answers = answers.filter((x) => x !== a);
+    profile = store.getProfile(profile.id);
+  }
   paint();
 }
 
@@ -108,6 +125,7 @@ export function handleClick(e) {
   const act = e.target.closest('[data-rateact]')?.dataset.rateact;
   if (act === 'back') { back(); return true; }
   if (act === 'stop') { queue = null; location.hash = '#/geschmack'; return true; }
+  if (act === 'scan') { queue = null; autoCamera = true; return false; } // Link führt zur Scan-Seite
   if (act === 'more') { queue = null; openSub('buecher'); return false; } // Link führt weiter
   return false;
 }

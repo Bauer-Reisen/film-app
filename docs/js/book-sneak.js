@@ -1,14 +1,14 @@
 // „Überrasch mich“ bei Büchern: ein viel gelesenes, gut bewertetes Buch aus einem Genre, das du sonst nicht liest.
 // Vorhang (nur Genre, Zeit, Seitenzahl) → Aufdecken → Rückmeldung oder anderes Buch.
-import * as store from './store.js?v=1.17.1';
-import * as books from './books.js?v=1.17.1';
-import { esc, toast } from './ui.js?v=1.17.1';
-import { SURPRISE } from './config.js?v=1.17.1';
-import { BOOK_GENRES, bookGenreById } from './book-genres.js?v=1.17.1';
-import { MEDIA, stateLabel, pressed } from './media.js?v=1.17.1';
-import { coverImg, bookMeta, nextStatus } from './book-taste.js?v=1.17.1';
-import { movieHint } from './book-extra.js?v=1.17.1';
-import { currentBookIds } from './book-suggest.js?v=1.17.1';
+import * as store from './store.js?v=1.18.0';
+import * as books from './books.js?v=1.18.0';
+import { esc, toast } from './ui.js?v=1.18.0';
+import { SURPRISE } from './config.js?v=1.18.0';
+import { BOOK_GENRES, bookGenreById } from './book-genres.js?v=1.18.0';
+import { MEDIA, stateLabel, pressed } from './media.js?v=1.18.0';
+import { coverImg, bookMeta, nextStatus } from './book-taste.js?v=1.18.0';
+import { movieHint } from './book-extra.js?v=1.18.0';
+import { currentBookIds } from './book-suggest.js?v=1.18.0';
 
 const FEEDBACK = [
   ['want', '+', 'Merken'],
@@ -52,7 +52,7 @@ function foreignGenres(p) {
 export async function drawBook(p) {
   const lang = books.readLang(p);
   const marks = p.books || {};
-  const shown = new Set((p.surpriseShownBook || []).map((x) => x.id));
+  const shown = new Set([...(p.surpriseShownBook || []).map((x) => x.id), ...(p.pendingBooks || []).map((x) => x.id)]);
   const exclude = currentBookIds();
   const ok = (b, strict) => b.cover && !marks[b.id] && !shown.has(b.id) && !exclude.has(b.id) && !BUNDLE.test(b.title)
     && !(lang === 'en' && b.edLang === false)

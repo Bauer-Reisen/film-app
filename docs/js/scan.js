@@ -2,12 +2,13 @@
 // Erkennung: eingebaute Strichcode-Erkennung des Browsers (Android/Chrome) oder die freie Bibliothek ZXing
 // (docs/vendor/zxing.min.js, Apache-Lizenz, wird erst hier geladen – iPhone/Safari kann es nicht von sich aus).
 // Das Kamerabild bleibt auf dem Gerät, gesendet wird nur die erkannte ISBN.
-import * as store from './store.js?v=1.17.1';
-import * as books from './books.js?v=1.17.1';
-import { esc, toast, dialog } from './ui.js?v=1.17.1';
-import { coverImg, bookMeta } from './book-taste.js?v=1.17.1';
-import { stateLabel } from './media.js?v=1.17.1';
-import { startRating } from './book-rate.js?v=1.17.1';
+import * as store from './store.js?v=1.18.0';
+import * as books from './books.js?v=1.18.0';
+import { esc, toast, dialog } from './ui.js?v=1.18.0';
+import { coverImg, bookMeta } from './book-taste.js?v=1.18.0';
+import { stateLabel } from './media.js?v=1.18.0';
+import { startRating, takeAutoCamera } from './book-rate.js?v=1.18.0';
+import { shareIds, shareText, importList, takePaste } from './book-share.js?v=1.18.0';
 
 
 let profile = null;
@@ -50,8 +51,63 @@ export function render(p) {
       <ul class="scan-list" id="scan-list" aria-labelledby="scan-list-h"></ul>
       <p class="row center-row" id="scan-done-row" hidden><button class="btn btn-primary btn-big" type="button" data-scan="done" id="scan-done">Fertig – speichern</button></p>
       ${missingSection()}
+      ${shareSection()}
       <p class="muted small">Datenschutz: Das Kamerabild bleibt auf deinem Handy. Gesendet wird nur die ISBN-Nummer an Open Library.</p>
     </div>`;
+}
+
+// Bücherliste weitergeben (z. B. an jemanden im Haushalt) oder einfügen
+function shareSection() {
+  const n = shareIds(profile).length;
+  return `
+    <section class="card stack" id="share">
+      <h2>Bücher weitergeben</h2>
+      <p class="muted small">Zum Beispiel an jemanden aus deinem Haushalt: Weitergegeben werden nur die Bücher, nicht deine Bewertungen. Die andere Person bewertet sie dann selbst.</p>
+      ${n ? `<p class="row"><button class="btn btn-primary" type="button" data-share="send"><span aria-hidden="true">📤</span> Bücherliste teilen (${n})</button>
+        <button class="btn" type="button" data-share="copy"><span aria-hidden="true">📋</span> Kopieren</button></p>` : '<p class="muted small">Sobald du Bücher gescannt hast, kannst du die Liste hier teilen.</p>'}
+      <details class="note" id="share-paste" ${takePaste() ? 'open' : ''}>
+        <summary>Liste von jemandem bekommen? <span class="link">Liste einfügen</span></summary>
+        <label class="field">Die ganze Nachricht hier einfügen
+          <textarea id="share-in" rows="4" autocomplete="off" placeholder="📚 … Liste: OL…"></textarea>
+        </label>
+        <p><button class="btn btn-primary" type="button" data-share="paste">Bücher übernehmen</button></p>
+      </details>
+    </section>`;
+}
+
+async function copyText(text) {
+  try { await navigator.clipboard.writeText(text); return true; } catch { /* unten */ }
+  // Ersatz: Text markieren und kopieren
+  const ta = Object.assign(document.createElement('textarea'), { value: text });
+  ta.style.position = 'fixed'; ta.style.opacity = '0';
+  document.body.append(ta); ta.select();
+  let ok = false;
+  try { ok = document.execCommand('copy'); } catch { /* egal */ }
+  ta.remove();
+  return ok;
+}
+
+async function share(kind) {
+  const text = shareText(store.getProfile(profile.id));
+  if (kind === 'send' && navigator.share) {
+    try { await navigator.share({ text }); return; } catch (err) { if (err?.name === 'AbortError') return; }
+  }
+  if (await copyText(text)) toast('Liste kopiert – jetzt z. B. in WhatsApp einfügen und abschicken.');
+  else dialog({ title: 'Liste kopieren', body: `<p>Bitte den Text markieren und kopieren:</p><textarea rows="6" readonly style="width:100%">${esc(text)}</textarea>`, buttons: [{ label: 'Schließen', value: 'ok', primary: true }] });
+}
+
+async function paste(btn) {
+  const text = document.getElementById('share-in')?.value || '';
+  if (!/OL\d+W|\d{10}/.test(text)) { toast('In dem Text steht keine Bücherliste. Bitte die ganze Nachricht einfügen.'); return; }
+  btn.disabled = true; btn.textContent = 'Lädt …';
+  let res;
+  try { res = await importList(store.getProfile(profile.id), text); } catch (err) { toast(err.message); btn.disabled = false; btn.textContent = 'Bücher übernehmen'; return; }
+  profile = store.getProfile(profile.id);
+  const parts = [`${res.added.length} ${res.added.length === 1 ? 'Buch' : 'Bücher'} übernommen`];
+  if (res.known) parts.push(`${res.known} kanntest du schon`);
+  if (res.missing) parts.push(`${res.missing} nicht gefunden`);
+  toast(`${parts.join(', ')}.`);
+  if (res.added.length) { startRating(res.added); location.hash = '#/bewerten'; } else { btn.disabled = false; btn.textContent = 'Bücher übernehmen'; }
 }
 
 function missingSection() {
@@ -82,6 +138,9 @@ export function mount(p) {
     if (isbn) add(isbn); else toast('Auf dem Foto wurde kein ISBN-Strichcode erkannt.');
   });
   paintList();
+  if (takeAutoCamera()) startCamera();
+  const pasteBox = document.getElementById('share-paste');
+  if (pasteBox?.open) { pasteBox.scrollIntoView({ block: 'center' }); document.getElementById('share-in')?.focus(); }
 }
 
 // Beim Verlassen der Seite: Kamera aus
@@ -300,18 +359,18 @@ function paintList() {
   document.getElementById('scan-done').textContent = n ? `Fertig – ${n} ${n === 1 ? 'Buch' : 'Bücher'} bewerten` : 'Fertig';
 }
 
-// Speichern: neue Bücher erst einmal als „Gelesen“ (noch nicht bewertet) – gleich danach fragt die Bewertungsrunde nach.
+// Speichern: neue Bücher kommen auf die Warteliste (noch nicht bewertet) – gleich danach fragt die Bewertungsrunde nach.
 // Schon bewertete Bücher bleiben, wie sie sind.
 function finish() {
   stopCamera();
   let added = 0; let known = 0;
   const toRate = [];
   for (const x of [...items].reverse().filter((i) => i.status === 'found')) { // in der Reihenfolge des Scannens
-    const old = profile.books?.[x.book.id];
-    if (!old) { store.setMark(profile.id, 'book', x.book.id, 'seen', books.markMeta(x.book)); added++; }
-    else known++;
-    const now = store.getProfile(profile.id).books[x.book.id];
-    if (now.s === 'seen' && !now.r) toRate.push(x.book.id);
+    const p = store.getProfile(profile.id);
+    const old = p.books?.[x.book.id];
+    const waiting = (p.pendingBooks || []).some((w) => w.id === x.book.id);
+    if (!old && !waiting) { store.addPending(profile.id, [books.pendingEntry(x.book)]); added++; } else known++;
+    if (!old || (old.s === 'seen' && !old.r)) toRate.push(x.book.id);
   }
   const missing = items.filter((i) => i.status === 'missing').map((i) => ({ isbn: i.isbn, t: Date.now() }));
   if (missing.length) {
@@ -334,6 +393,9 @@ export function handleClick(e) {
     miss.closest('li').remove();
     return true;
   }
+  const sh = e.target.closest('[data-share]')?.dataset.share;
+  if (sh === 'send' || sh === 'copy') { share(sh); return true; }
+  if (sh === 'paste') { paste(e.target.closest('[data-share]')); return true; }
   const act = e.target.closest('[data-scan]')?.dataset.scan;
   if (act === 'start') { startCamera(); return true; }
   if (act === 'stop') { stopCamera(); return true; }

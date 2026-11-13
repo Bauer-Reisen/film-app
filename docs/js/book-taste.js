@@ -1,14 +1,15 @@
 // Seite „Geschmack“ bei Büchern: Autor·innen, Themen und Genres in Stufen, Bücher markieren, Suche (auch ISBN), Scannen.
-import * as store from './store.js?v=1.17.1';
-import * as books from './books.js?v=1.17.1';
-import { esc, toast } from './ui.js?v=1.17.1';
-import { SEED_BOOKS, SEED_AUTHORS } from './seeds-books.js?v=1.17.1';
-import { THEMES, themeById } from './themes.js?v=1.17.1';
-import { BOOK_GENRES, bookGenreById } from './book-genres.js?v=1.17.1';
-import { MEDIA, stateLabel, pressed } from './media.js?v=1.17.1';
-import { TASTE_HINT_AFTER } from './config.js?v=1.17.1';
-import { authorsFromFilms } from './bridge-books.js?v=1.17.1';
-import { unrated } from './book-rate.js?v=1.17.1';
+import * as store from './store.js?v=1.18.0';
+import * as books from './books.js?v=1.18.0';
+import { esc, toast } from './ui.js?v=1.18.0';
+import { SEED_BOOKS, SEED_AUTHORS } from './seeds-books.js?v=1.18.0';
+import { THEMES, themeById } from './themes.js?v=1.18.0';
+import { BOOK_GENRES, bookGenreById } from './book-genres.js?v=1.18.0';
+import { MEDIA, stateLabel, pressed } from './media.js?v=1.18.0';
+import { TASTE_HINT_AFTER } from './config.js?v=1.18.0';
+import { authorsFromFilms } from './bridge-books.js?v=1.18.0';
+import { unrated } from './book-rate.js?v=1.18.0';
+import { requestPaste } from './book-share.js?v=1.18.0';
 
 const STEP = 20;
 const SCAN = true; // Knopf „Bücher scannen“
@@ -137,13 +138,14 @@ function scanBox() {
   const n = Object.keys(marks()).length;
   const open = unrated(profile).length;
   const btn = '<a class="btn btn-primary btn-big" href="#/scannen"><span aria-hidden="true">📷</span> Bücher scannen</a>';
-  const rate = open ? `<div class="card hint"><p><strong>${open} ${open === 1 ? 'Buch ist' : 'Bücher sind'} nur als „Gelesen“ markiert.</strong> Wie fandst du ${open === 1 ? 'es' : 'sie'}? Geht schnell: ein Tipp pro Buch.</p>
+  const rate = open ? `<div class="card hint"><p><strong>${open} ${open === 1 ? 'Buch wartet' : 'Bücher warten'} auf deine Bewertung.</strong> Wie fandst du ${open === 1 ? 'es' : 'sie'}? Geht schnell: ein Tipp pro Buch.</p>
     <p><a class="btn btn-primary" href="#/bewerten">Jetzt bewerten</a></p></div>` : '';
-  if (n >= 10) return `<p class="row scan-row">${btn}</p>${rate}`;
+  const paste = '<p class="small"><a href="#/scannen" data-btaste="paste">Bücherliste von jemandem bekommen? Hier einfügen</a></p>';
+  if (n >= 10) return `<p class="row scan-row">${btn}</p>${paste}${rate}`;
   return `<div class="card hint scan-first">
     <p><strong>Am besten fängst du mit deinem Bücherregal an.</strong></p>
     <p>Scanne die Bücher, die du zu Hause hast: Strichcode hinten auf dem Buch, eins nach dem anderen – die Kamera bleibt an. Danach fragt die App kurz, wie du sie fandst, und zeigt dir hier zuerst weitere Bücher deiner Autor·innen und Reihen.</p>
-    <p>${btn}</p></div>${rate}`;
+    <p>${btn}</p>${paste}</div>${rate}`;
 }
 
 // ---------- Seite ----------
@@ -204,7 +206,7 @@ const allBooks = () => {
 };
 const candidates = () => (L.showAll ? allBooks() : allBooks().filter((b) => !L.done.has(b.id)));
 function snapshotDone() {
-  L.done = new Set([...Object.keys(marks()), ...(profile.passedBook || [])]);
+  L.done = new Set([...Object.keys(marks()), ...(profile.passedBook || []), ...(profile.pendingBooks || []).map((x) => x.id)]);
   L.shown = STEP;
 }
 
@@ -497,6 +499,7 @@ export function handleClick(e) {
     return true;
   }
   const act = e.target.closest('[data-btaste]')?.dataset.btaste;
+  if (act === 'paste') { requestPaste(); return false; } // Link führt zur Scan-Seite
   if (act === 'more') { loadMore(e.target.closest('[data-btaste]')); return true; }
   if (act === 'hint-hide') {
     store.updateProfile(profile.id, { settings: { ...profile.settings, hintDone: { ...(profile.settings?.hintDone || {}), book: true } } });
