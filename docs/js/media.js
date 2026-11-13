@@ -1,6 +1,6 @@
 // Filme oder Serien: alles, was sich zwischen beiden unterscheidet, steht hier.
 // Die Seiten fragen hier nach (Adressen, Wörter, Profilfelder), statt alles doppelt zu bauen.
-import { dialog, esc } from './ui.js?v=1.10.0';
+import { dialog, esc } from './ui.js?v=1.10.1';
 
 // Serien-Genres, die nie vorgeschlagen werden: Nachrichten, Reality, Seifenoper, Talkshow
 export const TV_EXCLUDE = [10763, 10764, 10766, 10767];
@@ -70,6 +70,12 @@ export function mapGenres(ids, from) {
 
 // Status „Angefangen“ bei Serien – zwei Arten
 export const STARTED = new Set(['paused', 'dropped']);
+
+// Welche Knöpfe leuchten bei einem Status? Es gibt nur einen Status pro Titel, aber:
+// ★ Liebling schließt „Mag ich“ ein; „Mag ich“, „Mag ich nicht“ und ★ schließen „Gesehen“ ein.
+// Ein Tipp auf einen leuchtenden Knopf nimmt die Markierung ganz zurück.
+const SEEN_TOO = new Set(['liked', 'loved', 'disliked']);
+export const pressed = (s, key) => s === key || (s === 'loved' && key === 'liked') || (key === 'seen' && SEEN_TOO.has(s)) || (key === 'started' && STARTED.has(s));
 export async function askStarted(title) {
   const res = await dialog({
     title: 'Angefangen',

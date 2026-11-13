@@ -1,11 +1,11 @@
 // Seite „Überrasch mich“: Vorhang → Aufdecken → Rückmeldung oder anderer Film.
-import * as store from './store.js?v=1.10.0';
-import * as tmdb from './tmdb.js?v=1.10.0';
-import { esc, toast } from './ui.js?v=1.10.0';
-import { trailerBtn } from './trailer.js?v=1.10.0';
-import { draw, genreName } from './surprise.js?v=1.10.0';
-import { currentIds } from './suggest.js?v=1.10.0';
-import { MEDIA, mediaOf, marksOf, tvLength, askStarted, stateLabel, STARTED } from './media.js?v=1.10.0';
+import * as store from './store.js?v=1.10.1';
+import * as tmdb from './tmdb.js?v=1.10.1';
+import { esc, toast } from './ui.js?v=1.10.1';
+import { trailerBtn } from './trailer.js?v=1.10.1';
+import { draw, genreName } from './surprise.js?v=1.10.1';
+import { currentIds } from './suggest.js?v=1.10.1';
+import { MEDIA, mediaOf, marksOf, tvLength, askStarted, stateLabel, STARTED, pressed } from './media.js?v=1.10.1';
 
 const FEEDBACK = [
   ['want', '+', 'Merken'],
@@ -15,7 +15,6 @@ const FEEDBACK = [
   ['noInterest', '–', 'Kein Interesse'],
 ];
 const FEEDBACK_TV = [...FEEDBACK.slice(0, 4), ['started', '⏸', 'Angefangen'], FEEDBACK[4]];
-const pressed = (s, key) => s === key || (s === 'loved' && key === 'liked') || (key === 'started' && STARTED.has(s));
 
 let profile = null;
 let cur = null; // { profileId, media, movie, genre, revealed }

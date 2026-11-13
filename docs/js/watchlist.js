@@ -1,14 +1,14 @@
 // Seite „Merkliste“: alle Filme bzw. Serien mit „Merken“, neueste zuerst.
 // Bei Serien steht oben „Weiterschauen“ (angefangen, will ich zu Ende schauen).
 // Titel und Poster kommen immer in der Profilsprache (Startliste oder TMDB).
-import * as store from './store.js?v=1.10.0';
-import * as tmdb from './tmdb.js?v=1.10.0';
-import { esc, toast } from './ui.js?v=1.10.0';
-import { trailerBtn } from './trailer.js?v=1.10.0';
-import { titleText } from './runtime.js?v=1.10.0';
-import { SEED_MOVIES } from './seeds.js?v=1.10.0';
-import { SEED_SHOWS } from './seeds-tv.js?v=1.10.0';
-import { MEDIA, mediaOf, marksOf, tvLength, askStarted, stateLabel } from './media.js?v=1.10.0';
+import * as store from './store.js?v=1.10.1';
+import * as tmdb from './tmdb.js?v=1.10.1';
+import { esc, toast } from './ui.js?v=1.10.1';
+import { trailerBtn } from './trailer.js?v=1.10.1';
+import { titleText } from './runtime.js?v=1.10.1';
+import { SEED_MOVIES } from './seeds.js?v=1.10.1';
+import { SEED_SHOWS } from './seeds-tv.js?v=1.10.1';
+import { MEDIA, mediaOf, marksOf, tvLength, askStarted, stateLabel } from './media.js?v=1.10.1';
 
 const seedById = { movie: new Map(SEED_MOVIES.map((m) => [m.id, m])), tv: new Map(SEED_SHOWS.map((m) => [m.id, m])) };
 const ACTIONS = [

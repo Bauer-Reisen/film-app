@@ -1,13 +1,13 @@
 // Seite „Kinderfilme“ bzw. „Kinderserien“: gute Titel mit passender Altersfreigabe.
 // Es zählt vor allem Bewertung und Beliebtheit – Kinder haben ihren eigenen Geschmack.
-import { KIDS, KIDS_TV } from './config.js?v=1.10.0';
-import * as store from './store.js?v=1.10.0';
-import * as tmdb from './tmdb.js?v=1.10.0';
-import { esc, toast } from './ui.js?v=1.10.0';
-import { runtimeSlot } from './runtime.js?v=1.10.0';
-import { trailerBtn } from './trailer.js?v=1.10.0';
-import { ageOk } from './age.js?v=1.10.0';
-import { MEDIA, mediaOf, marksOf, askStarted, stateLabel, STARTED } from './media.js?v=1.10.0';
+import { KIDS, KIDS_TV } from './config.js?v=1.10.1';
+import * as store from './store.js?v=1.10.1';
+import * as tmdb from './tmdb.js?v=1.10.1';
+import { esc, toast } from './ui.js?v=1.10.1';
+import { runtimeSlot } from './runtime.js?v=1.10.1';
+import { trailerBtn } from './trailer.js?v=1.10.1';
+import { ageOk } from './age.js?v=1.10.1';
+import { MEDIA, mediaOf, marksOf, askStarted, stateLabel, STARTED, pressed } from './media.js?v=1.10.1';
 
 const FEEDBACK = [
   ['want', '+', 'Merken'],
@@ -19,7 +19,6 @@ const FEEDBACK = [
 const FEEDBACK_TV = [...FEEDBACK.slice(0, 4), ['started', '⏸', 'Angefangen'], FEEDBACK[4]];
 const HIDE = new Set(['disliked', 'noInterest', 'dropped']);
 const SEEN = new Set(['seen', 'liked', 'loved']);
-const pressed = (s, key) => s === key || (s === 'loved' && key === 'liked') || (key === 'started' && STARTED.has(s));
 
 let profile = null;
 let page = 0;
