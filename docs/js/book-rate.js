@@ -1,9 +1,9 @@
 // Seite „Wie fandst du sie?“: gelesene Bücher eins nach dem anderen kurz bewerten.
 // Kommt direkt nach dem Scannen; auch später über „Geschmack“ erreichbar (alle nur als „Gelesen“ markierten).
-import * as store from './store.js?v=1.17.0';
-import { esc } from './ui.js?v=1.17.0';
-import { MEDIA } from './media.js?v=1.17.0';
-import { coverImg, bookMeta, openSub } from './book-taste.js?v=1.17.0';
+import * as store from './store.js?v=1.17.1';
+import { esc } from './ui.js?v=1.17.1';
+import { MEDIA } from './media.js?v=1.17.1';
+import { coverImg, bookMeta, openSub } from './book-taste.js?v=1.17.1';
 
 const W = MEDIA.book.w;
 // Zu Ende gelesen → wie war's? Angefangen → abgebrochen oder liegen geblieben? Noch gar nicht → Leseliste
@@ -14,7 +14,7 @@ const CHOICES = [
   ['keep', '✓', 'Gelesen – weiß nicht mehr', ''],
   ['dropped', '⏹', 'Abgebrochen – passte nicht', ''],
   ['paused', '⏸', 'Liegen geblieben – weiterlesen', ''],
-  ['want', '+', 'Noch nicht gelesen', 'wide'],
+  ['want', '+', 'Noch nicht gelesen – auf die Leseliste', 'wide'],
 ];
 
 let profile = null;

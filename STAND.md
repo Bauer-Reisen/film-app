@@ -140,7 +140,7 @@ Die Nutzerin kann nicht programmieren. Antworte auf Deutsch, knapp und ohne Fach
   - Bekannt: Die Folgenlänge kommt bei manchen Serien von der letzten Folge und kann abweichen (z. B. Friends „ca. 48 Min.“ wegen Doppelfolge zum Schluss).
 - [x] **Bücher scannen ohne Vorauswahl** (13.11.2026, Version 1.17.0), auf Wunsch:
   - Die Vorauswahl „Gelesen / Mag ich / Im Regal“ beim Scannen ist weg, ebenso die Auswahl je Buch in der Liste. Man scannt einfach alles; „Fertig – X Bücher bewerten“ speichert neue Bücher vorläufig als „Gelesen“ und startet sofort die Bewertungsrunde. Schon bewertete Bücher bleiben unverändert und werden nicht nochmal gefragt.
-  - Bewertungsrunde jetzt: ★ Liebe ich · ♥ Gut · ✕ Nicht gut · ✓ Gelesen – weiß nicht mehr · ⏹ Abgebrochen – passte nicht · ⏸ Liegen geblieben – weiterlesen · + Noch nicht gelesen.
+  - Bewertungsrunde jetzt: ★ Liebe ich · ♥ Gut · ✕ Nicht gut · ✓ Gelesen – weiß nicht mehr · ⏹ Abgebrochen – passte nicht · ⏸ Liegen geblieben – weiterlesen · + Noch nicht gelesen – auf die Leseliste (Knopftext seit 1.17.1).
   - „Liegen geblieben“ = Status `paused` (bei Büchern „⏸ Weiterlesen“), steht auf der Leseliste mit „⏸ Angefangen – liegt bereit zum Weiterlesen“. „Abgebrochen“ zählt für die Vorschläge halb negativ wie bisher.
   - Geprüft: 4 ISBN gescannt (eins davon schon „Mag ich“ → nicht gefragt), Liegen geblieben / Abgebrochen / Noch nicht gelesen → Leseliste zeigt die richtigen zwei. 375 und 1024 px ohne Querscrollen, keine Fehler. Testprofil gelöscht.
 - [x] **Bücher: Regal zuerst, Bewerten, Abhaken, Links** (13.11.2026, Version 1.16.0):
