@@ -1,23 +1,24 @@
 // Oberfläche: Seitenwechsel über die Adresse (#/vorschlaege usw.)
-import { VERSION, LANGUAGES } from './config.js?v=1.12.0';
-import * as store from './store.js?v=1.12.0';
-import { saveBackup, readBackup, findSameName, importAsNew, mergeInto } from './backup.js?v=1.12.0';
-import { esc, dialog, toast, formatDate } from './ui.js?v=1.12.0';
-import * as platform from './platform.js?v=1.12.0';
-import * as taste from './taste.js?v=1.12.0';
-import * as suggest from './suggest.js?v=1.12.0';
-import * as watchlist from './watchlist.js?v=1.12.0';
-import * as sneak from './sneak.js?v=1.12.0';
-import * as group from './group.js?v=1.12.0';
-import * as kids from './kids.js?v=1.12.0';
-import * as rewatch from './rewatch.js?v=1.12.0';
-import * as trailer from './trailer.js?v=1.12.0';
-import { initRuntimes } from './runtime.js?v=1.12.0';
-import { mediaOf } from './media.js?v=1.12.0';
-import { runTour } from './tour.js?v=1.12.0';
-import * as bookTaste from './book-taste.js?v=1.12.0';
-import * as bookList from './book-list.js?v=1.12.0';
-import { initBookExtras } from './book-extra.js?v=1.12.0';
+import { VERSION, LANGUAGES } from './config.js?v=1.13.0';
+import * as store from './store.js?v=1.13.0';
+import { saveBackup, readBackup, findSameName, importAsNew, mergeInto } from './backup.js?v=1.13.0';
+import { esc, dialog, toast, formatDate } from './ui.js?v=1.13.0';
+import * as platform from './platform.js?v=1.13.0';
+import * as taste from './taste.js?v=1.13.0';
+import * as suggest from './suggest.js?v=1.13.0';
+import * as watchlist from './watchlist.js?v=1.13.0';
+import * as sneak from './sneak.js?v=1.13.0';
+import * as group from './group.js?v=1.13.0';
+import * as kids from './kids.js?v=1.13.0';
+import * as rewatch from './rewatch.js?v=1.13.0';
+import * as trailer from './trailer.js?v=1.13.0';
+import { initRuntimes } from './runtime.js?v=1.13.0';
+import { mediaOf } from './media.js?v=1.13.0';
+import { runTour } from './tour.js?v=1.13.0';
+import * as bookTaste from './book-taste.js?v=1.13.0';
+import * as bookList from './book-list.js?v=1.13.0';
+import * as scan from './scan.js?v=1.13.0';
+import { initBookExtras } from './book-extra.js?v=1.13.0';
 
 const view = document.getElementById('view');
 const APP_URL = 'https://bauer-reisen.github.io/film-app/';
@@ -241,6 +242,14 @@ const pages = {
         <p class="row"><button class="btn" type="button" data-act="tour">Rundgang ansehen</button> <a class="btn" href="#/ueber">Über diese App</a></p>
         <p class="muted small">Version ${VERSION}</p>`;
     },
+  },
+  scannen: {
+    title: 'Bücher scannen',
+    tab: 'geschmack',
+    render: () => scan.render(current()),
+    mount: () => scan.mount(current()),
+    click: scan.handleClick,
+    leave: scan.leave,
   },
   ueber: {
     title: 'Über diese App',
@@ -484,6 +493,7 @@ let currentKey = null;
 let currentPage = null;
 const listTab = document.querySelector('.tabs a[data-tab="merkliste"] span');
 function show() {
+  currentPage?.leave?.(); // z. B. Kamera ausschalten
   let key = (location.hash.replace(/^#\/?/, '') || 'vorschlaege').split('?')[0];
   if (!pages[key]) key = 'vorschlaege';
   if (!pages[key].noProfile && !current()) key = 'wer';

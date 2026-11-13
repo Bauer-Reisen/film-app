@@ -1,8 +1,8 @@
 // Laufzeit nachladen: TMDB-Listen enthalten sie nicht, nur die Details.
 // Filme: „· 112 Min.“, Serien: „· 3 Staffeln · ca. 50 Min.“
 // Geladen wird erst, wenn eine Karte (fast) auf dem Bildschirm ist – so bleiben es wenige Abfragen.
-import * as tmdb from './tmdb.js?v=1.12.0';
-import { tvLength } from './media.js?v=1.12.0';
+import * as tmdb from './tmdb.js?v=1.13.0';
+import { tvLength } from './media.js?v=1.13.0';
 
 const known = new Map(); // 'movie:id' / 'tv:id' → Text ('' = unbekannt)
 

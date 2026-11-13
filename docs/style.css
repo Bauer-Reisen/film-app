@@ -479,3 +479,29 @@ body:has(.toast.show) .to-top, .no-tabs .to-top { display: none; } /* nicht mit 
 .adapt:empty { display: none; }
 .face-wrap { display: grid; place-items: center; }
 @media (min-width: 768px) and (max-width: 1199px) { .ms { padding: 0 10px; font-size: 14px; } }
+
+/* Bücher scannen */
+.scan-cam { position: relative; margin: 12px 0; border-radius: var(--radius); overflow: hidden; background: #000; }
+.scan-cam[hidden] { display: none; }
+.scan-cam video { display: block; width: 100%; max-height: 55vh; object-fit: cover; }
+.scan-frame { position: absolute; left: 10%; right: 10%; top: 30%; bottom: 30%; border: 3px solid var(--accent); border-radius: 10px; box-shadow: 0 0 0 9999px rgb(0 0 0 / 35%); pointer-events: none; }
+.scan-status { position: absolute; left: 0; right: 0; bottom: 0; margin: 0; padding: 8px 12px; background: rgb(0 0 0 / 70%); color: #fff; font-size: 15px; text-align: center; }
+.scan-buttons .btn { flex: 1 1 auto; justify-content: center; }
+.scan-manual { align-items: flex-end; margin-top: 8px; }
+.scan-manual .grow { flex: 1 1 160px; margin: 0; }
+.scan-list { list-style: none; margin: 0 0 12px; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.scan-item { display: grid; grid-template-columns: 56px 1fr; gap: 6px 10px; align-items: center; padding: 8px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+.scan-item .poster { width: 56px; height: 84px; font-size: 18px; }
+.scan-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; overflow-wrap: anywhere; }
+.scan-actions { grid-column: 1 / -1; display: flex; gap: 8px; align-items: center; }
+.scan-actions select { flex: 1; min-height: 44px; font-size: 16px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface-2); color: var(--text); padding: 0 10px; }
+.scan-actions .btn { min-width: 44px; min-height: 44px; }
+.scan-item.missing { border-color: var(--muted); }
+.scan-item.loading { opacity: 0.7; }
+ul.plain { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
+@media (min-width: 768px) {
+  .scan-item { grid-template-columns: 56px 1fr auto; }
+  .scan-actions { grid-column: auto; }
+  .scan-actions select { flex: none; width: 170px; }
+}
+#scan .segmented { display: flex; } #scan .seg { flex: 1; min-width: 0; padding: 0 8px; }

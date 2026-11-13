@@ -1,9 +1,9 @@
 // Brücke Filme/Serien ↔ Bücher.
 // Romanvorlagen erkennt man bei TMDB an Mitwirkenden mit der Aufgabe „Novel“, „Author“ oder „Book“
 // (dazu oft das Stichwort „based on novel or book“). Die Person suchen wir bei Open Library.
-import * as tmdb from './tmdb.js?v=1.12.0';
-import * as books from './books.js?v=1.12.0';
-import { marksOf } from './media.js?v=1.12.0';
+import * as tmdb from './tmdb.js?v=1.13.0';
+import * as books from './books.js?v=1.13.0';
+import { marksOf } from './media.js?v=1.13.0';
 
 const NOVEL_JOBS = new Set(['Novel', 'Author', 'Book', 'Original Story', 'Characters', 'Comic Book', 'Graphic Novel']);
 const STRONG_JOBS = new Set(['Novel', 'Author', 'Book']);
