@@ -1,11 +1,11 @@
 // Spiele: Vorschläge berechnen (harte Filter, Punkte, Indie-Mischung) und die Seite „Vorschläge“.
-import * as store from './store.js?v=1.28.2';
-import * as games from './games.js?v=1.28.2';
-import { esc, toast } from './ui.js?v=1.28.2';
-import { RECOMMEND_GAME as R } from './config.js?v=1.28.2';
-import { GENRES, INDIE } from './game-data.js?v=1.28.2';
-import { WORLDS } from './seeds-games.js?v=1.28.2';
-import { markButtons, moreBox } from './cards.js?v=1.28.2';
+import * as store from './store.js?v=1.28.3';
+import * as games from './games.js?v=1.28.3';
+import { esc, toast } from './ui.js?v=1.28.3';
+import { RECOMMEND_GAME as R } from './config.js?v=1.28.3';
+import { GENRES, INDIE, MODES } from './game-data.js?v=1.28.3';
+import { WORLDS } from './seeds-games.js?v=1.28.3';
+import { markButtons, moreBox, filterBox } from './cards.js?v=1.28.3';
 
 const MAIN = [['known', '✓', 'Schon gespielt'], ['want', '+', 'Merken'], ['noInterest', '–', 'Nein danke']];
 const KNOWN = [['liked', '♥', 'Mag ich'], ['seen', '✓', 'Ganz okay'], ['disliked', '✕', 'Mag ich nicht']];
@@ -29,15 +29,15 @@ function likedWorlds(p) {
 }
 export const worldsForGame = (id) => WORLDS.filter((w) => w.games.some((g) => g.id === id));
 
-export async function compute(p) {
+export async function compute(p, mode = '') {
   const marks = p.games || {};
   const now = Date.now() / 1000;
   const set = games.settingsOf(p);
   const plats = games.myPlatformIds(p).join(',');
   // IGDB-Spielweisen: 2 Mehrspieler, 3 Koop, 4 geteilter Bildschirm, 5 MMO, 6 Battle Royale
   const MODE_IDS = { couch: [3, 4], online: [3, 5], versus: [2, 6] };
-  const modeIds = [...new Set(set.modes.flatMap((m) => MODE_IDS[m] || []))];
-  const massiveOk = set.modes.includes('online') || set.modes.includes('versus');
+  const modeIds = MODE_IDS[mode] || [];
+  const massiveOk = mode === 'online' || mode === 'versus';
   const cand = new Map(); // id → { g, reasons: [{ pts, text }] }
   const take = (g) => { if (!cand.has(g.id)) cand.set(g.id, { g, reasons: [] }); return cand.get(g.id); };
   const reason = (g, pts, text) => take(g).reasons.push({ pts, text });
@@ -98,7 +98,7 @@ export async function compute(p) {
   const worldIds = new Set(WORLDS.flatMap((w) => w.games.map((g) => g.id)));
   const ok = (g) => !marks[g.id]
     && games.onMine(g, p)
-    && games.fitsModes(g, p)
+    && games.fitsModes(g, mode)
     && g.d && g.d < now
     && (massiveOk || !(g.m || []).some((x) => R.noMassive.includes(x)))
     && (worldIds.has(g.id) || ((g.r || 0) >= R.minRating && g.rc >= (games.isIndie(g) ? R.indieMinVotes : R.minVotes)));
@@ -167,12 +167,21 @@ let shown = 0;
 let run = 0;
 const byId = new Map();
 const box = () => document.getElementById('suggest-list');
+let mode = ''; // „Heute: …“ – gilt nur, solange die App offen ist
+const modeName = () => MODES.find((m) => m.id === mode)?.n || '';
 
 export function render(p) {
   profile = p;
   return `
     <h1>Vorschläge</h1>
     <p class="muted small game-settings">Für: ${esc(games.settingsText(p))} · <button type="button" class="link-btn" data-gsg="setup">ändern</button></p>
+    ${filterBox(modeName() ? `heute ${modeName()}` : '', `
+      <label class="mood"><span>Heute spiele ich</span>
+        <select id="gmode">
+          <option value="">egal</option>
+          ${MODES.map((m) => `<option value="${m.id}" ${m.id === mode ? 'selected' : ''}>${esc(m.n)}</option>`).join('')}
+        </select>
+      </label>`)}
     <div id="suggest-list" aria-live="polite"><p class="muted center">Suche passende Spiele …</p></div>
     ${games.igdbLink}`;
 }
@@ -180,13 +189,21 @@ export function render(p) {
 export async function mount(p) {
   profile = p;
   const mine = ++run;
+  const sel = document.getElementById('gmode');
+  if (sel) sel.onchange = () => {
+    mode = sel.value;
+    const now = document.querySelector('.filters-now');
+    if (now) now.textContent = modeName() ? `heute ${modeName()}` : 'alles, was zu dir passt';
+    box().innerHTML = '<p class="muted center">Suche passende Spiele …</p>';
+    mount(profile);
+  };
   if (!p.settings?.gameSetup) {
-    box().innerHTML = `<div class="card placeholder"><p><strong>Erst drei kurze Fragen</strong></p>
-      <p class="muted">Plattform, Spiellänge und wie du spielst – dann kommen nur Spiele, die du auch spielen kannst.</p>
+    box().innerHTML = `<div class="card placeholder"><p><strong>Erst zwei kurze Fragen</strong></p>
+      <p class="muted">Plattform und Spiellänge – dann kommen nur Spiele, die du auch spielen kannst.</p>
       <p><button class="btn btn-primary btn-big" type="button" data-gsg="setup">Los geht’s</button></p></div>`;
     return;
   }
-  try { pool = await compute(p); } catch (err) {
+  try { pool = await compute(p, mode); } catch (err) {
     if (mine === run && box()) box().innerHTML = `<div class="card center"><p>${esc(err.message)}</p><button class="btn" type="button" data-gsg="retry">Nochmal versuchen</button></div>`;
     return;
   }
@@ -198,7 +215,7 @@ export async function mount(p) {
   const few = Object.values(p.games || {}).filter((m) => LIKED.has(m.s)).length < 3;
   if (!first.length) {
     box().innerHTML = `<div class="card placeholder"><p><strong>Gerade keine passenden Spiele.</strong></p>
-      <p class="muted">Vielleicht sind Spiellänge oder Spielweise zu eng gewählt? Oben auf „ändern“ tippen – oder unter „Geschmack“ weitere Spiele markieren.</p></div>`;
+      <p class="muted">Vielleicht ist die Spiellänge oder „Heute spiele ich“ zu eng gewählt? Oben auf „ändern“ bzw. „Filter &amp; mehr“ tippen – oder unter „Geschmack“ weitere Spiele markieren.</p></div>`;
     return;
   }
   box().innerHTML = `

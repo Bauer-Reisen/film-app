@@ -1,13 +1,13 @@
 // Seite „Gruppenabend“: ein Film (oder eine Serie), der zu dir passt und in eine Runde passt.
 // Jedes Handy rechnet für sich – man zeigt sich die Vorschläge und stimmt ab.
-import { GROUP, GROUP_TV } from './config.js?v=1.28.2';
-import * as store from './store.js?v=1.28.2';
-import * as tmdb from './tmdb.js?v=1.28.2';
-import { esc, toast } from './ui.js?v=1.28.2';
-import { trailerBtn } from './trailer.js?v=1.28.2';
-import { compute, hasSources, genreTilt } from './recommend.js?v=1.28.2';
-import { ageOk, discoverAge } from './age.js?v=1.28.2';
-import { MEDIA, mediaOf, marksOf, tvLength, episodeMinutes } from './media.js?v=1.28.2';
+import { GROUP, GROUP_TV } from './config.js?v=1.28.3';
+import * as store from './store.js?v=1.28.3';
+import * as tmdb from './tmdb.js?v=1.28.3';
+import { esc, toast } from './ui.js?v=1.28.3';
+import { trailerBtn } from './trailer.js?v=1.28.3';
+import { compute, hasSources, genreTilt } from './recommend.js?v=1.28.3';
+import { ageOk, discoverAge } from './age.js?v=1.28.3';
+import { MEDIA, mediaOf, marksOf, tvLength, episodeMinutes } from './media.js?v=1.28.3';
 
 const COMEDY = 35;
 const LIKED = new Set(['liked', 'loved']);

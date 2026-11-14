@@ -31,12 +31,12 @@ export const GENRES = {
 };
 export const INDIE = 32;
 
-// Spielweise (Startfrage) – wie man es an einem Spiel erkennt
+// Spielweise – Filter bei den Vorschlägen („Heute: …“, gilt nur für den Moment) und wie man es an einem Spiel erkennt
 export const MODES = [
-  { id: 'solo', n: 'Allein' },
-  { id: 'online', n: 'Online zusammen' },
-  { id: 'couch', n: 'Couch zusammen' },
-  { id: 'versus', n: 'Gegeneinander' },
+  { id: 'solo', n: 'allein' },
+  { id: 'couch', n: 'zu zweit auf der Couch' },
+  { id: 'online', n: 'online mit Freunden' },
+  { id: 'versus', n: 'gegeneinander' },
 ];
 export function fitsMode(g, mode) {
   const m = g.m || [];

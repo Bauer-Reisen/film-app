@@ -1,9 +1,9 @@
 // Spiele: Abfragen an IGDB (immer über den Worker), Karten-Bausteine, Spielzeit.
 // Wird erst geladen, wenn man oben auf „Spiele“ umschaltet (app.js: loadGames).
-import { WORKER_URL } from './config.js?v=1.28.2';
-import { esc } from './ui.js?v=1.28.2';
-import { compact, GENRES, PLATFORM_SHORT, PLATFORMS, platformIds, MODES, fitsMode, timeLevel, timeIndex } from './game-data.js?v=1.28.2';
-import { MEDIA, stateLabel } from './media.js?v=1.28.2';
+import { WORKER_URL } from './config.js?v=1.28.3';
+import { esc } from './ui.js?v=1.28.3';
+import { compact, GENRES, PLATFORM_SHORT, PLATFORMS, platformIds, MODES, fitsMode, timeLevel, timeIndex } from './game-data.js?v=1.28.3';
+import { MEDIA, stateLabel } from './media.js?v=1.28.3';
 
 export const W = MEDIA.game.w;
 const memo = new Map();
@@ -72,11 +72,10 @@ export function settingsText(p) {
   const s = settingsOf(p);
   const plats = s.plats.length ? PLATFORMS.filter((x) => s.plats.includes(x.id)).map((x) => x.n).join(', ') : 'alle Plattformen';
   const time = timeIndex(s.time) >= 0 ? ['kurze Spiele', 'mittellange Spiele', 'lange Spiele'][timeIndex(s.time)] : 'Länge egal';
-  const modes = s.modes.length ? MODES.filter((m) => s.modes.includes(m.id)).map((m) => m.n.toLowerCase()).join(', ') : 'Spielweise egal';
-  return `${plats} · ${time} · ${modes}`;
+  return `${plats} · ${time}`;
 }
 export const onMine = (g, p) => { const mine = myPlatformIds(p); return (g.p || []).some((x) => mine.includes(x)); };
-export const fitsModes = (g, p) => { const m = settingsOf(p).modes; return !m.length || m.some((x) => fitsMode(g, x)); };
+export const fitsModes = (g, mode) => !mode || fitsMode(g, mode); // mode: Filter „Heute: …“ ('' = egal)
 export const timeDistance = (g, p) => {
   const want = timeIndex(settingsOf(p).time);
   const lvl = timeLevel(hoursOf(g.id));

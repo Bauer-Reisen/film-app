@@ -1,11 +1,11 @@
 // Seite „Geschmack“ bei Spielen: 3 Startfragen, Startliste (ca. 100), Suche, „Weitere laden“.
 // Knöpfe: Gespielt · Mag ich · Mag ich nicht · Merken; Tipp aufs Cover = ★ Lieblingsspiel.
-import * as store from './store.js?v=1.28.2';
-import * as games from './games.js?v=1.28.2';
-import { esc, dialog, toast } from './ui.js?v=1.28.2';
-import { pressed } from './media.js?v=1.28.2';
-import { PLATFORMS, MODES, TIMES } from './game-data.js?v=1.28.2';
-import { SEED_GAMES } from './seeds-games.js?v=1.28.2';
+import * as store from './store.js?v=1.28.3';
+import * as games from './games.js?v=1.28.3';
+import { esc, dialog, toast } from './ui.js?v=1.28.3';
+import { pressed } from './media.js?v=1.28.3';
+import { PLATFORMS, TIMES } from './game-data.js?v=1.28.3';
+import { SEED_GAMES } from './seeds-games.js?v=1.28.3';
 
 const GAME_MARKS = [['seen', '✓', 'Gespielt'], ['liked', '♥', 'Mag ich'], ['disliked', '✕', 'Mag ich nicht'], ['want', '+', 'Merken']];
 const W = games.W;
@@ -22,12 +22,12 @@ const body = () => document.getElementById('taste-body');
 // Von außen („🎮 Das Spiel dazu“ bei Filmen/Serien/Büchern): gleich danach suchen
 export function openSearch(q) { ui.query = q || ''; }
 
-// ---------- Die 3 Startfragen (auch unter „Profil“ änderbar) ----------
+// ---------- Die 2 Startfragen (auch unter „Profil“ änderbar); Spielweise wählt man bei den Vorschlägen ----------
 export async function setupDialog(p) {
   const s = games.settingsOf(p);
   const box = (name, val, text, on) => `<label class="radio"><input type="checkbox" name="${name}" value="${val}"${on ? ' checked' : ''}> ${text}</label>`;
   const res = await dialog({
-    title: 'Drei kurze Fragen',
+    title: 'Zwei kurze Fragen',
     body: `
       <fieldset class="field"><legend><strong>Worauf spielst du?</strong> (mehrere möglich)</legend>
         ${PLATFORMS.map((x) => box(`plat_${x.id}`, 1, esc(x.n), s.plats.includes(x.id))).join('')}
@@ -36,10 +36,6 @@ export async function setupDialog(p) {
       </fieldset>
       <fieldset class="field"><legend><strong>Wie lang dürfen Spiele sein?</strong></legend>
         ${[{ id: '', n: 'Egal', d: '' }, ...TIMES].map((t) => `<label class="radio"><input type="radio" name="time" value="${t.id}"${s.time === t.id ? ' checked' : ''}> ${t.n}${t.d ? ` <span class="muted">(${t.d})</span>` : ''}</label>`).join('')}
-      </fieldset>
-      <fieldset class="field"><legend><strong>Wie spielst du am liebsten?</strong> (mehrere möglich)</legend>
-        ${MODES.map((m) => box(`mode_${m.id}`, 1, m.n, s.modes.includes(m.id))).join('')}
-        <span class="muted small">Nichts angehakt = egal.</span>
       </fieldset>
       <p class="muted small">Das kannst du später unter „Profil“ ändern.</p>`,
     buttons: [{ label: 'Abbrechen', value: false }, { label: 'Speichern', value: true, primary: true }],
@@ -50,7 +46,7 @@ export async function setupDialog(p) {
   const plats = f.plat_all ? [] : PLATFORMS.filter((x) => f[`plat_${x.id}`]).map((x) => x.id);
   const fresh = store.getProfile(p.id);
   store.updateProfile(p.id, {
-    settings: { ...fresh.settings, gamePlatforms: plats, gameTime: f.time || '', gameModes: MODES.filter((m) => f[`mode_${m.id}`]).map((m) => m.id), gameSetup: true },
+    settings: { ...fresh.settings, gamePlatforms: plats, gameTime: f.time || '', gameModes: [], gameSetup: true },
   });
   toast('Gespeichert.');
   return true;
@@ -82,7 +78,7 @@ export async function mount(p) {
   input?.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); clearTimeout(searchTimer); fillBody(); input.blur(); } });
   if (!p.settings?.gameSetup) {
     body().innerHTML = `<div class="card placeholder"><p><strong>Willkommen bei den Spielen!</strong></p>
-      <p class="muted">Erst drei kurze Fragen: Plattform, Spiellänge und wie du spielst. Dann zeigt die App nur Spiele, die du auch spielen kannst.</p>
+      <p class="muted">Erst zwei kurze Fragen: Plattform und Spiellänge. Dann zeigt die App nur Spiele, die du auch spielen kannst.</p>
       <p><button class="btn btn-primary btn-big" type="button" data-gtaste="setup">Los geht’s</button></p></div>`;
     return; // Fragen erst auf Knopfdruck (sonst kollidiert es mit dem Rundgang neuer Profile)
   }
