@@ -18,6 +18,9 @@ writeFileSync('docs/version.json', JSON.stringify({ version: v }) + '\n');
 
 // Alle Importe zwischen den Modulen bekommen dieselbe Versionsnummer
 for (const f of readdirSync('docs/js').filter((f) => f.endsWith('.js'))) {
-  edit(`docs/js/${f}`, (s) => s.replace(/from '(\.\/[\w-]+\.js)(\?v=[\d.]+)?'/g, `from '$1?v=${v}'`));
+  // statisch (from './x.js') und dynamisch (import('./x.js'))
+  edit(`docs/js/${f}`, (s) => s
+    .replace(/from '(\.\/[\w-]+\.js)(\?v=[\d.]+)?'/g, `from '$1?v=${v}'`)
+    .replace(/import\('(\.\/[\w-]+\.js)(\?v=[\d.]+)?'\)/g, `import('$1?v=${v}')`));
 }
 console.log(`Version ${v} gesetzt.`);

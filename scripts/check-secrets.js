@@ -1,4 +1,4 @@
-// Sucht vor jedem Hochladen nach versehentlich enthaltenen TMDB-Schlüsseln.
+// Sucht vor jedem Hochladen nach versehentlich enthaltenen TMDB- und Twitch-Schlüsseln.
 // Läuft automatisch vor `git push` (Git-Hook) und per `npm run check-secrets`.
 // Findet es etwas, bricht es mit Fehler ab – dann wird NICHT hochgeladen.
 
@@ -8,6 +8,8 @@ import { readFileSync } from 'node:fs';
 const PATTERNS = [
   { name: 'TMDB-Lesetoken (beginnt mit eyJ)', re: /eyJ[A-Za-z0-9_-]{15,}\.[A-Za-z0-9_-]{15,}\.[A-Za-z0-9_-]{10,}/ },
   { name: 'TMDB-API-Schlüssel (32 Zeichen)', re: /(?<![A-Za-z0-9])[a-f0-9]{32}(?![A-Za-z0-9])/i },
+  // Twitch-Client-ID/-Secret: 30 Zeichen, Kleinbuchstaben und Ziffern (mindestens eine Ziffer)
+  { name: 'Twitch-ID/-Secret (30 Zeichen)', re: /(?<![A-Za-z0-9])(?=[a-z]*\d)[a-z0-9]{30}(?![A-Za-z0-9])/ },
 ];
 
 // Alle Dateien, die Git kennt oder kennen würde (ohne ignorierte)
@@ -40,7 +42,7 @@ console.log('✓ Kein Schlüssel im Code gefunden.');
 const version = readFileSync('docs/js/config.js', 'utf8').match(/VERSION = '([^']+)'/)[1];
 const wrong = [];
 for (const f of files.filter((f) => /^docs\/js\/.+\.js$/.test(f))) {
-  for (const m of readFileSync(f, 'utf8').matchAll(/from '(\.\/[^']+)'/g)) {
+  for (const m of readFileSync(f, 'utf8').matchAll(/(?:from |import\()'(\.\/[^']+)'/g)) {
     if (!m[1].endsWith(`?v=${version}`)) wrong.push(`${f}: ${m[1]}`);
   }
 }
