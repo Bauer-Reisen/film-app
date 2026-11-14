@@ -1,9 +1,9 @@
 // Spiele: Abfragen an IGDB (immer über den Worker), Karten-Bausteine, Spielzeit.
 // Wird erst geladen, wenn man oben auf „Spiele“ umschaltet (app.js: loadGames).
-import { WORKER_URL } from './config.js?v=1.28.0';
-import { esc } from './ui.js?v=1.28.0';
-import { compact, GENRES, PLATFORM_SHORT, PLATFORMS, platformIds, MODES, fitsMode, timeLevel, timeIndex } from './game-data.js?v=1.28.0';
-import { MEDIA, stateLabel } from './media.js?v=1.28.0';
+import { WORKER_URL } from './config.js?v=1.28.1';
+import { esc } from './ui.js?v=1.28.1';
+import { compact, GENRES, PLATFORM_SHORT, PLATFORMS, platformIds, MODES, fitsMode, timeLevel, timeIndex } from './game-data.js?v=1.28.1';
+import { MEDIA, stateLabel } from './media.js?v=1.28.1';
 
 export const W = MEDIA.game.w;
 const memo = new Map();
@@ -49,8 +49,8 @@ export async function loadTimes(ids) {
     let rows = [];
     try { rows = await get('time', { ids: part.sort((a, b) => a - b).join(',') }); } catch { continue; }
     part.forEach((id) => hours.set(id, null));
-    // nur ab 3 Angaben – sonst zu unsicher
-    for (const r of rows) if (r.normally && (r.count || 0) >= 3) hours.set(r.game_id, Math.max(1, Math.round(r.normally / 3600)));
+    // nur ab 3 Angaben und höchstens 250 Std. (Endlos-Spiele wie League of Legends haben sonst Fantasiewerte)
+    for (const r of rows) if (r.normally && (r.count || 0) >= 3 && r.normally <= 250 * 3600) hours.set(r.game_id, Math.max(1, Math.round(r.normally / 3600)));
   }
 }
 export const timeText = (id) => { const h = hoursOf(id); return h ? `ca. ${h} Std.` : ''; };
