@@ -1,6 +1,6 @@
 // Filme oder Serien: alles, was sich zwischen beiden unterscheidet, steht hier.
 // Die Seiten fragen hier nach (Adressen, Wörter, Profilfelder), statt alles doppelt zu bauen.
-import { dialog, esc } from './ui.js?v=1.27.0';
+import { dialog, esc } from './ui.js?v=1.28.0';
 
 // Serien-Genres, die nie vorgeschlagen werden: Nachrichten, Reality, Seifenoper, Talkshow
 export const TV_EXCLUDE = [10763, 10764, 10766, 10767];
@@ -28,6 +28,15 @@ export const MEDIA = {
       noPoster: 'Kein Poster', it: 'Die', director: 'Regie & Idee',
     },
   },
+  // Spiele (seit 1.28.0, Testversion): Daten von IGDB, eigene Seiten (game-*.js)
+  game: {
+    id: 'game', marks: 'games', suffix: 'Game',
+    w: {
+      one: 'Spiel', many: 'Spiele', fav: 'Lieblingsspiel', favs: 'Lieblingsspiele', the: 'das Spiel',
+      a: 'ein Spiel', ofA: 'einem Spiel', yours: 'deine Spiele', ofYours: 'deiner Spiele', unknown: 'Unbekanntes Spiel',
+      noPoster: 'Kein Cover', it: 'Das', director: 'Studio', list: 'Merkliste',
+    },
+  },
   // Bücher (seit 1.12.0): Daten von Open Library, eigene Seiten (book-*.js) – nur Wörter und Profilfelder hier
   book: {
     id: 'book', marks: 'books', suffix: 'Book',
@@ -39,7 +48,7 @@ export const MEDIA = {
   },
 };
 
-export const other = (media) => (media === 'tv' ? 'movie' : 'tv');
+export const other = (media) => (media === 'tv' ? 'movie' : 'tv'); // nur für Film ↔ Serie
 // Filme, Serien oder Bücher – wie oben im Umschalter gewählt
 // Wo bekomme ich es? Nur Links zu den Seiten (Suche dort), nichts wird gesendet, kein Partnerprogramm (seit 1.16.0)
 const enc = encodeURIComponent;
@@ -47,7 +56,19 @@ export const amazonBookUrl = (title, author, language) => `https://www.amazon.${
 export const justWatchUrl = (title, language) => (language === 'en-US' ? `https://www.justwatch.com/us/search?q=${enc(title)}` : `https://www.justwatch.com/de/Suche?q=${enc(title)}`);
 export const shopLink = (href, label) => `<a class="btn btn-small" href="${href}" target="_blank" rel="noopener noreferrer">${label}</a>`;
 
-export const mediaOf = (profile) => (['tv', 'book'].includes(profile?.settings?.media) ? profile.settings.media : 'movie');
+// Welche Bereiche zeigt der Umschalter? (Spiele standardmäßig aus; mindestens einer bleibt an)
+export const AREAS = ['movie', 'tv', 'book', 'game'];
+export const areasOf = (profile) => {
+  const a = profile?.settings?.areas || {};
+  const on = AREAS.filter((k) => (k in a ? a[k] : k !== 'game'));
+  return on.length ? on : ['movie'];
+};
+// Gewählter Bereich – ist er ausgeschaltet, der erste eingeschaltete (meist Filme)
+export const mediaOf = (profile) => {
+  const on = areasOf(profile);
+  const m = profile?.settings?.media;
+  return on.includes(m) ? m : on[0];
+};
 export const M = (profile) => MEDIA[mediaOf(profile)];
 // Markierungen des Profils für Filme oder Serien
 export const marksOf = (profile, media = mediaOf(profile)) => profile[MEDIA[media].marks] || {};
@@ -111,7 +132,7 @@ export async function askStarted(title) {
 export function stateLabel(media, s) {
   const w = MEDIA[media].w;
   return {
-    loved: `★ ${w.fav}`, seen: media === 'book' ? '✓ Gelesen' : '✓ Gesehen', liked: '♥ Mag ich', disliked: '✕ Mag ich nicht', want: '+ Gemerkt',
-    noInterest: 'Kein Interesse', paused: media === 'book' ? '⏸ Weiterlesen' : '⏸ Weiterschauen', dropped: '⏹ Abgebrochen',
+    loved: `★ ${w.fav}`, seen: media === 'book' ? '✓ Gelesen' : media === 'game' ? '✓ Gespielt' : '✓ Gesehen', liked: '♥ Mag ich', disliked: '✕ Mag ich nicht', want: '+ Gemerkt',
+    noInterest: 'Kein Interesse', paused: media === 'book' ? '⏸ Weiterlesen' : media === 'game' ? '⏸ Weiterspielen' : '⏸ Weiterschauen', dropped: '⏹ Abgebrochen',
   }[s] || '';
 }

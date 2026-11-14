@@ -1,36 +1,59 @@
 // Oberfläche: Seitenwechsel über die Adresse (#/vorschlaege usw.)
-import { VERSION, LANGUAGES } from './config.js?v=1.27.0';
-import * as store from './store.js?v=1.27.0';
-import { saveBackup, readBackup, findSameName, importAsNew, mergeInto } from './backup.js?v=1.27.0';
-import { esc, dialog, toast, formatDate } from './ui.js?v=1.27.0';
-import * as platform from './platform.js?v=1.27.0';
-import * as taste from './taste.js?v=1.27.0';
-import * as suggest from './suggest.js?v=1.27.0';
-import * as watchlist from './watchlist.js?v=1.27.0';
-import * as sneak from './sneak.js?v=1.27.0';
-import * as group from './group.js?v=1.27.0';
-import * as kids from './kids.js?v=1.27.0';
-import * as rewatch from './rewatch.js?v=1.27.0';
-import * as trailer from './trailer.js?v=1.27.0';
-import { handleKnown } from './cards.js?v=1.27.0';
-import { initRuntimes } from './runtime.js?v=1.27.0';
-import { mediaOf } from './media.js?v=1.27.0';
-import { runTour } from './tour.js?v=1.27.0';
-import { unseen, showNews, LATEST } from './news.js?v=1.27.0';
-import * as bookTaste from './book-taste.js?v=1.27.0';
-import * as bookList from './book-list.js?v=1.27.0';
-import * as scan from './scan.js?v=1.27.0';
-import * as bookRate from './book-rate.js?v=1.27.0';
-import * as bookSuggest from './book-suggest.js?v=1.27.0';
-import * as bookSneak from './book-sneak.js?v=1.27.0';
-import * as bookRewatch from './book-rewatch.js?v=1.27.0';
-import { initBookExtras } from './book-extra.js?v=1.27.0';
+import { VERSION, LANGUAGES } from './config.js?v=1.28.0';
+import * as store from './store.js?v=1.28.0';
+import { saveBackup, readBackup, findSameName, importAsNew, mergeInto } from './backup.js?v=1.28.0';
+import { esc, dialog, toast, formatDate } from './ui.js?v=1.28.0';
+import * as platform from './platform.js?v=1.28.0';
+import * as taste from './taste.js?v=1.28.0';
+import * as suggest from './suggest.js?v=1.28.0';
+import * as watchlist from './watchlist.js?v=1.28.0';
+import * as sneak from './sneak.js?v=1.28.0';
+import * as group from './group.js?v=1.28.0';
+import * as kids from './kids.js?v=1.28.0';
+import * as rewatch from './rewatch.js?v=1.28.0';
+import * as trailer from './trailer.js?v=1.28.0';
+import { handleKnown } from './cards.js?v=1.28.0';
+import { initRuntimes } from './runtime.js?v=1.28.0';
+import { mediaOf, areasOf, AREAS } from './media.js?v=1.28.0';
+import { runTour } from './tour.js?v=1.28.0';
+import { unseen, showNews, LATEST } from './news.js?v=1.28.0';
+import * as bookTaste from './book-taste.js?v=1.28.0';
+import * as bookList from './book-list.js?v=1.28.0';
+import * as scan from './scan.js?v=1.28.0';
+import * as bookRate from './book-rate.js?v=1.28.0';
+import * as bookSuggest from './book-suggest.js?v=1.28.0';
+import * as bookSneak from './book-sneak.js?v=1.28.0';
+import * as bookRewatch from './book-rewatch.js?v=1.28.0';
+import { initBookExtras } from './book-extra.js?v=1.28.0';
 
 const view = document.getElementById('view');
 const APP_URL = 'https://bauer-reisen.github.io/film-app/';
 const tabs = document.querySelectorAll('.tabs a[data-tab]');
 const whoBtn = document.getElementById('who');
 const mediaSwitch = document.querySelector('.media-switch');
+
+// ---------- Spiele (Testversion): erst laden, wenn eingeschaltet ----------
+// Link …/?spiele=1 schaltet Spiele für das Profil ein (auch für Profile, die erst danach angelegt werden)
+const AREA_NAMES = { movie: 'Filme', tv: 'Serien', book: 'Bücher', game: 'Spiele' };
+try {
+  const params = new URLSearchParams(location.search);
+  if (params.get('spiele') === '1') {
+    store.updateDevice({ gamesInvite: true });
+    params.delete('spiele');
+    history.replaceState(null, '', location.pathname + (params.toString() ? `?${params}` : '') + location.hash);
+  }
+} catch { /* egal */ }
+function applyInvite(p) {
+  if (!p || !store.device().gamesInvite || p.settings?.gamesInvited) return;
+  store.updateProfile(p.id, { settings: { ...p.settings, areas: { ...(p.settings?.areas || {}), game: true }, media: 'game', gamesInvited: true } });
+}
+const gamesOn = (p) => areasOf(p).includes('game');
+let gamesMod = null;
+let gamesLoading = null;
+function loadGames() {
+  gamesLoading ||= import('./game-pages.js?v=1.28.0').then((m) => { gamesMod = m; return m; }).catch((err) => { gamesLoading = null; throw err; });
+  return gamesLoading;
+}
 
 // ---------- aktuelles Profil (gilt für diese Sitzung) ----------
 const SESSION_KEY = 'filmapp.current';
@@ -42,6 +65,7 @@ export const current = () => store.getProfile(currentId);
 
 function selectProfile(id, goTo = '#/vorschlaege') {
   currentId = id;
+  applyInvite(store.getProfile(id));
   try { sessionStorage.setItem(SESSION_KEY, id); } catch { /* egal */ }
   store.setLastProfile(id);
   location.hash = goTo;
@@ -208,6 +232,15 @@ const pages = {
         </section>
 
         <section class="card stack">
+          <h2 id="areas-h">Bereiche oben</h2>
+          <div class="row" role="group" aria-labelledby="areas-h">
+            ${AREAS.map((a) => `<button type="button" class="btn toggle" data-area="${a}" aria-pressed="${areasOf(p).includes(a)}">${AREA_NAMES[a]}${a === 'game' ? ' (Test)' : ''}</button>`).join('')}
+          </div>
+          <p class="muted small">Was du nicht brauchst, blendest du aus. Markierungen bleiben erhalten.</p>
+          ${gamesOn(p) ? `<p><button class="btn" type="button" data-act="game-setup">Spiele: Plattform, Zeit, Spielweise</button></p>` : ''}
+        </section>
+
+        <section class="card stack">
           <h2>Sichern</h2>
           <p class="muted small">Zuletzt gesichert: ${p.lastBackup ? formatDate(p.lastBackup) : 'nie'}</p>
           <div class="row">
@@ -285,6 +318,12 @@ const pages = {
         <p class="muted">Beim Scannen bleibt das Kamerabild auf deinem Handy. Gesendet wird nur die ISBN-Nummer.</p>
       </div>
 
+      ${current() && gamesOn(current()) ? `
+      <h2>Spieldaten</h2>
+      <div class="card stack">
+        <p>Alle Spieldaten, Cover und Trailer-Hinweise kommen von <a href="https://www.igdb.com/" target="_blank" rel="noopener">IGDB.com</a>. Die Spiele sind eine Testversion.</p>
+      </div>` : ''}
+
       <h2>App weitergeben</h2>
       <div class="card stack about-share">
         <img class="qr" src="img/qr.svg" alt="QR-Code zur App" width="200" height="200">
@@ -348,7 +387,7 @@ async function createProfileDialog() {
 async function tour() {
   const p = current();
   if (!p) return;
-  await runTour(p.name);
+  await runTour(p.name, gamesOn(p));
   store.updateProfile(p.id, { settings: { ...(p.settings || {}), tourDone: true } });
 }
 
@@ -457,6 +496,25 @@ view.addEventListener('click', async (e) => {
   const pick = e.target.closest('[data-pick]');
   if (pick) return selectProfile(pick.dataset.pick);
 
+  const gb = e.target.closest('[data-gamebridge]');
+  if (gb) {
+    e.preventDefault();
+    const p = current();
+    const m = await loadGames();
+    m.openSearch(gb.dataset.gamebridge);
+    store.updateProfile(p.id, { settings: { ...p.settings, media: 'game' } });
+    if (location.hash === '#/geschmack') show(); else location.hash = '#/geschmack';
+    return;
+  }
+  const area = e.target.closest('[data-area]');
+  if (area) {
+    const p = current();
+    const on = new Set(areasOf(p));
+    if (on.has(area.dataset.area)) on.delete(area.dataset.area); else on.add(area.dataset.area);
+    if (!on.size) { toast('Ein Bereich muss bleiben.'); return; }
+    store.updateProfile(p.id, { settings: { ...p.settings, areas: Object.fromEntries(AREAS.map((a) => [a, on.has(a)])) } });
+    return show();
+  }
   const blang = e.target.closest('[data-blang]');
   if (blang) {
     const p = current();
@@ -484,6 +542,7 @@ view.addEventListener('click', async (e) => {
     case 'install-later': platform.dismissInstallTip(); return show();
     case 'share-app': return shareApp();
     case 'tour': return tour();
+    case 'game-setup': { const m = await loadGames(); if (await m.setupDialog(current())) show(); return; }
     case 'install': await platform.install(); platform.dismissInstallTip(); return show();
   }
 });
@@ -533,7 +592,15 @@ function show() {
   if (!pages[key]) key = 'vorschlaege';
   if (!pages[key].noProfile && !current()) key = 'wer';
   const media0 = current() ? mediaOf(current()) : 'movie';
-  const page = (media0 === 'book' && BOOK_PAGES[key]) ? { ...pages[key], ...BOOK_PAGES[key] } : pages[key];
+  let page = (media0 === 'book' && BOOK_PAGES[key]) ? { ...pages[key], ...BOOK_PAGES[key] } : pages[key];
+  if (media0 === 'game' && !pages[key].noProfile && key !== 'profil') {
+    if (!gamesMod) {
+      page = { ...pages[key], render: () => '<p class="muted center">Spiele werden geladen …</p>', mount: () => loadGames().then(show, () => toast('Die Spiele ließen sich nicht laden. Bist du online?')) };
+    } else {
+      const gp = gamesMod.pages(current, view)[key];
+      if (gp) page = { ...pages[key], ...gp };
+    }
+  }
   currentPage = page;
   const activeTab = page.tab || key;
 
@@ -544,8 +611,13 @@ function show() {
   document.body.dataset.media = media;
   view.innerHTML = page.render();
   page.mount?.();
-  mediaSwitch.hidden = !p || !!page.noTabs;
-  mediaSwitch.querySelectorAll('[data-media]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.media === media)));
+  const areas = p ? areasOf(p) : [];
+  mediaSwitch.hidden = !p || !!page.noTabs || areas.length < 2;
+  mediaSwitch.classList.toggle('ms-4', areas.length > 3);
+  mediaSwitch.querySelectorAll('[data-media]').forEach((b) => {
+    b.hidden = !areas.includes(b.dataset.media);
+    b.setAttribute('aria-pressed', String(b.dataset.media === media));
+  });
   document.title = `${(media === 'tv' && page.titleTv) || page.title} · Was schaue ich?`;
   if (listTab) listTab.textContent = media === 'book' ? 'Leseliste' : 'Merkliste';
   tabs.forEach((a) => {
@@ -556,6 +628,7 @@ function show() {
   whoBtn.setAttribute('aria-label', p ? `Profil ${p.name} – Profil wechseln` : 'Profil wählen');
   window.scrollTo(0, 0);
   if (p && !page.noTabs) maybeNews(p);
+  if (p && gamesOn(p) && media !== 'game') loadGames().then((m) => m.decorate(view, media)).catch(() => {});
 }
 
 // Nach einem Update: einmal „Was ist neu?“ (wer neu ist, bekommt den Rundgang und keine alten Neuigkeiten)
@@ -575,6 +648,8 @@ async function maybeNews(p) {
 window.addEventListener('hashchange', show);
 initRuntimes(view, () => current()?.language || 'de-DE');
 initBookExtras(view, () => current());
+new MutationObserver(() => { const p = current(); if (gamesMod && p && gamesOn(p) && mediaOf(p) !== 'game') gamesMod.decorate(view, mediaOf(p)); }).observe(view, { childList: true, subtree: true });
+applyInvite(current());
 show();
 
 // ---------- Update-Prüfung ----------

@@ -607,6 +607,7 @@ Von Hand gepflegte Liste (wie `PAIRS` bei Büchern), nur **gute** Spiele: The La
 ### Bauschritte Spiele
 - **G1 (fertig):** `.gitattributes`, Versions-/Prüfskript für dynamische Importe, Twitch-Erkennung.
 - **G2 (fertig):** Worker `/igdb/…`, Prüfskript, dieser Plan.
+- **G3–G8 (1.28.0, fertig):** siehe STAND.md.
 - **G3:** `settings.areas`, Umschalter bei 375/360 px, Spiele standardmäßig aus, `?spiele=1`.
 - **G4:** Profilfelder, `data-playtime`, alte Sicherungen laden.
 - **G5:** Startliste (Skript) und Geschmack mit den 3 Startfragen.

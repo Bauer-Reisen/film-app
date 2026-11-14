@@ -1,6 +1,6 @@
 // Profil sichern (als Datei) und wieder laden – so zieht man auf ein
 // anderes Gerät oder in die Home-Bildschirm-App um.
-import { newProfile, getProfile, updateProfile, addProfile, profiles } from './store.js?v=1.27.0';
+import { newProfile, getProfile, updateProfile, addProfile, profiles } from './store.js?v=1.28.0';
 
 const FORMAT = 'filmapp-profil';
 
@@ -79,6 +79,7 @@ export function mergeInto(targetId, incoming) {
   const movies = newer(t.movies, incoming.movies);
   const shows = newer(t.shows, incoming.shows);
   const books = newer(t.books, incoming.books);
+  const games = newer(t.games, incoming.games);
   const byId = (a, b) => {
     const map = new Map(a.map((x) => [x.id, x]));
     for (const x of b || []) if (!map.has(x.id) || (x.t || 0) > (map.get(x.id).t || 0)) map.set(x.id, x);
@@ -91,6 +92,8 @@ export function mergeInto(targetId, incoming) {
   };
   const lastGenre = latest(t.surpriseLastGenre, incoming.surpriseLastGenre);
   updateProfile(targetId, {
+    games,
+    passedGame: [...new Set([...(t.passedGame || []), ...(incoming.passedGame || [])])],
     books,
     authors: byId(t.authors || [], incoming.authors),
     bookGenres: byId(t.bookGenres || [], incoming.bookGenres),

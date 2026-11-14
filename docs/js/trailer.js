@@ -1,7 +1,7 @@
 // Trailer: Knopf auf den Filmkarten, Fenster mit eingebettetem YouTube-Video.
 // YouTube wird erst geladen, wenn man auf „Trailer“ tippt (datensparsame Variante youtube-nocookie).
-import * as tmdb from './tmdb.js?v=1.27.0';
-import { esc, toast } from './ui.js?v=1.27.0';
+import * as tmdb from './tmdb.js?v=1.28.0';
+import { esc, toast } from './ui.js?v=1.28.0';
 
 export const trailerBtn = (id, title, big = false, media = 'movie') =>
   `<button type="button" class="btn ${big ? 'btn-big' : 'btn-small'} trailer-btn" data-trailer="${id}" data-tmedia="${media}" data-title="${esc(title)}"><span aria-hidden="true">▶</span> Trailer</button>`;
@@ -25,7 +25,12 @@ async function open(id, title, language, media = 'movie') {
     return;
   }
   if (!video) { toast(`Zu „${title}“ gibt es leider keinen Trailer.`); return; }
+  showVideo(video.key, title, video.iso_639_1 && video.iso_639_1 !== language.slice(0, 2));
+}
 
+// Fenster mit eingebettetem YouTube-Video (auch für Spiele-Trailer)
+export function showVideo(key, title, englishOnly = false) {
+  const video = { key };
   const d = document.createElement('dialog');
   d.className = 'trailer-dlg';
   d.setAttribute('aria-label', `Trailer: ${title}`);
@@ -40,7 +45,7 @@ async function open(id, title, language, media = 'movie') {
     </div>
     <p class="trailer-foot">
       <a href="https://www.youtube.com/watch?v=${encodeURIComponent(video.key)}" target="_blank" rel="noopener">Auf YouTube öffnen</a>
-      ${video.iso_639_1 && video.iso_639_1 !== language.slice(0, 2) ? '<span class="muted small"> · nur auf Englisch</span>' : ''}
+      ${englishOnly ? '<span class="muted small"> · nur auf Englisch</span>' : ''}
     </p>`;
   const close = () => { if (d.open) d.close(); d.remove(); };
   d.querySelector('.trailer-close').addEventListener('click', close);

@@ -1,6 +1,6 @@
 // Kurzer Rundgang für neue Profile: sechs Karten nacheinander, jederzeit überspringbar.
 // Danach (oder beim Überspringen) gilt er als gesehen; unter „Profil“ lässt er sich nochmal ansehen.
-import { dialog, esc } from './ui.js?v=1.27.0';
+import { dialog, esc } from './ui.js?v=1.28.0';
 
 const STEPS = [
   {
@@ -30,18 +30,24 @@ const STEPS = [
 ];
 
 // Zeigt den Rundgang; liefert, wenn er fertig oder übersprungen ist
-export async function runTour(name = '') {
-  for (let i = 0; i < STEPS.length; i++) {
-    const s = STEPS[i];
-    const last = i === STEPS.length - 1;
+// Spiele (Testversion) nur erwähnen, wenn eingeschaltet
+const GAME_STEP = {
+  icon: '🎮', title: 'Spiele (Test)',
+  text: 'Bei <strong>Spiele</strong> fragt die App zuerst, worauf du spielst, wie viel Zeit du hast und ob allein oder zusammen. Dann markierst du Spiele (<strong>Gespielt</strong>, <strong>Mag ich</strong>, <strong>Mag ich nicht</strong>, <strong>Merken</strong>) und bekommst Vorschläge – nur für deine Plattformen. Ein- und ausblenden kannst du Bereiche unter <strong>Profil</strong>.',
+};
+export async function runTour(name = '', withGames = false) {
+  const steps = withGames ? [...STEPS.slice(0, -1), GAME_STEP, STEPS.at(-1)] : STEPS;
+  for (let i = 0; i < steps.length; i++) {
+    const s = steps[i];
+    const last = i === steps.length - 1;
     const res = await dialog({
       title: i === 0 && name ? `Willkommen, ${name}!` : s.title,
       body: `
         <div class="tour">
           <div class="tour-icon" aria-hidden="true">${s.icon}</div>
           ${i === 0 && name ? `<h3>${esc(s.title)}</h3>` : ''}
-          <p>${s.text}</p>
-          <p class="tour-dots" aria-label="Schritt ${i + 1} von ${STEPS.length}">${STEPS.map((_, j) => `<span class="${j === i ? 'on' : ''}"></span>`).join('')}</p>
+          <p>${i === 0 && withGames ? s.text.replace(' und <strong>Bücher</strong> um.', ', <strong>Bücher</strong> und <strong>Spiele</strong> um.') : s.text}</p>
+          <p class="tour-dots" aria-label="Schritt ${i + 1} von ${steps.length}">${steps.map((_, j) => `<span class="${j === i ? 'on' : ''}"></span>`).join('')}</p>
         </div>`,
       buttons: [
         { label: 'Überspringen', value: 'skip' },

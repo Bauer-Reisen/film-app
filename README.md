@@ -20,6 +20,7 @@ Tipp: Leg die App gleich beim ersten Öffnen auf deinen Home-Bildschirm. Wie das
 7. **Merkliste:** alles, was du dir gemerkt hast.
 8. **Filme · Serien:** Der Umschalter oben wechselt alle Seiten zwischen Filmen und Serien. Bei Serien gibt es zusätzlich Sender und den Knopf **⏸ Angefangen** („Will ich weiterschauen“ oder „Hat mich verloren“). Was du bei Filmen magst, bringt passende Serien – und umgekehrt.
 9. **Bücher:** dritter Knopf im Umschalter. Autor·innen, Themen und Genres bewerten, Bücher markieren (Gelesen · Mag ich · Mag ich nicht · Merken · Abgebrochen) oder mit **📷 Bücher scannen** gleich das ganze Regal über den Strichcode (ISBN) erfassen – danach fragt die App bei jedem Buch kurz nach. Die Bücherliste lässt sich per WhatsApp an jemanden im Haushalt weitergeben und dort einfügen. Vorschläge mit Begründung – auch passend zu deinen Filmen („Die Vorlage zu …“). Dazu „Überrasch mich“, „Lieblingsbuch“ und die **Leseliste**. Im Profil wählst du, ob du Bücher auf Englisch oder Deutsch liest.
+10. **Spiele (Testversion, standardmäßig aus):** unter „Profil → Bereiche oben“ einschalten oder per Link `…/film-app/?spiele=1`. Drei Startfragen (Plattform, Zeit, Spielweise), Startliste mit 100 Spielen, Vorschläge nur für die eigenen Plattformen, Merkliste, „🎮 Das Spiel dazu“ bei Filmen/Serien/Büchern. Daten von IGDB.com über den Worker (Twitch-Zugang als Secrets `TWITCH_CLIENT_ID`/`TWITCH_CLIENT_SECRET`), Prüfung: `node scripts/check-igdb.js`.
 
 ### Profile mitnehmen
 Profile liegen nur im Browser des jeweiligen Geräts. Unter **Profil → Profil sichern** entsteht eine kleine Datei. Mit **Profil laden** holt man sie auf einem anderen Gerät wieder rein.
@@ -59,6 +60,7 @@ Wichtige Dateien in `docs/js/`:
 | `books.js` | Buchdaten von Open Library (Suche, ISBN, Cover) |
 | `book-recommend.js` | wie Buch-Vorschläge entstehen (Punkte stehen oben in der Datei) |
 | `bridge-books.js` | Brücke Filme/Serien ↔ Bücher (Romanvorlagen, Autor·innen) |
+| `game-pages.js`, `games.js`, `game-*.js`, `seeds-games.js` | Spiele (erst beim Einschalten geladen): Seiten, IGDB-Abfragen, Geschmack, Vorschläge, Merkliste, Startliste und Brücke |
 | `scan.js` | Bücher scannen (Strichcode, ISBN eintippen, Foto) |
 | `book-rate.js` / `book-share.js` | Bewertungsrunde nach dem Scannen / Bücherliste teilen und einfügen |
 | `seeds-books.js` | Startliste Bücher, Autor·innen, Paarliste Film→Buch (`node scripts/make-seeds-books.js`) |

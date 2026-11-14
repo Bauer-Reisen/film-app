@@ -78,9 +78,17 @@ export const newProfile = (name, language = 'de-DE') => ({
   rewatchShownBook: {},
   scanMissing: [], // gescannte ISBN, die Open Library nicht kannte [{ isbn, t }]
   shelf: [], // im Regal, noch nicht gelesen [{ id, n, a, ak, c, y, pg, g, t }] (seit 1.19.0)
+  // Spiele (seit 1.28.0, Testversion): Markierungen an der IGDB-Nummer
+  games: {},
+  passedGame: [],
+  rewatchShown: {},
   pendingBooks: [], // gescannt oder aus einer geteilten Liste, aber noch nicht bewertet [{ id, n, a, ak, c, y, pg, g, t }] (seit 1.18.0)
   // tourDone: kurzer Rundgang schon gesehen; hintDone: Hinweis „bei Vorschlägen weitermachen“ weggetippt (je movie/tv)
-  settings: { groupHorror: false, groupWar: false, groupAge: null, kidsAge: 6, media: 'movie', tourDone: false, hintDone: {}, bookLang: 'en' },
+  settings: {
+    groupHorror: false, groupWar: false, groupAge: null, kidsAge: 6, media: 'movie', tourDone: false, hintDone: {}, bookLang: 'en',
+    // Bereiche oben im Umschalter (Spiele standardmäßig aus); Spiele-Startfragen: leer = egal, gameSetup = schon gefragt
+    areas: { movie: true, tv: true, book: true, game: false }, gamePlatforms: [], gameTime: '', gameModes: [], gameSetup: false,
+  },
 });
 
 // Ältere Profile (vor den Serien) um die neuen Felder ergänzen – nichts wird umgebaut
@@ -88,11 +96,12 @@ export function migrate(p) {
   const base = newProfile(p.name || 'Profil', p.language);
   for (const k of ['movies', 'people', 'companies', 'themes', 'passed', 'surpriseShown', 'surpriseLastGenre',
     'shows', 'networks', 'passedTv', 'surpriseShownTv', 'surpriseLastGenreTv', 'rewatchShownTv',
-    'books', 'authors', 'bookGenres', 'passedBook', 'surpriseShownBook', 'surpriseLastGenreBook', 'rewatchShownBook', 'scanMissing', 'pendingBooks', 'shelf']) {
+    'books', 'authors', 'bookGenres', 'passedBook', 'surpriseShownBook', 'surpriseLastGenreBook', 'rewatchShownBook', 'scanMissing', 'pendingBooks', 'shelf', 'games', 'passedGame', 'rewatchShown']) {
     if (p[k] == null) p[k] = base[k];
   }
   const known = p.settings && 'tourDone' in p.settings;
   p.settings = { ...base.settings, ...(p.settings || {}) };
+  p.settings.areas = { ...base.settings.areas, ...(p.settings.areas || {}) };
   if (!known) p.settings.tourDone = true; // bestehende Profile bekommen den Rundgang nicht
   // Einmalig (1.19.1): In der Bewertungsrunde „Noch nicht gelesen“ landete früher auf der Leseliste – jetzt „im Regal“
   if (!p.settings.shelfMoved) {
@@ -155,8 +164,9 @@ export function profilesForPicker() {
 // status: 'loved' (Lieblingsfilm) | 'seen' | 'liked' | 'disliked' | 'want' | 'noInterest' | null (= löschen)
 // media: 'movie' (Feld movies), 'tv' (Feld shows) oder 'book' (Feld books). Bei Serien zusätzlich 'paused' | 'dropped',
 // bei Büchern 'dropped' (abgebrochen); 'seen' heißt bei Büchern „Gelesen“.
-const MARKS = { movie: 'movies', tv: 'shows', book: 'books' };
+const MARKS = { movie: 'movies', tv: 'shows', book: 'books', game: 'games' };
 const BOOK_META = ['a', 'ak', 'c', 'pg', 'r']; // Autor·in, Autor-Nummer, Cover, Seiten, r = in der Bewertungsrunde schon gefragt (seit 1.16.0)
+const GAME_META = ['c', 'p', 'm', 'cm', 'on']; // Cover, Plattformen, Spielweisen, Couch-/Online-Koop
 export function setMark(profileId, media, movieId, status, meta = {}) {
   const p = getProfile(profileId);
   if (!p) return null;
@@ -165,6 +175,7 @@ export function setMark(profileId, media, movieId, status, meta = {}) {
   if (status) {
     list[movieId] = { s: status, t: Date.now(), g: meta.g ?? old?.g ?? [], l: meta.l ?? old?.l ?? '', y: meta.y ?? old?.y ?? null, n: meta.n ?? old?.n ?? '' }; // n = Titel (für Begründungen)
     if (media === 'book' && p.pendingBooks?.length) p.pendingBooks = p.pendingBooks.filter((x) => x.id !== movieId); // markiert = wartet nicht mehr
+    if (media === 'game') for (const k of GAME_META) { const v = meta[k] ?? old?.[k]; if (v != null && v !== '') list[movieId][k] = v; }
     if (media === 'book') for (const k of BOOK_META) { const v = meta[k] ?? old?.[k]; if (v != null && v !== '') list[movieId][k] = v; }
     p.marksSinceBackup = (p.marksSinceBackup || 0) + 1;
   } else {
@@ -228,14 +239,15 @@ export function setShelf(profileId, entry, on) {
 export function addPassed(profileId, ids, media = 'movie') {
   const p = getProfile(profileId);
   if (!p || !ids.length) return;
-  const key = media === 'tv' ? 'passedTv' : media === 'book' ? 'passedBook' : 'passed';
+  const key = { tv: 'passedTv', book: 'passedBook', game: 'passedGame' }[media] || 'passed';
   p[key] = [...new Set([...(p[key] || []), ...ids])].slice(-3000);
   save();
 }
 
 export const markCount = (p) => Object.keys(p.movies).length + Object.keys(p.shows || {}).length + p.people.length
   + p.companies.length + (p.themes || []).length + (p.networks || []).length
-  + Object.keys(p.books || {}).length + (p.authors || []).length + (p.bookGenres || []).length;
+  + Object.keys(p.books || {}).length + (p.authors || []).length + (p.bookGenres || []).length
+  + Object.keys(p.games || {}).length;
 
 // ---------- Geräte-Einstellungen (Hinweise) ----------
 export const device = () => state.device;

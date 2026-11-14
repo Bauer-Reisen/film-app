@@ -10,7 +10,7 @@ const CARD = [
   'total_rating', 'total_rating_count', 'game_modes', 'game_type', 'franchises', 'collections',
   'multiplayer_modes.platform', 'multiplayer_modes.offlinecoop', 'multiplayer_modes.offlinecoopmax',
   'multiplayer_modes.onlinecoop', 'multiplayer_modes.splitscreen', 'multiplayer_modes.offlinemax',
-  'game_localizations.name', 'game_localizations.region',
+  'game_localizations.name', 'game_localizations.region', 'similar_games',
 ].join(',');
 const DETAIL = `${CARD},summary,similar_games,videos.video_id,videos.name,involved_companies.company.name,involved_companies.developer`;
 

@@ -1,7 +1,7 @@
 // ALLE Einstellungen und Grenzwerte an einer Stelle.
 // Wer etwas nachjustieren will (z. B. Mindestbewertung), ändert es nur hier.
 
-export const VERSION = '1.27.0';
+export const VERSION = '1.28.0';
 
 // Adresse des Cloudflare Workers (nicht geheim – der Schlüssel liegt nur dort).
 export const WORKER_URL = 'https://film-app-tmdb.film-app.workers.dev';
@@ -103,4 +103,20 @@ export const KIDS_TV = {
   without: '80,10768',
   minVote: 7.0, minVotes: 100,
   usFallback: { 0: ['TV-Y', 'TV-G'], 6: ['TV-Y', 'TV-Y7', 'TV-G', 'TV-PG'], 12: ['TV-Y', 'TV-Y7', 'TV-G', 'TV-PG', 'TV-14'] },
+};
+
+// ---------- Spiele (seit 1.28.0, Testversion) ----------
+// Punkte im Maßstab der Film-Punkte (höchstens ~10). ★ = Lieblingsspiel/-titel, ♥ = Mag ich
+export const RECOMMEND_GAME = {
+  minRating: 75, minVotes: 50, indieMinVotes: 15, // Mindestqualität
+  points: {
+    world: { loved: 9, liked: 5 }, // gleiche Welt wie ein Film, eine Serie, ein Buch
+    similar: { loved: 6, liked: 3 }, // IGDB „ähnliches Spiel“
+    genre: { loved: 4, liked: 2 }, genreMax: 2, // gleiches Genre wie gemochte Spiele, höchstens 2×
+    timeOff: -5, // Spielzeit eine Stufe daneben
+    dislikedGenre: -3,
+  },
+  sources: 15, // so viele ★/♥-Spiele fragen nach ähnlichen
+  blockSize: 20, indiesPerBlock: 5,
+  noMassive: [5, 6], // MMO, Battle Royale – nur bei „Online zusammen“/„Gegeneinander“
 };
