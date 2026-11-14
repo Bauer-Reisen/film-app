@@ -1,6 +1,8 @@
 // Cloudflare Worker: reicht Leseanfragen an TMDB weiter und ergänzt dabei den
 // geheimen Schlüssel (Secret TMDB_TOKEN). Der Schlüssel verlässt den Worker nie.
 
+import { isIgdb, handleIgdb } from './igdb.js';
+
 // Nur diese TMDB-Adressen sind erlaubt – alles andere wird abgelehnt.
 // Rechts: wie lange der Browser die Antwort aufheben darf (Sekunden).
 const DAY = 86400;
@@ -37,7 +39,7 @@ const OL_ROUTES = [
 ];
 
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     const origin = request.headers.get('Origin') || '';
     const allowed = (env.ALLOWED_ORIGINS || '').split(',').map((s) => s.trim()).filter(Boolean);
     const cors = allowed.includes(origin)
@@ -56,8 +58,9 @@ export default {
 
     const url = new URL(request.url);
     const olRoute = OL_ROUTES.find(([re]) => re.test(url.pathname));
+    const game = isIgdb(url.pathname);
     const route = olRoute || ROUTES.find(([re]) => re.test(url.pathname));
-    if (!route) return reply(403, { error: 'Adresse nicht erlaubt' });
+    if (!route && !game) return reply(403, { error: 'Adresse nicht erlaubt' });
 
     if (env.RATE_LIMITER) {
       const ip = request.headers.get('CF-Connecting-IP') || 'unbekannt';
@@ -65,6 +68,7 @@ export default {
       if (!success) return reply(429, { error: 'Zu viele Anfragen – kurz warten' }, { 'Retry-After': '10' });
     }
 
+    if (game) return handleIgdb(request, env, ctx, reply);
     if (olRoute) return openLibrary(url, olRoute[1], reply);
 
     if (!env.TMDB_TOKEN) return reply(500, { error: 'Schlüssel fehlt im Worker (Secret TMDB_TOKEN)' });
