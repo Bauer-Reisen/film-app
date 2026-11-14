@@ -1,10 +1,10 @@
 // Seite „Lieblingsfilm“ bzw. „Lieblingsserie“: einer deiner ★-Titel zum Wiedersehen.
 // Bevorzugt Filme, die hier am längsten nicht mehr vorgeschlagen wurden.
-import * as store from './store.js?v=1.28.4';
-import * as tmdb from './tmdb.js?v=1.28.4';
-import { esc, toast } from './ui.js?v=1.28.4';
-import { trailerBtn } from './trailer.js?v=1.28.4';
-import { MEDIA, mediaOf, marksOf, fieldName, tvLength } from './media.js?v=1.28.4';
+import * as store from './store.js?v=1.28.5';
+import * as tmdb from './tmdb.js?v=1.28.5';
+import { esc, toast } from './ui.js?v=1.28.5';
+import { trailerBtn } from './trailer.js?v=1.28.5';
+import { MEDIA, mediaOf, marksOf, fieldName, tvLength } from './media.js?v=1.28.5';
 
 let profile = null;
 let cur = null;       // { profileId, details }

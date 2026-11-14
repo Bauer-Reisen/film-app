@@ -1,14 +1,14 @@
 // Seite „Kinderfilme“ bzw. „Kinderserien“: gute Titel mit passender Altersfreigabe.
 // Es zählt vor allem Bewertung und Beliebtheit – Kinder haben ihren eigenen Geschmack.
-import { KIDS, KIDS_TV } from './config.js?v=1.28.4';
-import * as store from './store.js?v=1.28.4';
-import * as tmdb from './tmdb.js?v=1.28.4';
-import { esc, toast } from './ui.js?v=1.28.4';
-import { markButtons, moreBox } from './cards.js?v=1.28.4';
-import { runtimeSlot } from './runtime.js?v=1.28.4';
-import { trailerBtn } from './trailer.js?v=1.28.4';
-import { ageOk } from './age.js?v=1.28.4';
-import { MEDIA, mediaOf, marksOf, askStarted, stateLabel, STARTED, pressed, pressedExact } from './media.js?v=1.28.4';
+import { KIDS, KIDS_TV } from './config.js?v=1.28.5';
+import * as store from './store.js?v=1.28.5';
+import * as tmdb from './tmdb.js?v=1.28.5';
+import { esc, toast } from './ui.js?v=1.28.5';
+import { markButtons, moreBox } from './cards.js?v=1.28.5';
+import { runtimeSlot } from './runtime.js?v=1.28.5';
+import { trailerBtn } from './trailer.js?v=1.28.5';
+import { ageOk } from './age.js?v=1.28.5';
+import { MEDIA, mediaOf, marksOf, askStarted, stateLabel, STARTED, pressed, pressedExact } from './media.js?v=1.28.5';
 
 // Drei große Knöpfe; „Schon gesehen“ klappt die Bewertung auf
 const MAIN = [['known', '✓', 'Schon gesehen'], ['want', '+', 'Merken'], ['noInterest', '–', 'Nein danke']];
@@ -63,6 +63,7 @@ async function loadPage(mine) {
   for (const { src, d } of ok) {
     for (const m of d.results || []) {
       if (m.adult || !m.poster_path || !m.release_date || m.release_date > today) continue;
+      if (!(m.genre_ids || []).some((g) => K.genres.includes(g))) continue; // nur echte Kinder- und Familientitel
       if (HIDE.has(marks()[m.id]?.s) || SEEN.has(marks()[m.id]?.s)) continue; // Gesehenes gar nicht erst vorschlagen
       const known = pool.get(m.id);
       const score = base(m) + (src === 'studio' ? K.studioBonus : 0);
