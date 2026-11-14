@@ -4,10 +4,9 @@
 
 const WORKER = process.env.WORKER_URL || 'https://film-app-tmdb.film-app.workers.dev';
 const ORIGIN = 'http://localhost:5500';
-const PIN = process.env.APP_PIN || ''; // nur nötig, wenn im Worker eine PIN gesetzt ist
 
 async function api(path, origin = ORIGIN) {
-  const headers = { ...(origin ? { Origin: origin } : {}), ...(PIN ? { 'X-App-Pin': PIN } : {}) };
+  const headers = origin ? { Origin: origin } : {};
   let res = await fetch(`${WORKER}${path}`, { headers });
   for (let i = 0; res.status === 429 && i < 5; i++) {
     await new Promise((r) => setTimeout(r, 3000));
