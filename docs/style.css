@@ -457,6 +457,7 @@ body:has(.toast.show) .to-top, .no-tabs .to-top { display: none; } /* nicht mit 
 
 /* Kinderfilme */
 .ages { display: flex; max-width: 420px; margin: 4px 0 8px; }
+.kids-adv { margin: 4px 0 8px; }
 .ages .seg { flex: 1; min-width: 0; min-height: 52px; font-size: 18px; }
 
 /* Über diese App */

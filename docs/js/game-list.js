@@ -1,9 +1,9 @@
 // Seite „Merkliste“ bei Spielen: alles mit „Merken“, neueste zuerst. Angaben vom Markieren (ohne Abfrage).
-import * as store from './store.js?v=1.28.5';
-import * as games from './games.js?v=1.28.5';
-import { esc, toast } from './ui.js?v=1.28.5';
-import { markButtons } from './cards.js?v=1.28.5';
-import { gameMore } from './game-suggest.js?v=1.28.5';
+import * as store from './store.js?v=1.28.6';
+import * as games from './games.js?v=1.28.6';
+import { esc, toast } from './ui.js?v=1.28.6';
+import { markButtons } from './cards.js?v=1.28.6';
+import { gameMore } from './game-suggest.js?v=1.28.6';
 
 const MAIN = [['known', '✓', 'Gespielt'], ['remove', '–', 'Entfernen']];
 const KNOWN = [['liked', '♥', 'Mag ich'], ['seen', '✓', 'Ganz okay'], ['disliked', '✕', 'Mag ich nicht']];

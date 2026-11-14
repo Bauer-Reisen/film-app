@@ -1,13 +1,13 @@
 // Spiele-Bereich: Seiten-Tabelle (wie BOOK_PAGES), gemeinsame Klicks (Trailer, „Mehr dazu“),
 // Brücke „🎮 Das Spiel dazu“ auf Film-, Serien- und Buchkarten.
 // Wird von app.js erst geladen, wenn Spiele eingeschaltet sind (loadGames).
-import * as games from './games.js?v=1.28.5';
-import * as taste from './game-taste.js?v=1.28.5';
-import * as suggest from './game-suggest.js?v=1.28.5';
-import * as list from './game-list.js?v=1.28.5';
-import { WORLDS } from './seeds-games.js?v=1.28.5';
-import { showVideo } from './trailer.js?v=1.28.5';
-import { esc, toast } from './ui.js?v=1.28.5';
+import * as games from './games.js?v=1.28.6';
+import * as taste from './game-taste.js?v=1.28.6';
+import * as suggest from './game-suggest.js?v=1.28.6';
+import * as list from './game-list.js?v=1.28.6';
+import { WORLDS } from './seeds-games.js?v=1.28.6';
+import { showVideo } from './trailer.js?v=1.28.6';
+import { esc, toast } from './ui.js?v=1.28.6';
 
 export const setupDialog = taste.setupDialog;
 export const openSearch = taste.openSearch;

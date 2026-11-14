@@ -1,16 +1,16 @@
 // Seite „Vorschläge“ bei Büchern: Liste mit Begründung, Rückmeldungen, Rückgängig, „Mehr“,
 // „Heute Lust auf …“ und „Aus welcher Zeit“.
-import * as store from './store.js?v=1.28.5';
-import * as books from './books.js?v=1.28.5';
-import { esc, toast } from './ui.js?v=1.28.5';
-import { THEMES, themeById } from './themes.js?v=1.28.5';
-import { MEDIA, stateLabel } from './media.js?v=1.28.5';
-import { computeBooks, visibleBooks, hasBookSources, BOOK_ERAS, bookEraById, BOOK_POINTS } from './book-recommend.js?v=1.28.5';
-import { coverImg, bookMetaHtml, rememberBooks } from './book-taste.js?v=1.28.5';
-import { movieHint } from './book-extra.js?v=1.28.5';
-import { fillSeriesSlots } from './book-series.js?v=1.28.5';
-import { markButtons, moreBox, filterBox } from './cards.js?v=1.28.5';
-import { BOOK_GENRES, bookGenreById } from './book-genres.js?v=1.28.5';
+import * as store from './store.js?v=1.28.6';
+import * as books from './books.js?v=1.28.6';
+import { esc, toast } from './ui.js?v=1.28.6';
+import { THEMES, themeById } from './themes.js?v=1.28.6';
+import { MEDIA, stateLabel } from './media.js?v=1.28.6';
+import { computeBooks, visibleBooks, hasBookSources, BOOK_ERAS, bookEraById, BOOK_POINTS } from './book-recommend.js?v=1.28.6';
+import { coverImg, bookMetaHtml, rememberBooks } from './book-taste.js?v=1.28.6';
+import { movieHint } from './book-extra.js?v=1.28.6';
+import { fillSeriesSlots } from './book-series.js?v=1.28.6';
+import { markButtons, moreBox, filterBox } from './cards.js?v=1.28.6';
+import { BOOK_GENRES, bookGenreById } from './book-genres.js?v=1.28.6';
 
 // Drei große Knöpfe; „Schon gelesen“ klappt die Bewertung auf
 const MAIN = [['known', '✓', 'Schon gelesen'], ['want', '+', 'Merken'], ['noInterest', '–', 'Nein danke']];

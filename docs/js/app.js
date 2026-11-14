@@ -1,30 +1,30 @@
 // Oberfläche: Seitenwechsel über die Adresse (#/vorschlaege usw.)
-import { VERSION, LANGUAGES } from './config.js?v=1.28.5';
-import * as store from './store.js?v=1.28.5';
-import { saveBackup, readBackup, findSameName, importAsNew, mergeInto } from './backup.js?v=1.28.5';
-import { esc, dialog, toast, formatDate } from './ui.js?v=1.28.5';
-import * as platform from './platform.js?v=1.28.5';
-import * as taste from './taste.js?v=1.28.5';
-import * as suggest from './suggest.js?v=1.28.5';
-import * as watchlist from './watchlist.js?v=1.28.5';
-import * as sneak from './sneak.js?v=1.28.5';
-import * as group from './group.js?v=1.28.5';
-import * as kids from './kids.js?v=1.28.5';
-import * as rewatch from './rewatch.js?v=1.28.5';
-import * as trailer from './trailer.js?v=1.28.5';
-import { handleKnown } from './cards.js?v=1.28.5';
-import { initRuntimes } from './runtime.js?v=1.28.5';
-import { mediaOf, areasOf, AREAS } from './media.js?v=1.28.5';
-import { runTour } from './tour.js?v=1.28.5';
-import { unseen, showNews, LATEST } from './news.js?v=1.28.5';
-import * as bookTaste from './book-taste.js?v=1.28.5';
-import * as bookList from './book-list.js?v=1.28.5';
-import * as scan from './scan.js?v=1.28.5';
-import * as bookRate from './book-rate.js?v=1.28.5';
-import * as bookSuggest from './book-suggest.js?v=1.28.5';
-import * as bookSneak from './book-sneak.js?v=1.28.5';
-import * as bookRewatch from './book-rewatch.js?v=1.28.5';
-import { initBookExtras } from './book-extra.js?v=1.28.5';
+import { VERSION, LANGUAGES } from './config.js?v=1.28.6';
+import * as store from './store.js?v=1.28.6';
+import { saveBackup, readBackup, findSameName, importAsNew, mergeInto } from './backup.js?v=1.28.6';
+import { esc, dialog, toast, formatDate } from './ui.js?v=1.28.6';
+import * as platform from './platform.js?v=1.28.6';
+import * as taste from './taste.js?v=1.28.6';
+import * as suggest from './suggest.js?v=1.28.6';
+import * as watchlist from './watchlist.js?v=1.28.6';
+import * as sneak from './sneak.js?v=1.28.6';
+import * as group from './group.js?v=1.28.6';
+import * as kids from './kids.js?v=1.28.6';
+import * as rewatch from './rewatch.js?v=1.28.6';
+import * as trailer from './trailer.js?v=1.28.6';
+import { handleKnown } from './cards.js?v=1.28.6';
+import { initRuntimes } from './runtime.js?v=1.28.6';
+import { mediaOf, areasOf, AREAS } from './media.js?v=1.28.6';
+import { runTour } from './tour.js?v=1.28.6';
+import { unseen, showNews, LATEST } from './news.js?v=1.28.6';
+import * as bookTaste from './book-taste.js?v=1.28.6';
+import * as bookList from './book-list.js?v=1.28.6';
+import * as scan from './scan.js?v=1.28.6';
+import * as bookRate from './book-rate.js?v=1.28.6';
+import * as bookSuggest from './book-suggest.js?v=1.28.6';
+import * as bookSneak from './book-sneak.js?v=1.28.6';
+import * as bookRewatch from './book-rewatch.js?v=1.28.6';
+import { initBookExtras } from './book-extra.js?v=1.28.6';
 
 const view = document.getElementById('view');
 const APP_URL = 'https://bauer-reisen.github.io/film-app/';
@@ -51,7 +51,7 @@ const gamesOn = (p) => areasOf(p).includes('game');
 let gamesMod = null;
 let gamesLoading = null;
 function loadGames() {
-  gamesLoading ||= import('./game-pages.js?v=1.28.5').then((m) => { gamesMod = m; return m; }).catch((err) => { gamesLoading = null; throw err; });
+  gamesLoading ||= import('./game-pages.js?v=1.28.6').then((m) => { gamesMod = m; return m; }).catch((err) => { gamesLoading = null; throw err; });
   return gamesLoading;
 }
 

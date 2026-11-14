@@ -1,14 +1,14 @@
 // Seite „Kinderfilme“ bzw. „Kinderserien“: gute Titel mit passender Altersfreigabe.
 // Es zählt vor allem Bewertung und Beliebtheit – Kinder haben ihren eigenen Geschmack.
-import { KIDS, KIDS_TV } from './config.js?v=1.28.5';
-import * as store from './store.js?v=1.28.5';
-import * as tmdb from './tmdb.js?v=1.28.5';
-import { esc, toast } from './ui.js?v=1.28.5';
-import { markButtons, moreBox } from './cards.js?v=1.28.5';
-import { runtimeSlot } from './runtime.js?v=1.28.5';
-import { trailerBtn } from './trailer.js?v=1.28.5';
-import { ageOk } from './age.js?v=1.28.5';
-import { MEDIA, mediaOf, marksOf, askStarted, stateLabel, STARTED, pressed, pressedExact } from './media.js?v=1.28.5';
+import { KIDS, KIDS_TV } from './config.js?v=1.28.6';
+import * as store from './store.js?v=1.28.6';
+import * as tmdb from './tmdb.js?v=1.28.6';
+import { esc, toast } from './ui.js?v=1.28.6';
+import { markButtons, moreBox } from './cards.js?v=1.28.6';
+import { runtimeSlot } from './runtime.js?v=1.28.6';
+import { trailerBtn } from './trailer.js?v=1.28.6';
+import { ageOk } from './age.js?v=1.28.6';
+import { MEDIA, mediaOf, marksOf, askStarted, stateLabel, STARTED, pressed, pressedExact } from './media.js?v=1.28.6';
 
 // Drei große Knöpfe; „Schon gesehen“ klappt die Bewertung auf
 const MAIN = [['known', '✓', 'Schon gesehen'], ['want', '+', 'Merken'], ['noInterest', '–', 'Nein danke']];
@@ -32,6 +32,10 @@ function setMedia(p) { md = mediaOf(p); K = md === 'tv' ? { ...KIDS, ...KIDS_TV 
 
 const box = () => document.getElementById('kids-list');
 const age = () => profile.settings?.kidsAge ?? 6;
+// Optional: auch Abenteuerfilme (z. B. Harry Potter), die bei TMDB nicht als Familienfilm gelten – nur bei Filmen
+const ADVENTURE = 12;
+const withAdventure = () => md === 'movie' && !!profile.settings?.kidsAdventure;
+const genres = () => (withAdventure() ? [...K.genres, ADVENTURE] : K.genres);
 
 // Punkte: Note und Beliebtheit, kleiner Vorrang für eigene Lieblingsstudios
 const base = (m) => (m.vote_average || 0) + Math.log10(Math.max(m.vote_count || 1, 1)) * 0.6;
@@ -42,7 +46,7 @@ async function loadPage(mine) {
   const lang = profile.language;
   const today = new Date().toISOString().slice(0, 10);
   const c = MEDIA[md];
-  const common = { language: lang, with_genres: K.genres.join('|'), without_genres: md === 'tv' ? `${K.without},${c.without}` : '27,53,10752', 'vote_average.gte': K.minVote, 'vote_count.gte': K.minVotes, sort_by: 'vote_count.desc', page };
+  const common = { language: lang, with_genres: genres().join('|'), without_genres: md === 'tv' ? `${K.without},${c.without}` : '27,53,10752', 'vote_average.gte': K.minVote, 'vote_count.gte': K.minVotes, sort_by: 'vote_count.desc', page };
   // Lieblingsstudios bzw. bei Serien Lieblingssender bekommen einen kleinen Vorrang
   const studios = md === 'tv' ? (profile.networks || []).map((n) => n.id) : profile.companies.map((x) => [x.id, ...(x.also || [])]).flat();
   const jobs = [
@@ -63,7 +67,7 @@ async function loadPage(mine) {
   for (const { src, d } of ok) {
     for (const m of d.results || []) {
       if (m.adult || !m.poster_path || !m.release_date || m.release_date > today) continue;
-      if (!(m.genre_ids || []).some((g) => K.genres.includes(g))) continue; // nur echte Kinder- und Familientitel
+      if (!(m.genre_ids || []).some((g) => genres().includes(g))) continue; // nur echte Kinder- und Familientitel
       if (HIDE.has(marks()[m.id]?.s) || SEEN.has(marks()[m.id]?.s)) continue; // Gesehenes gar nicht erst vorschlagen
       const known = pool.get(m.id);
       const score = base(m) + (src === 'studio' ? K.studioBonus : 0);
@@ -100,6 +104,7 @@ export function render(p) {
     <div class="segmented ages" role="group" aria-label="Altersfreigabe">
       ${K.ages.map((x) => `<button type="button" class="seg" data-kid-age="${x}" aria-pressed="${x === a}">ab ${x}</button>`).join('')}
     </div>
+    ${md === 'movie' ? `<label class="radio kids-adv"><input type="checkbox" data-kid-adv${withAdventure() ? ' checked' : ''}> <span>Auch Abenteuerfilme <span class="muted small">(z. B. Harry Potter – nicht extra für Kinder gemacht)</span></span></label>` : ''}
     <p class="muted small">Nach deutscher FSK, sonst nach US-Freigabe. Vor allem gut bewertete und beliebte ${W().many}.</p>
     <details class="flimmo-info">
       <summary>Was ist FLIMMO? <span aria-hidden="true">▾</span></summary>
@@ -113,7 +118,7 @@ export async function mount(p) {
   profile = p;
   setMedia(p);
   const mine = ++run;
-  const key = `${p.id}:${md}:${age()}`;
+  const key = `${p.id}:${md}:${age()}:${withAdventure()}`;
   if (forAge !== key) { pool = new Map(); page = 0; forAge = key; }
   shownCount = 0;
   justMarked = new Set();
@@ -204,6 +209,14 @@ async function more(btn) {
 }
 
 export function handleClick(e) {
+  const adv = e.target.closest('[data-kid-adv]');
+  if (adv) {
+    store.updateProfile(profile.id, { settings: { ...(profile.settings || {}), kidsAdventure: adv.checked } });
+    profile = store.getProfile(profile.id);
+    box().innerHTML = `<p class="muted center">Suche ${W().kids} …</p>`;
+    mount(profile);
+    return true;
+  }
   const a = e.target.closest('[data-kid-age]');
   if (a) {
     store.updateProfile(profile.id, { settings: { ...(profile.settings || {}), kidsAge: Number(a.dataset.kidAge) } });

@@ -1,11 +1,11 @@
 // Spiele: Vorschläge berechnen (harte Filter, Punkte, Indie-Mischung) und die Seite „Vorschläge“.
-import * as store from './store.js?v=1.28.5';
-import * as games from './games.js?v=1.28.5';
-import { esc, toast } from './ui.js?v=1.28.5';
-import { RECOMMEND_GAME as R } from './config.js?v=1.28.5';
-import { GENRES, INDIE, MODES } from './game-data.js?v=1.28.5';
-import { WORLDS } from './seeds-games.js?v=1.28.5';
-import { markButtons, moreBox, filterBox } from './cards.js?v=1.28.5';
+import * as store from './store.js?v=1.28.6';
+import * as games from './games.js?v=1.28.6';
+import { esc, toast } from './ui.js?v=1.28.6';
+import { RECOMMEND_GAME as R } from './config.js?v=1.28.6';
+import { GENRES, INDIE, MODES } from './game-data.js?v=1.28.6';
+import { WORLDS } from './seeds-games.js?v=1.28.6';
+import { markButtons, moreBox, filterBox } from './cards.js?v=1.28.6';
 
 const MAIN = [['known', '✓', 'Schon gespielt'], ['want', '+', 'Merken'], ['noInterest', '–', 'Nein danke']];
 const KNOWN = [['liked', '♥', 'Mag ich'], ['seen', '✓', 'Ganz okay'], ['disliked', '✕', 'Mag ich nicht']];
