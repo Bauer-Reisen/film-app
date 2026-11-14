@@ -1,8 +1,8 @@
 // Wer spielt mit? Kleine Zeile auf Film- und Serienkarten (Vorschläge, Merkliste).
 // Jeder Name ist antippbar und öffnet die Personen-Seite unter „Geschmack“ (app.js → taste.openPerson).
-import * as tmdb from './tmdb.js?v=1.28.3';
-import { esc } from './ui.js?v=1.28.3';
-import { MEDIA } from './media.js?v=1.28.3';
+import * as tmdb from './tmdb.js?v=1.28.4';
+import { esc } from './ui.js?v=1.28.4';
+import { MEDIA } from './media.js?v=1.28.4';
 
 // Link auf die Personen-Seite; x = { id, n, r: 'actor' | 'director', p: Bildpfad }
 export const personLink = (x, cls = 'author-link', inner = esc(x.n), extra = '') =>

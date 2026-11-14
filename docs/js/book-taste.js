@@ -1,16 +1,16 @@
 // Seite „Geschmack“ bei Büchern: Autor·innen, Themen und Genres in Stufen, Bücher markieren, Suche (auch ISBN), Scannen.
-import * as store from './store.js?v=1.28.3';
-import * as books from './books.js?v=1.28.3';
-import { esc, toast } from './ui.js?v=1.28.3';
-import { SEED_BOOKS, SEED_AUTHORS } from './seeds-books.js?v=1.28.3';
-import { THEMES, themeById } from './themes.js?v=1.28.3';
-import { BOOK_GENRES, bookGenreById } from './book-genres.js?v=1.28.3';
-import { MEDIA, stateLabel, pressed } from './media.js?v=1.28.3';
-import { TASTE_HINT_AFTER } from './config.js?v=1.28.3';
-import { authorsFromFilms } from './bridge-books.js?v=1.28.3';
-import { unrated } from './book-rate.js?v=1.28.3';
-import { requestPaste } from './book-share.js?v=1.28.3';
-import { seriesBooks, fillSeriesSlots as seriesSlots } from './book-series.js?v=1.28.3';
+import * as store from './store.js?v=1.28.4';
+import * as books from './books.js?v=1.28.4';
+import { esc, toast } from './ui.js?v=1.28.4';
+import { SEED_BOOKS, SEED_AUTHORS } from './seeds-books.js?v=1.28.4';
+import { THEMES, themeById } from './themes.js?v=1.28.4';
+import { BOOK_GENRES, bookGenreById } from './book-genres.js?v=1.28.4';
+import { MEDIA, stateLabel, pressed } from './media.js?v=1.28.4';
+import { TASTE_HINT_AFTER } from './config.js?v=1.28.4';
+import { authorsFromFilms } from './bridge-books.js?v=1.28.4';
+import { unrated } from './book-rate.js?v=1.28.4';
+import { requestPaste } from './book-share.js?v=1.28.4';
+import { seriesBooks, fillSeriesSlots as seriesSlots } from './book-series.js?v=1.28.4';
 
 const STEP = 20;
 const SCAN = true; // Knopf „Bücher scannen“

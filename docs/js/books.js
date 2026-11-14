@@ -1,9 +1,9 @@
 // Buchdaten von Open Library (frei, ohne Schlüssel).
 // Erst über unseren Worker (/ol/…). Kennt der Worker die Adressen noch nicht, direkt bei Open Library
 // (die Seite erlaubt das ausdrücklich). Merkt sich Antworten für die Sitzung, höchstens 4 Anfragen gleichzeitig.
-import { WORKER_URL } from './config.js?v=1.28.3';
-import { SEED_BOOKS } from './seeds-books.js?v=1.28.3';
-import { genresOf } from './book-genres.js?v=1.28.3';
+import { WORKER_URL } from './config.js?v=1.28.4';
+import { SEED_BOOKS } from './seeds-books.js?v=1.28.4';
+import { genresOf } from './book-genres.js?v=1.28.4';
 
 const OL = 'https://openlibrary.org';
 const COVERS = 'https://covers.openlibrary.org';

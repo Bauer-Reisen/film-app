@@ -1,11 +1,11 @@
 // Seite „Geschmack“ bei Spielen: 3 Startfragen, Startliste (ca. 100), Suche, „Weitere laden“.
 // Knöpfe: Gespielt · Mag ich · Mag ich nicht · Merken; Tipp aufs Cover = ★ Lieblingsspiel.
-import * as store from './store.js?v=1.28.3';
-import * as games from './games.js?v=1.28.3';
-import { esc, dialog, toast } from './ui.js?v=1.28.3';
-import { pressed } from './media.js?v=1.28.3';
-import { PLATFORMS, TIMES } from './game-data.js?v=1.28.3';
-import { SEED_GAMES } from './seeds-games.js?v=1.28.3';
+import * as store from './store.js?v=1.28.4';
+import * as games from './games.js?v=1.28.4';
+import { esc, dialog, toast } from './ui.js?v=1.28.4';
+import { pressed } from './media.js?v=1.28.4';
+import { PLATFORMS, TIMES } from './game-data.js?v=1.28.4';
+import { SEED_GAMES } from './seeds-games.js?v=1.28.4';
 
 const GAME_MARKS = [['seen', '✓', 'Gespielt'], ['liked', '♥', 'Mag ich'], ['disliked', '✕', 'Mag ich nicht'], ['want', '+', 'Merken']];
 const W = games.W;

@@ -1,14 +1,14 @@
 // Seite „Kinderfilme“ bzw. „Kinderserien“: gute Titel mit passender Altersfreigabe.
 // Es zählt vor allem Bewertung und Beliebtheit – Kinder haben ihren eigenen Geschmack.
-import { KIDS, KIDS_TV } from './config.js?v=1.28.3';
-import * as store from './store.js?v=1.28.3';
-import * as tmdb from './tmdb.js?v=1.28.3';
-import { esc, toast } from './ui.js?v=1.28.3';
-import { markButtons, moreBox } from './cards.js?v=1.28.3';
-import { runtimeSlot } from './runtime.js?v=1.28.3';
-import { trailerBtn } from './trailer.js?v=1.28.3';
-import { ageOk } from './age.js?v=1.28.3';
-import { MEDIA, mediaOf, marksOf, askStarted, stateLabel, STARTED, pressed, pressedExact } from './media.js?v=1.28.3';
+import { KIDS, KIDS_TV } from './config.js?v=1.28.4';
+import * as store from './store.js?v=1.28.4';
+import * as tmdb from './tmdb.js?v=1.28.4';
+import { esc, toast } from './ui.js?v=1.28.4';
+import { markButtons, moreBox } from './cards.js?v=1.28.4';
+import { runtimeSlot } from './runtime.js?v=1.28.4';
+import { trailerBtn } from './trailer.js?v=1.28.4';
+import { ageOk } from './age.js?v=1.28.4';
+import { MEDIA, mediaOf, marksOf, askStarted, stateLabel, STARTED, pressed, pressedExact } from './media.js?v=1.28.4';
 
 // Drei große Knöpfe; „Schon gesehen“ klappt die Bewertung auf
 const MAIN = [['known', '✓', 'Schon gesehen'], ['want', '+', 'Merken'], ['noInterest', '–', 'Nein danke']];
@@ -21,6 +21,7 @@ let profile = null;
 let page = 0;
 let shownCount = 0;
 let pool = new Map(); // id → { movie, score, why }
+let justMarked = new Set(); // hier gerade als gesehen markiert – Karte bleibt stehen, bis man die Seite verlässt
 let run = 0;
 let forAge = null;
 let md = 'movie';
@@ -62,7 +63,7 @@ async function loadPage(mine) {
   for (const { src, d } of ok) {
     for (const m of d.results || []) {
       if (m.adult || !m.poster_path || !m.release_date || m.release_date > today) continue;
-      if (HIDE.has(marks()[m.id]?.s)) continue;
+      if (HIDE.has(marks()[m.id]?.s) || SEEN.has(marks()[m.id]?.s)) continue; // Gesehenes gar nicht erst vorschlagen
       const known = pool.get(m.id);
       const score = base(m) + (src === 'studio' ? K.studioBonus : 0);
       if (known) { if (src === 'studio' && !known.studio) { known.score += K.studioBonus; known.studio = true; } continue; }
@@ -81,11 +82,11 @@ async function loadPage(mine) {
   return added > 0 || (ok[0].d.total_pages || 1) > page;
 }
 
-// Ungesehene zuerst (nach Punkten), dann gesehene mit Hinweis
+// Nur Ungesehene, nach Punkten (eben hier markierte bleiben an ihrem Platz stehen)
 function ordered() {
-  const list = [...pool.values()].filter((x) => !HIDE.has(marks()[x.movie.id]?.s));
-  const isSeen = (x) => SEEN.has(marks()[x.movie.id]?.s);
-  return list.sort((a, b) => isSeen(a) - isSeen(b) || b.score - a.score);
+  return [...pool.values()]
+    .filter((x) => { const st = marks()[x.movie.id]?.s; return !HIDE.has(st) && (!SEEN.has(st) || justMarked.has(x.movie.id)); })
+    .sort((a, b) => b.score - a.score);
 }
 
 export function render(p) {
@@ -114,6 +115,7 @@ export async function mount(p) {
   const key = `${p.id}:${md}:${age()}`;
   if (forAge !== key) { pool = new Map(); page = 0; forAge = key; }
   shownCount = 0;
+  justMarked = new Set();
   try {
     while (pool.size < 20 && page < 5) { if (!(await loadPage(mine))) break; if (mine !== run) return; }
   } catch (err) {
@@ -177,6 +179,7 @@ async function feedback(cardEl, key) {
   else if (pressedExact(old, key)) now = null;
   else if (key === 'started') { now = await askStarted(m.title); if (!now) return; }
   else now = key;
+  if (SEEN.has(now)) justMarked.add(id);
   const prev = store.setMark(profile.id, mine, id, now, { g: m.genre_ids, l: m.original_language, y: tmdb.year(m.release_date), n: m.title });
   if (HIDE.has(now)) {
     cardEl.hidden = true;
