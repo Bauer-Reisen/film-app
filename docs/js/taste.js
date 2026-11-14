@@ -1,14 +1,14 @@
 // Seite „Geschmack“: Personen, Studios/Sender und Themen in Stufen wählen, Filme oder Serien markieren, Suche.
-import * as store from './store.js?v=1.29.1';
-import * as tmdb from './tmdb.js?v=1.29.1';
-import { esc, toast } from './ui.js?v=1.29.1';
-import { runtimeSlot, titleText } from './runtime.js?v=1.29.1';
-import { SEED_MOVIES, SEED_PEOPLE, SEED_STUDIOS } from './seeds.js?v=1.29.1';
-import { SEED_SHOWS, SEED_TV_PEOPLE, SEED_NETWORKS } from './seeds-tv.js?v=1.29.1';
-import { THEMES, themeById, themeQuery } from './themes.js?v=1.29.1';
-import { MEDIA, mediaOf, marksOf, excludedGenre, askStarted, stateLabel, STARTED, creditsOf, pressed } from './media.js?v=1.29.1';
-import { TASTE_HINT_AFTER } from './config.js?v=1.29.1';
-import { personLink } from './people.js?v=1.29.1';
+import * as store from './store.js?v=1.29.2';
+import * as tmdb from './tmdb.js?v=1.29.2';
+import { esc, toast } from './ui.js?v=1.29.2';
+import { runtimeSlot, titleText } from './runtime.js?v=1.29.2';
+import { SEED_MOVIES, SEED_PEOPLE, SEED_STUDIOS } from './seeds.js?v=1.29.2';
+import { SEED_SHOWS, SEED_TV_PEOPLE, SEED_NETWORKS } from './seeds-tv.js?v=1.29.2';
+import { THEMES, themeById, themeQuery } from './themes.js?v=1.29.2';
+import { MEDIA, mediaOf, marksOf, excludedGenre, askStarted, stateLabel, STARTED, creditsOf, pressed } from './media.js?v=1.29.2';
+import { TASTE_HINT_AFTER } from './config.js?v=1.29.2';
+import { personLink } from './people.js?v=1.29.2';
 
 const STEP = 20;
 const MARKS = [

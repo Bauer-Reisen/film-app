@@ -1,6 +1,6 @@
 // Kurzer Rundgang für neue Profile: sechs Karten nacheinander, jederzeit überspringbar.
 // Danach (oder beim Überspringen) gilt er als gesehen; unter „Profil“ lässt er sich nochmal ansehen.
-import { dialog, esc } from './ui.js?v=1.29.1';
+import { dialog, esc } from './ui.js?v=1.29.2';
 
 const STEPS = [
   {
@@ -13,7 +13,7 @@ const STEPS = [
   },
   {
     icon: '☆', title: 'Vorschläge',
-    text: 'Hier kommen Titel, die zu dir passen – jeweils mit einem Satz, warum. Pro Titel drei Knöpfe: <strong>✓ Schon gesehen</strong> (danach sagst du, wie du ihn fandst), <strong>+ Merken</strong> und <strong>– Nein danke</strong>. Unter <strong>Mehr dazu</strong> stehen Inhalt, Darsteller·innen und Links – Namen kannst du antippen.',
+    text: 'Hier kommen Titel, die zu dir passen – jeweils mit einem Satz, warum. Pro Titel drei Knöpfe: <strong>✓ Schon gesehen</strong> (danach sagst du, wie du ihn fandst), <strong>+ Merken</strong> und <strong>– Nein danke</strong>. Unter <strong>Mehr dazu</strong> stehen Inhalt, Darsteller·innen und Links – Namen kannst du antippen. Kommt bald ein neuer Film deiner Lieblinge ins Kino (oder ein neuer Teil deiner Lieblingsreihe), steht er oben in einem kleinen Kasten.',
   },
   {
     icon: '🍿', title: 'Noch mehr',

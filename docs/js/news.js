@@ -1,9 +1,17 @@
 // „Was ist neu?“ – nach einem Update einmal pro Profil, wenn man die App wieder öffnet.
 // Neue Profile bekommen stattdessen den Rundgang (tour.js) und sehen die alten Neuigkeiten nicht.
 // Neueste zuerst; nur Änderungen, die man sieht und kennen sollte.
-import { dialog } from './ui.js?v=1.29.1';
+import { dialog } from './ui.js?v=1.29.2';
 
 export const NEWS = [
+  {
+    v: '1.29.2', title: 'Demnächst von deinen Lieblingen',
+    items: [
+      'Bei den Film-Vorschlägen steht oben ein kleiner Kasten, wenn es Neues gibt: kommende Filme deiner Lieblingspersonen und -studios und <strong>neue Teile deiner Lieblings-Filmreihen</strong> – mit Kinostart. Gemerkte stehen mit Termin auf der Merkliste.',
+      '<strong>Kinderfilme</strong> zeigen nur noch echte Kinder- und Familienfilme, ohne schon Gesehene. Abenteuerfilme wie Harry Potter holst du per Haken dazu.',
+      'Im Suchfeld bei „Geschmack“ löscht das <strong>✕</strong> alles Eingetippte.',
+    ],
+  },
   {
     v: '1.26.0', title: 'Nach Genre filtern',
     items: ['Bei den Vorschlägen kannst du unter <strong>Filter &amp; mehr</strong> jetzt auch ein <strong>Genre</strong> wählen – z. B. nur Krimis oder nur Komödien. Das geht auch zusammen mit Thema und Zeit.'],

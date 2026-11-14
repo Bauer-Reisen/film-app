@@ -2,6 +2,8 @@
 
 Für eine neue Sitzung: zuerst diese Datei lesen, dann bei Bedarf [PLAN.md](PLAN.md) (Abschnitt 6 = Bauschritte).
 
+**Bei jeder neuen sichtbaren Funktion:** den Rundgang (`docs/js/tour.js`) prüfen und anpassen und einen Eintrag in „Was ist neu?“ (`docs/js/news.js`, neueste oben, `v` = Version des Updates) ergänzen. Neue Profile sehen nur den Rundgang, bestehende nur „Was ist neu?“.
+
 Die Nutzerin kann nicht programmieren. Antworte auf Deutsch, knapp und ohne Fachjargon. Claude legt keine Konten an und gibt keine Passwörter oder Schlüssel ein.
 
 ## Bauschritte
@@ -138,6 +140,7 @@ Die Nutzerin kann nicht programmieren. Antworte auf Deutsch, knapp und ohne Fach
   - **Lieblingsserie:** zieht aus den ★-Serien (`rewatchShownTv`).
   - Geprüft (375 und 1280 px): 20× Überrasch mich = 20 verschiedene Serien; Angefangen → Weiterschauen gespeichert; Gruppenabend ab 12 nur Serien bis 12, Folgen ≤ 60 Min.; Kinderserien ab 0 und ab 6 ohne zu hohe Freigabe; Lieblingsserie wechselt zwischen den ★-Serien. Filmseiten danach unverändert. Keine Konsolenfehler. Testprofil gelöscht.
   - Bekannt: Die Folgenlänge kommt bei manchen Serien von der letzten Folge und kann abweichen (z. B. Friends „ca. 48 Min.“ wegen Doppelfolge zum Schluss).
+- [x] **Rundgang und „Was ist neu?“ nachgezogen** (14.11.2026, Version 1.29.2), Frage der Nutzerin: Rundgang erwähnt jetzt den Kasten „Demnächst“; „Was ist neu?“ hat einen Eintrag für Demnächst, Kinderfilme und das ✕. Regel oben in dieser Datei ergänzt, damit künftige Sitzungen beides mitpflegen.
 - [x] **Suchfeld mit ✕ zum Leeren** (14.11.2026, Version 1.29.1), Wunsch der Nutzerin: Unter „Geschmack“ (Filme, Serien, Bücher, Spiele) steht rechts im Suchfeld ein ✕, sobald etwas eingetippt ist. Es löscht alles, die Liste ist wieder wie ohne Suche, der Cursor bleibt im Feld. Das kleine Browser-Kreuzchen ist ausgeblendet. Geprüft bei 375 px.
 - [x] **Demnächst von deinen Lieblingen** (14.11.2026, Version 1.29.0), Wunsch der Nutzerin (abgespeckte Fassung statt eigener „Bald im Kino“-Seite): kleiner Kasten oben bei den Film-Vorschlägen, nur sichtbar, wenn es etwas gibt, höchstens 3 Einträge, nur ohne aktiven Filter. Quellen: neue Filme der Lieblingspersonen (echte Regie/Hauptrolle), der Lieblingsstudios (je 2 bekannteste) und neue Teile von ★/♥-Filmreihen (die 40 bekanntesten kommenden Filme, Reihe über `collection/…`). Zeitraum 12 Monate (`UPCOMING` in config.js). Knöpfe: + Merken, Trailer, ✕ (= Nein danke). Datum: deutscher Kinostart, sonst digital, sonst allgemein. Merkliste zeigt bei noch nicht erschienenen Filmen „🎬 Kinostart …“. Worker: neue Adresse `/3/collection/{id}` (hochgeladen). Geprüft bei 375 px: Dune ★ → „Dune: Part Three – Kinostart 17.12.2026“, Avengers ♥ → „Avengers: Doomsday“, Chalamet → „Nicht allein“. Bewusst nicht gebaut: allgemeine „Bald im Kino“-Liste, Hinweis beim Öffnen, „Wo läuft er?“, Serien-Staffeln.
 - [x] **Kinderfilme: Schalter „Auch Abenteuerfilme“** (14.11.2026, Version 1.28.6), Wunsch der Nutzerin: holt Abenteuerfilme ohne Familien-Genre wieder dazu (z. B. Harry Potter, Fluch der Karibik bei ab 12). Wird im Profil gespeichert (`settings.kidsAdventure`), nur bei Filmen. Geprüft bei 375 px.
