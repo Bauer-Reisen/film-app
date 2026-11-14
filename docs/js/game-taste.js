@@ -1,11 +1,11 @@
 // Seite „Geschmack“ bei Spielen: 3 Startfragen, Startliste (ca. 100), Suche, „Weitere laden“.
 // Knöpfe: Gespielt · Mag ich · Mag ich nicht · Merken; Tipp aufs Cover = ★ Lieblingsspiel.
-import * as store from './store.js?v=1.29.0';
-import * as games from './games.js?v=1.29.0';
-import { esc, dialog, toast } from './ui.js?v=1.29.0';
-import { pressed } from './media.js?v=1.29.0';
-import { PLATFORMS, TIMES } from './game-data.js?v=1.29.0';
-import { SEED_GAMES } from './seeds-games.js?v=1.29.0';
+import * as store from './store.js?v=1.29.1';
+import * as games from './games.js?v=1.29.1';
+import { esc, dialog, toast } from './ui.js?v=1.29.1';
+import { pressed } from './media.js?v=1.29.1';
+import { PLATFORMS, TIMES } from './game-data.js?v=1.29.1';
+import { SEED_GAMES } from './seeds-games.js?v=1.29.1';
 
 const GAME_MARKS = [['seen', '✓', 'Gespielt'], ['liked', '♥', 'Mag ich'], ['disliked', '✕', 'Mag ich nicht'], ['want', '+', 'Merken']];
 const W = games.W;
@@ -62,6 +62,7 @@ export function render(p) {
       <span class="sr-only">Suche</span>
       <input id="taste-search" type="search" inputmode="search" enterkeyhint="search" autocomplete="off"
         placeholder="Spiel suchen" value="${esc(ui.query)}">
+      <button type="button" class="search-clear" data-clear-search aria-label="Suche leeren">✕</button>
     </label>
     <div id="taste-body" aria-live="polite"></div>
     ${games.igdbLink}`;

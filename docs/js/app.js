@@ -1,30 +1,30 @@
 // Oberfläche: Seitenwechsel über die Adresse (#/vorschlaege usw.)
-import { VERSION, LANGUAGES } from './config.js?v=1.29.0';
-import * as store from './store.js?v=1.29.0';
-import { saveBackup, readBackup, findSameName, importAsNew, mergeInto } from './backup.js?v=1.29.0';
-import { esc, dialog, toast, formatDate } from './ui.js?v=1.29.0';
-import * as platform from './platform.js?v=1.29.0';
-import * as taste from './taste.js?v=1.29.0';
-import * as suggest from './suggest.js?v=1.29.0';
-import * as watchlist from './watchlist.js?v=1.29.0';
-import * as sneak from './sneak.js?v=1.29.0';
-import * as group from './group.js?v=1.29.0';
-import * as kids from './kids.js?v=1.29.0';
-import * as rewatch from './rewatch.js?v=1.29.0';
-import * as trailer from './trailer.js?v=1.29.0';
-import { handleKnown } from './cards.js?v=1.29.0';
-import { initRuntimes } from './runtime.js?v=1.29.0';
-import { mediaOf, areasOf, AREAS } from './media.js?v=1.29.0';
-import { runTour } from './tour.js?v=1.29.0';
-import { unseen, showNews, LATEST } from './news.js?v=1.29.0';
-import * as bookTaste from './book-taste.js?v=1.29.0';
-import * as bookList from './book-list.js?v=1.29.0';
-import * as scan from './scan.js?v=1.29.0';
-import * as bookRate from './book-rate.js?v=1.29.0';
-import * as bookSuggest from './book-suggest.js?v=1.29.0';
-import * as bookSneak from './book-sneak.js?v=1.29.0';
-import * as bookRewatch from './book-rewatch.js?v=1.29.0';
-import { initBookExtras } from './book-extra.js?v=1.29.0';
+import { VERSION, LANGUAGES } from './config.js?v=1.29.1';
+import * as store from './store.js?v=1.29.1';
+import { saveBackup, readBackup, findSameName, importAsNew, mergeInto } from './backup.js?v=1.29.1';
+import { esc, dialog, toast, formatDate } from './ui.js?v=1.29.1';
+import * as platform from './platform.js?v=1.29.1';
+import * as taste from './taste.js?v=1.29.1';
+import * as suggest from './suggest.js?v=1.29.1';
+import * as watchlist from './watchlist.js?v=1.29.1';
+import * as sneak from './sneak.js?v=1.29.1';
+import * as group from './group.js?v=1.29.1';
+import * as kids from './kids.js?v=1.29.1';
+import * as rewatch from './rewatch.js?v=1.29.1';
+import * as trailer from './trailer.js?v=1.29.1';
+import { handleKnown } from './cards.js?v=1.29.1';
+import { initRuntimes } from './runtime.js?v=1.29.1';
+import { mediaOf, areasOf, AREAS } from './media.js?v=1.29.1';
+import { runTour } from './tour.js?v=1.29.1';
+import { unseen, showNews, LATEST } from './news.js?v=1.29.1';
+import * as bookTaste from './book-taste.js?v=1.29.1';
+import * as bookList from './book-list.js?v=1.29.1';
+import * as scan from './scan.js?v=1.29.1';
+import * as bookRate from './book-rate.js?v=1.29.1';
+import * as bookSuggest from './book-suggest.js?v=1.29.1';
+import * as bookSneak from './book-sneak.js?v=1.29.1';
+import * as bookRewatch from './book-rewatch.js?v=1.29.1';
+import { initBookExtras } from './book-extra.js?v=1.29.1';
 
 const view = document.getElementById('view');
 const APP_URL = 'https://bauer-reisen.github.io/film-app/';
@@ -51,7 +51,7 @@ const gamesOn = (p) => areasOf(p).includes('game');
 let gamesMod = null;
 let gamesLoading = null;
 function loadGames() {
-  gamesLoading ||= import('./game-pages.js?v=1.29.0').then((m) => { gamesMod = m; return m; }).catch((err) => { gamesLoading = null; throw err; });
+  gamesLoading ||= import('./game-pages.js?v=1.29.1').then((m) => { gamesMod = m; return m; }).catch((err) => { gamesLoading = null; throw err; });
   return gamesLoading;
 }
 
@@ -482,6 +482,16 @@ view.addEventListener('click', async (e) => {
     e.preventDefault();
     bookTaste.openSeries(so.dataset.seriesopen, so.dataset.seriesname || '', so.dataset.seriesback || '');
     if (location.hash === '#/geschmack') show(); else location.hash = '#/geschmack';
+    return;
+  }
+  // ✕ im Suchfeld: alles löschen, Liste wie ohne Suche
+  const clr = e.target.closest('[data-clear-search]');
+  if (clr) {
+    e.preventDefault();
+    const input = clr.parentElement.querySelector('input');
+    input.value = '';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    input.focus();
     return;
   }
   if (current() && trailer.handleClick(e, current().language)) return;

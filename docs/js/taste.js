@@ -1,14 +1,14 @@
 // Seite „Geschmack“: Personen, Studios/Sender und Themen in Stufen wählen, Filme oder Serien markieren, Suche.
-import * as store from './store.js?v=1.29.0';
-import * as tmdb from './tmdb.js?v=1.29.0';
-import { esc, toast } from './ui.js?v=1.29.0';
-import { runtimeSlot, titleText } from './runtime.js?v=1.29.0';
-import { SEED_MOVIES, SEED_PEOPLE, SEED_STUDIOS } from './seeds.js?v=1.29.0';
-import { SEED_SHOWS, SEED_TV_PEOPLE, SEED_NETWORKS } from './seeds-tv.js?v=1.29.0';
-import { THEMES, themeById, themeQuery } from './themes.js?v=1.29.0';
-import { MEDIA, mediaOf, marksOf, excludedGenre, askStarted, stateLabel, STARTED, creditsOf, pressed } from './media.js?v=1.29.0';
-import { TASTE_HINT_AFTER } from './config.js?v=1.29.0';
-import { personLink } from './people.js?v=1.29.0';
+import * as store from './store.js?v=1.29.1';
+import * as tmdb from './tmdb.js?v=1.29.1';
+import { esc, toast } from './ui.js?v=1.29.1';
+import { runtimeSlot, titleText } from './runtime.js?v=1.29.1';
+import { SEED_MOVIES, SEED_PEOPLE, SEED_STUDIOS } from './seeds.js?v=1.29.1';
+import { SEED_SHOWS, SEED_TV_PEOPLE, SEED_NETWORKS } from './seeds-tv.js?v=1.29.1';
+import { THEMES, themeById, themeQuery } from './themes.js?v=1.29.1';
+import { MEDIA, mediaOf, marksOf, excludedGenre, askStarted, stateLabel, STARTED, creditsOf, pressed } from './media.js?v=1.29.1';
+import { TASTE_HINT_AFTER } from './config.js?v=1.29.1';
+import { personLink } from './people.js?v=1.29.1';
 
 const STEP = 20;
 const MARKS = [
@@ -187,6 +187,7 @@ export function render(p) {
       <span class="sr-only">Suche</span>
       <input id="taste-search" type="search" inputmode="search" enterkeyhint="search" autocomplete="off"
         placeholder="${tv ? 'Serie, Person, Sender oder Thema suchen' : 'Film, Person, Studio oder Thema suchen'}" value="${esc(ui.query)}">
+      <button type="button" class="search-clear" data-clear-search aria-label="Suche leeren">✕</button>
     </label>
     <div class="segmented sub-tabs" role="group" aria-label="Bereich">
       ${tab('personen', 'Personen')}${tv ? tab('sender', 'Sender') : tab('studios', 'Studios')}${tab('themen', 'Themen')}${tab('filme', cfg().w.many)}

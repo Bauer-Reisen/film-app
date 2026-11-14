@@ -1,16 +1,16 @@
 // Seite „Geschmack“ bei Büchern: Autor·innen, Themen und Genres in Stufen, Bücher markieren, Suche (auch ISBN), Scannen.
-import * as store from './store.js?v=1.29.0';
-import * as books from './books.js?v=1.29.0';
-import { esc, toast } from './ui.js?v=1.29.0';
-import { SEED_BOOKS, SEED_AUTHORS } from './seeds-books.js?v=1.29.0';
-import { THEMES, themeById } from './themes.js?v=1.29.0';
-import { BOOK_GENRES, bookGenreById } from './book-genres.js?v=1.29.0';
-import { MEDIA, stateLabel, pressed } from './media.js?v=1.29.0';
-import { TASTE_HINT_AFTER } from './config.js?v=1.29.0';
-import { authorsFromFilms } from './bridge-books.js?v=1.29.0';
-import { unrated } from './book-rate.js?v=1.29.0';
-import { requestPaste } from './book-share.js?v=1.29.0';
-import { seriesBooks, fillSeriesSlots as seriesSlots } from './book-series.js?v=1.29.0';
+import * as store from './store.js?v=1.29.1';
+import * as books from './books.js?v=1.29.1';
+import { esc, toast } from './ui.js?v=1.29.1';
+import { SEED_BOOKS, SEED_AUTHORS } from './seeds-books.js?v=1.29.1';
+import { THEMES, themeById } from './themes.js?v=1.29.1';
+import { BOOK_GENRES, bookGenreById } from './book-genres.js?v=1.29.1';
+import { MEDIA, stateLabel, pressed } from './media.js?v=1.29.1';
+import { TASTE_HINT_AFTER } from './config.js?v=1.29.1';
+import { authorsFromFilms } from './bridge-books.js?v=1.29.1';
+import { unrated } from './book-rate.js?v=1.29.1';
+import { requestPaste } from './book-share.js?v=1.29.1';
+import { seriesBooks, fillSeriesSlots as seriesSlots } from './book-series.js?v=1.29.1';
 
 const STEP = 20;
 const SCAN = true; // Knopf „Bücher scannen“
@@ -176,6 +176,7 @@ export function render(p) {
       <span class="sr-only">Suche</span>
       <input id="taste-search" type="search" inputmode="search" enterkeyhint="search" autocomplete="off"
         placeholder="Buch, Autor·in, Thema oder ISBN suchen" value="${esc(ui.query)}">
+      <button type="button" class="search-clear" data-clear-search aria-label="Suche leeren">✕</button>
     </label>
     <div class="segmented sub-tabs" role="group" aria-label="Bereich">
       ${tab('autoren', 'Autor·innen')}${tab('themen', 'Themen')}${tab('genres', 'Genres')}${tab('buecher', 'Bücher')}
