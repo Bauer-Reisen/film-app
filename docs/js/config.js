@@ -1,7 +1,7 @@
 // ALLE Einstellungen und Grenzwerte an einer Stelle.
 // Wer etwas nachjustieren will (z. B. Mindestbewertung), ändert es nur hier.
 
-export const VERSION = '1.28.6';
+export const VERSION = '1.29.0';
 
 // Adresse des Cloudflare Workers (nicht geheim – der Schlüssel liegt nur dort).
 export const WORKER_URL = 'https://film-app-tmdb.film-app.workers.dev';
@@ -67,6 +67,14 @@ export const GROUP = {
   onlyWithComedy: [53, 80], // Thriller, Krimi
   maxRuntime: 130, minVote: 6.8, minVotes: 1000,
   bonus: { 35: 2, 16: 1, 10751: 1 },
+};
+
+// „Demnächst von deinen Lieblingen“ (bei den Vorschlägen, nur Filme)
+export const UPCOMING = {
+  months: 12,     // wie weit voraus
+  max: 3,         // höchstens so viele Einträge
+  people: 15, companies: 6, // so viele Lieblingspersonen/-studios abfragen
+  sequelPages: 2, // so viele Seiten der bekanntesten kommenden Filme auf Fortsetzungen prüfen (je 20)
 };
 
 export const KIDS = {

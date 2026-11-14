@@ -1,16 +1,17 @@
 // Seite „Merkliste“: alle Filme bzw. Serien mit „Merken“, neueste zuerst.
 // Bei Serien steht oben „Weiterschauen“ (angefangen, will ich zu Ende schauen).
 // Titel und Poster kommen immer in der Profilsprache (Startliste oder TMDB).
-import * as store from './store.js?v=1.28.6';
-import * as tmdb from './tmdb.js?v=1.28.6';
-import { esc, toast } from './ui.js?v=1.28.6';
-import { trailerBtn } from './trailer.js?v=1.28.6';
-import { titleText } from './runtime.js?v=1.28.6';
-import { SEED_MOVIES } from './seeds.js?v=1.28.6';
-import { SEED_SHOWS } from './seeds-tv.js?v=1.28.6';
-import { peopleSlot, fillPeopleSlots } from './people.js?v=1.28.6';
-import { markButtons, moreBox } from './cards.js?v=1.28.6';
-import { MEDIA, mediaOf, marksOf, tvLength, askStarted, stateLabel, justWatchUrl, shopLink } from './media.js?v=1.28.6';
+import * as store from './store.js?v=1.29.0';
+import * as tmdb from './tmdb.js?v=1.29.0';
+import { esc, toast } from './ui.js?v=1.29.0';
+import { trailerBtn } from './trailer.js?v=1.29.0';
+import { titleText } from './runtime.js?v=1.29.0';
+import { SEED_MOVIES } from './seeds.js?v=1.29.0';
+import { SEED_SHOWS } from './seeds-tv.js?v=1.29.0';
+import { peopleSlot, fillPeopleSlots } from './people.js?v=1.29.0';
+import { markButtons, moreBox } from './cards.js?v=1.29.0';
+import { isUpcoming, startText } from './upcoming.js?v=1.29.0';
+import { MEDIA, mediaOf, marksOf, tvLength, askStarted, stateLabel, justWatchUrl, shopLink } from './media.js?v=1.29.0';
 
 const seedById = { movie: new Map(SEED_MOVIES.map((m) => [m.id, m])), tv: new Map(SEED_SHOWS.map((m) => [m.id, m])) };
 // Zwei große Knöpfe; „Gesehen“ klappt die Bewertung auf
@@ -52,11 +53,17 @@ export async function mount(p) {
     const seed = seedById[md].get(m.id);
     let d = null;
     try { d = await tmdb.get(`${MEDIA[md].path}/${m.id}`, { language: profile.language }); } catch { /* ohne Details weiter */ }
+    // Noch nicht erschienen? Dann den Starttermin (in Deutschland) statt der Laufzeit
+    let soon = '';
+    if (md === 'movie' && isUpcoming(d)) {
+      try { soon = startText(await tmdb.get(`movie/${m.id}`, { language: profile.language, append_to_response: 'release_dates' })); } catch { soon = startText(d); }
+    }
     info.set(`${md}:${m.id}`, {
       title: d?.title || seed?.t[lang] || m.n || w.unknown,
       poster: d?.poster_path || seed?.p[lang] || null,
       y: tmdb.year(d?.release_date) || m.y,
       length: md === 'tv' ? tvLength(d) : d?.runtime ? `${d.runtime} Min.` : '',
+      soon,
       overview: d?.overview || '',
       g: m.g, l: m.l,
     });
@@ -83,6 +90,7 @@ function card(m) {
   const md = media();
   const x = info.get(`${md}:${m.id}`);
   const meta = [x.y, x.length].filter(Boolean).join(' · ');
+  const soon = x.soon ? `<p class="soon small">🎬 ${esc(x.soon)}</p>` : '';
   const poster = x.poster
     ? `<img class="poster" src="${tmdb.img(x.poster, 'w185')}" srcset="${tmdb.img(x.poster, 'w185')} 185w, ${tmdb.img(x.poster, 'w342')} 342w" sizes="(min-width: 768px) 140px, 100px" width="100" height="150" loading="lazy" decoding="async" alt="">`
     : '<div class="poster noimg" aria-hidden="true">Kein Poster</div>';
@@ -93,7 +101,7 @@ function card(m) {
       </button>
       <div class="film-info">
         <h3 class="film-title">${titleText(x.title, m.id, md) || esc(x.title)}</h3>
-        <p class="rating muted small">${esc(meta)}</p>
+        <p class="rating muted small">${esc(meta)}</p>${soon}
         <div class="film-extra">${moreBox(x.overview ? `<p>${esc(x.overview)}</p>` : '', `
           ${peopleSlot(m.id, md)}
           <p class="shop-links">${shopLink(esc(justWatchUrl(x.title, profile.language)), '📺 Wo kann ich das schauen?')}</p>`)}${trailerBtn(m.id, x.title, false, md)}</div>

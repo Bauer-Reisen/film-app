@@ -579,3 +579,14 @@ ul.plain { list-style: none; padding: 0; margin: 0; display: flex; flex-directio
 .game .poster { aspect-ratio: 3 / 4; }
 
 .data-credit { margin-top: 24px; }
+
+/* Demnächst von deinen Lieblingen (Vorschläge) */
+.upcoming { border: 1px solid var(--line, rgba(127,127,127,.3)); border-radius: 12px; padding: 10px 12px; margin: 0 0 14px; }
+.upcoming-head { font-size: 16px; margin: 0 0 6px; }
+.upcoming-row { display: flex; gap: 10px; padding: 8px 0; }
+.upcoming-row + .upcoming-row { border-top: 1px solid var(--line, rgba(127,127,127,.2)); }
+.upcoming-poster { flex: none; width: 46px; height: 69px; border-radius: 4px; object-fit: cover; background: rgba(127,127,127,.2); }
+.upcoming-info { min-width: 0; flex: 1; }
+.upcoming-info p { margin: 0 0 4px; }
+.upcoming-actions { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.soon { margin: 2px 0 6px; font-weight: 600; }

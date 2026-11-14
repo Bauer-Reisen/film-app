@@ -1,17 +1,18 @@
 // Seite „Vorschläge“: Liste mit Begründung, fünf Rückmeldungen, Rückgängig, „Mehr“.
-import * as store from './store.js?v=1.28.6';
-import * as tmdb from './tmdb.js?v=1.28.6';
-import { esc, toast } from './ui.js?v=1.28.6';
-import { runtimeSlot, titleText } from './runtime.js?v=1.28.6';
-import { trailerBtn } from './trailer.js?v=1.28.6';
-import { compute, computeFiltered, visible, hasSources, erasFor, eraById } from './recommend.js?v=1.28.6';
-import { MEDIA, mediaOf, marksOf, askStarted, stateLabel } from './media.js?v=1.28.6';
-import { THEMES, themeById } from './themes.js?v=1.28.6';
-import { RECOMMEND } from './config.js?v=1.28.6';
-import { GENRES, GENRES_TV } from './surprise.js?v=1.28.6';
-import { bookSlot } from './book-extra.js?v=1.28.6';
-import { peopleSlot, fillPeopleSlots } from './people.js?v=1.28.6';
-import { markButtons, moreBox, filterBox } from './cards.js?v=1.28.6';
+import * as store from './store.js?v=1.29.0';
+import * as tmdb from './tmdb.js?v=1.29.0';
+import { esc, toast } from './ui.js?v=1.29.0';
+import { runtimeSlot, titleText } from './runtime.js?v=1.29.0';
+import { trailerBtn } from './trailer.js?v=1.29.0';
+import { compute, computeFiltered, visible, hasSources, erasFor, eraById } from './recommend.js?v=1.29.0';
+import { MEDIA, mediaOf, marksOf, askStarted, stateLabel } from './media.js?v=1.29.0';
+import { THEMES, themeById } from './themes.js?v=1.29.0';
+import { RECOMMEND } from './config.js?v=1.29.0';
+import { GENRES, GENRES_TV } from './surprise.js?v=1.29.0';
+import { bookSlot } from './book-extra.js?v=1.29.0';
+import { peopleSlot, fillPeopleSlots } from './people.js?v=1.29.0';
+import { markButtons, moreBox, filterBox } from './cards.js?v=1.29.0';
+import * as upcoming from './upcoming.js?v=1.29.0';
 
 // Drei große Knöpfe; „Schon gesehen“ klappt die Bewertung auf
 const MAIN = [['known', '✓', 'Schon gesehen'], ['want', '+', 'Merken'], ['noInterest', '–', 'Nein danke']];
@@ -78,6 +79,7 @@ export function render(p) {
         <a class="mode" href="#/kinder"><span aria-hidden="true">🧸</span> ${W().kids}</a>
         <a class="mode" href="#/liebling"><span aria-hidden="true">★</span> ${W().fav}</a>
       </nav>`)}
+    ${md === 'movie' && !activeText() ? upcoming.upcomingSlot() : ''}
     <div id="suggest-list" aria-live="polite"><p class="muted center">Suche passende ${W().many} …</p></div>`;
 }
 
@@ -128,6 +130,7 @@ export async function mount(p) {
     <div class="suggestions">${first.map(card).join('')}</div>
     <div class="row center-row"><button class="btn btn-primary" type="button" data-sg="more">Mehr Vorschläge</button></div>`;
   fillPeopleSlots(box());
+  if (md === 'movie' && !activeText()) upcoming.fill(profile); // kommt nach, ohne die Vorschläge aufzuhalten
 }
 
 const errorBox = (msg) => `<div class="card center"><p>${esc(msg)}</p><button class="btn" type="button" data-sg="retry">Nochmal versuchen</button></div>`;
@@ -212,6 +215,7 @@ async function more(btn) {
 }
 
 export function handleClick(e) {
+  if (upcoming.handleClick(e)) return true;
   const fb = e.target.closest('[data-fb]');
   if (fb) { feedback(fb.closest('[data-sgfilm]'), fb.dataset.fb); return true; }
   const act = e.target.closest('[data-sg]');
