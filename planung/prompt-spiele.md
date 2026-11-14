@@ -54,6 +54,13 @@ Von Hand gepflegte Liste (wie `PAIRS` bei Büchern), z. B. The Last of Us, The W
 - Hochladen: `NODE_USE_SYSTEM_CA=1 npx wrangler deploy --config worker/wrangler.toml`. Klappt das nicht, erklär mir genau, was ich tun soll.
 - „Daten: IGDB.com“ mit Link auf der Über-Seite und auf den Spiele-Seiten.
 
+## Zugang per PIN (im Worker geprüft)
+- Ich trage eine PIN selbst als Secret `APP_PIN` beim Worker im Cloudflare-Dashboard ein. **Frag mich nie nach dem Wert.** Sie steht nirgends im Code oder Repo.
+- Der Worker beantwortet TMDB- und IGDB-Anfragen nur, wenn die richtige PIN mitkommt (als Header, z. B. `X-App-Pin`; Vergleich in konstanter Zeit). Ist `APP_PIN` nicht gesetzt, läuft alles wie bisher – so bricht beim Hochladen nichts.
+- Die App fragt beim ersten Start einmal nach der PIN (einfaches Feld, Ziffern), merkt sie sich auf dem Gerät und schickt sie bei jeder Anfrage mit. Falsche PIN → freundlicher Hinweis und erneut fragen. Im Profil „PIN neu eingeben“.
+- Wichtig: Antworten mit PIN dürfen nicht für Anfragen ohne PIN aus dem Zwischenspeicher kommen (Prüfung **vor** dem Cache). Der eigene Header löst eine CORS-Vorabfrage aus: `OPTIONS` beantworten und `X-App-Pin` in `Access-Control-Allow-Headers` erlauben.
+- Hinweis an mich: Schützt vor fremder Nutzung meines Zwischendienstes (TMDB-Schlüssel, Twitch-Konto). Wer die PIN kennt, kann sie weitergeben – dann einfach im Dashboard ändern.
+
 ## Technik in dieser App (Code-Analyse – unbedingt beachten)
 - `scripts/set-version.js` und `check-secrets.js` müssen auch dynamische Importe `import('./x.js?v=…')` umschreiben bzw. prüfen – sonst lädt ein Modul doppelt mit getrenntem Zustand (der alte Fehler mit verschluckten Markierungen).
 - **Spiele erst beim Umschalten laden:** eine Stelle `loadGames()` in `app.js`, die das Nachladen einmal macht; nirgends statisch importieren. Gemeinsame Module mit derselben `?v=`. Messen und mir sagen: wie viele KB lädt der Start bei ausgeschalteten Spielen, vorher und nachher.
@@ -68,13 +75,14 @@ Von Hand gepflegte Liste (wie `PAIRS` bei Büchern), z. B. The Last of Us, The W
 ## Bauschritte – jeder einzeln fertig und hochladbar
 1. `.gitattributes`; Versions- und Prüfskript für dynamische Importe (+ Twitch-Secret-Erkennung).
 2. Twitch-Konto mit mir einrichten (siehe Reihenfolge), Worker-Adressen `/igdb/…` hochladen, Prüfskript über den Worker, Ergebnis kurz erklären. Dann `PLAN.md` um „Spiele“ erweitern, kurz zusammenfassen, **auf mein OK warten.**
-3. `settings.areas`, Umschalter bei 375/360 px, Spiele standardmäßig aus, `?spiele=1`.
-4. Profilfelder, `data-playtime`, alte Sicherungen laden.
-5. Startliste (Skript) und Geschmack-Seite mit den 3 Startfragen.
-6. Vorschläge mit den harten Filtern und Punkten, Merkliste.
-7. Brücke „gleiche Welt“.
-8. Kurze Nachricht für meine Freunde zum Testen: Link mit `?spiele=1`, was sie ausprobieren sollen, welches Feedback mich interessiert („Kam ein Spiel, das du nicht kanntest und spielen willst?“, „Was war falsch oder hat genervt?“).
+3. PIN-Schutz (siehe oben): erst App-Seite und Worker hochladen, dann mir sagen, dass ich `APP_PIN` eintragen kann, danach live prüfen.
+4. `settings.areas`, Umschalter bei 375/360 px, Spiele standardmäßig aus, `?spiele=1`.
+5. Profilfelder, `data-playtime`, alte Sicherungen laden.
+6. Startliste (Skript) und Geschmack-Seite mit den 3 Startfragen.
+7. Vorschläge mit den harten Filtern und Punkten, Merkliste.
+8. Brücke „gleiche Welt“.
+9. Kurze Nachricht für meine Freunde zum Testen: Link mit `?spiele=1` und Hinweis, dass sie die PIN von mir bekommen, was sie ausprobieren sollen, welches Feedback mich interessiert („Kam ein Spiel, das du nicht kanntest und spielen willst?“, „Was war falsch oder hat genervt?“).
 
-Ab Schritt 3 am Stück, ohne Zwischenfragen. Nach jedem Schritt: selbst im Browser prüfen (375 px und Laptop), Testprofile löschen, `STAND.md` aktualisieren, hochladen, live prüfen, mir **einen Satz** Stand schreiben. Reicht das Budget nicht, **sauber nach einem fertigen Schritt aufhören** und sagen, wo es weitergeht.
+Ab Schritt 3 am Stück (nur die PIN trage ich zwischendurch ein), ohne Zwischenfragen. Nach jedem Schritt: selbst im Browser prüfen (375 px und Laptop), Testprofile löschen, `STAND.md` aktualisieren, hochladen, live prüfen, mir **einen Satz** Stand schreiben. Reicht das Budget nicht, **sauber nach einem fertigen Schritt aufhören** und sagen, wo es weitergeht.
 
 Antworte auf Deutsch, kurz und ohne Fachchinesisch.
