@@ -48,18 +48,18 @@ for (const [k, re] of Object.entries(want)) {
 for (const [list, names] of [
   ['genres', ['Indie', 'Role-playing (RPG)', 'Shooter', 'Adventure', 'Platform', 'Puzzle', 'Strategy', 'Racing', 'Fighting', 'Simulator', 'Sport']],
   ['game_modes', ['Single player', 'Multiplayer', 'Co-operative', 'Split screen', 'Massively Multiplayer Online (MMO)', 'Battle Royale']],
-  ['game_types', ['main_game', 'standalone_expansion', 'remake', 'remaster', 'expanded_game', 'port', 'dlc_addon', 'bundle']],
-  ['game_statuses', ['released', 'alpha', 'beta', 'early_access', 'cancelled', 'rumored']],
+  ['game_types', ['MainGame', 'StandaloneExpansion', 'Remake', 'Remaster', 'DLC', 'Bundle']],
+  ['game_statuses', ['Released', 'EarlyAccess', 'Cancelled']],
 ]) {
   const r = await api(`/igdb/meta/${list}`);
   if (r.status !== 200) { report('FEHLT', `Liste ${list}`, `Status ${r.status}`); continue; }
-  const hits = names.map((n) => { const x = r.body.find((e) => e.name === n); return `${n}=${x ? x.id : '?'}`; });
+  const hits = names.map((n) => { const x = r.body.find((e) => (e.name || e.type || e.status) === n); return `${n}=${x ? x.id : '?'}`; });
   report(hits.some((h) => h.endsWith('?')) ? 'HINWEIS' : 'OK', `Nummern ${list}`, hits.join(' · '));
 }
 
 // 4. Suche, Details, Trailer, ähnliche
 const s = await api('/igdb/search?q=' + encodeURIComponent('hades'));
-const hades = (s.body || []).find((g) => g.name === 'Hades');
+const hades = (s.body || []).filter((g) => g.name === 'Hades').sort((a, b) => (b.total_rating_count || 0) - (a.total_rating_count || 0))[0];
 hades ? report('OK', 'Suche findet „Hades“', `Nummer ${hades.id}, Bewertung ${Math.round(hades.total_rating)} (${hades.total_rating_count})`) : report('FEHLT', 'Suche findet „Hades“', JSON.stringify(s.body).slice(0, 200));
 const bad = await api('/igdb/search?q=' + encodeURIComponent('x"; fields *; limit 500;'));
 bad.status === 200 && bad.body.length <= 30 ? report('OK', 'Suche mit Sonderzeichen bleibt harmlos', `${bad.body.length} Treffer`) : report('HINWEIS', 'Suche mit Sonderzeichen', `Status ${bad.status}`);
@@ -83,13 +83,14 @@ if (hades) {
 }
 
 // 5. Couch-Koop am Beispiel It Takes Two
-const itt = (await api('/igdb/search?q=' + encodeURIComponent('it takes two'))).body?.find((g) => g.name === 'It Takes Two');
+const ittId = (await api('/igdb/search?q=' + encodeURIComponent('it takes two'))).body?.filter((g) => g.name === 'It Takes Two').sort((a, b) => (b.total_rating_count || 0) - (a.total_rating_count || 0))[0]?.id;
+const itt = ittId && (await api(`/igdb/game/${ittId}`)).body?.[0];
 report(itt?.multiplayer_modes?.some((m) => m.offlinecoop || m.splitscreen) ? 'OK' : 'HINWEIS', 'Couch-Koop erkennbar (It Takes Two)', JSON.stringify(itt?.multiplayer_modes || '-').slice(0, 300));
 
 // 6. Entdecken nach Plattform/Genre
 if (found['Nintendo Switch']) {
   const d = await api(`/igdb/discover?platforms=${found['Nintendo Switch']}&genres=32&min=15&rating=75`);
-  report(d.body?.length ? 'OK' : 'FEHLT', 'Entdecken: Indies auf Switch', (d.body || []).slice(0, 6).map((x) => x.name).join(', '));
+  report(d.body?.length ? 'OK' : 'FEHLT', 'Entdecken: Indies auf Switch', (Array.isArray(d.body) ? d.body : []).slice(0, 6).map((x) => x.name).join(', '));
 }
 
 // 7. Zwischenspeicher bei Cloudflare

@@ -56,8 +56,10 @@ function build(path, q) {
     if (genre.length) where.push(`genres = (${genre.join(',')})`);
     const mode = ints(q.get('modes'), 6);
     if (mode.length) where.push(`game_modes = (${mode.join(',')})`);
+    // nur erschienene Spiele (bis heute), auf Wunsch Zeitraum
     const from = int(q.get('from'), 1970, 2100, 1970), to = int(q.get('to'), 1970, 2100, 2100);
-    where.push(`first_release_date >= ${Date.UTC(from, 0, 1) / 1000}`, `first_release_date < ${Date.UTC(to + 1, 0, 1) / 1000}`);
+    const until = Math.min(Date.UTC(to + 1, 0, 1), Date.now()) / 1000 | 0;
+    where.push(`first_release_date >= ${Date.UTC(from, 0, 1) / 1000}`, `first_release_date < ${until}`);
     const sort = q.get('sort') === 'rating' ? 'total_rating desc' : 'total_rating_count desc';
     return ['games', `fields ${CARD}; where ${where.join(' & ')}; sort ${sort}; limit 50; offset ${int(q.get('offset'), 0, 1000, 0)};`, DAY];
   }
@@ -68,9 +70,9 @@ function build(path, q) {
   }
   // Nachschlage-Listen (für Prüfskript und App): Nummer → Name
   if ((m = path.match(/^\/igdb\/meta\/(platforms|genres|game_modes|game_types|game_statuses|themes|regions)$/))) {
-    const extra = m[1] === 'platforms' ? ',abbreviation,platform_family' : '';
+    const extra = { platforms: ',name,abbreviation,platform_family', game_types: ',type', game_statuses: ',status' }[m[1]] ?? ',name';
     const ep = m[1] === 'regions' ? 'regions' : m[1];
-    return [ep, `fields id,name${extra}; sort id asc; limit 500;`, 7 * DAY];
+    return [ep, `fields id${extra}; sort id asc; limit 500;`, 7 * DAY];
   }
   return null;
 }
@@ -126,7 +128,7 @@ export async function handleIgdb(request, env, ctx, reply) {
     } else res = await igdb(env, endpoint, body);
   } catch { return reply(502, { error: 'IGDB nicht erreichbar' }); }
   const text = await res.text();
-  if (!res.ok) return reply(res.status === 429 ? 429 : 502, { error: `IGDB antwortet ${res.status}` }, { 'Cache-Control': 'no-store', ...(res.status === 429 ? { 'Retry-After': '2' } : {}) });
+  if (!res.ok) return reply(res.status === 429 ? 429 : 502, { error: `IGDB antwortet ${res.status}`, detail: text.slice(0, 300) }, { 'Cache-Control': 'no-store', ...(res.status === 429 ? { 'Retry-After': '2' } : {}) });
   if (cache) {
     const stored = new Response(text, { headers: { 'Content-Type': 'application/json', 'Cache-Control': `public, max-age=${maxAge}` } });
     ctx.waitUntil(cache.put(key, stored));

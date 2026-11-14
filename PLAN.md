@@ -538,3 +538,81 @@ Mindestqualität: ab 30 Leser·innen bzw. Note ab 3,5 wenn bewertet; bei Lieblin
 - **B2 (1.13.0):** Scannen am Stück, ISBN eintippen, Foto, Testbilder.
 - **B3 (1.14.0):** Vorschläge mit Begründung und Brücke, „Heute Lust auf …“, „Aus welcher Zeit“, „Das Buch dazu“ / „Verfilmt als“.
 - **B4 (1.15.0):** Überrasch mich, Lieblingsbuch, README, Abschluss.
+
+## 9. Spiele (Plan vom 14.11.2026, schlanke Testversion)
+
+Grundlage: [planung/prompt-spiele.md](planung/prompt-spiele.md). Spiele sind ein vierter Bereich, **standardmäßig aus**. Einschalten im Profil oder per Link `…/film-app/?spiele=1` (für die Tester·innen). Ohne Einschalten sieht niemand etwas davon.
+
+### Datenquelle: IGDB (geprüft mit `node scripts/check-igdb.js`, nur über den Worker)
+| Annahme | Ergebnis |
+|---|---|
+| Twitch-Zugang im Worker | geht (Secrets `TWITCH_CLIENT_ID`/`TWITCH_CLIENT_SECRET`, Schlüssel nur im Speicher) |
+| Plattform-Nummern | PC 6 · PS5 167 · PS4 48 · Xbox Series 169 · Xbox One 49 · Switch 2 508 · Switch 130 (dazu Linux 3, Mac 14, PS3 9, Xbox 360 12, Wii U 41, Wii 5) |
+| Genre / Spielweise | Indie = 32 · Einzelspieler 1, Mehrspieler 2, Koop 3, geteilter Bildschirm 4, MMO 5, Battle Royale 6 |
+| Spieltyp | Hauptspiel 0, eigenständige Erweiterung 4, Remake 8, Remaster 9 (nur diese zählen; DLC, Bundles, Ports raus) |
+| Suche | findet „Hades“ und „It Takes Two“; mehrere gleichnamige Treffer → nach Bekanntheit sortieren |
+| Couch-Koop | erkennbar (`multiplayer_modes.offlinecoop`/`splitscreen`, z. B. It Takes Two: Koop für 2) |
+| Ähnliche Spiele | ja, ca. 10 pro Spiel (Hades → Curse of the Dead Gods, Black Myth: Wukong …), teils grob |
+| Trailer | YouTube-Nummern vorhanden |
+| Spielzeit | eigener Endpunkt, aber **oft hoch gegriffen und wenige Angaben** (Hades „normal“ 70 Std., Witcher 3 71 Std.). Deshalb nur als „ca.“ zeigen, erst ab 3 Angaben; ausschließen nur bei „zwei Stufen daneben“ |
+| Deutsche Titel | praktisch keine (IGDB kennt nur Japan, Korea, Europa) → **immer Originaltitel** |
+| Zwischenspeicher bei Cloudflare | funktioniert auf workers.dev (zweiter Abruf kommt aus dem Speicher) |
+| Schutz | fremde Seiten, freie Abfragen, falsche Nummern → abgelehnt |
+
+### Worker
+Feste Adressen: `/igdb/search?q=`, `/igdb/game/<id>`, `/igdb/games?ids=` (bis 50), `/igdb/similar/<id>`, `/igdb/discover?platforms=&genres=&modes=&min=&rating=&from=&to=&offset=&sort=`, `/igdb/time?ids=`, `/igdb/meta/<liste>`. Der Worker baut jede IGDB-Abfrage selbst (feste Felder, feste Obergrenze). Suchtext nur Buchstaben/Ziffern/Leerzeichen, höchstens 60 Zeichen. `ALLOWED_ORIGINS` lässt sich fälschen – der echte Schutz sind die festen Abfragen und die Anfragen-Grenze; Missbrauch träfe das Twitch-Konto.
+
+### Bedienung
+- Umschalter oben: Filme · Serien · Bücher · **Spiele**. Bereiche im Profil ein-/ausblendbar (`settings.areas`); unter 480 px schmalere Knöpfe. Ist der gespeicherte Bereich aus → Filme.
+- **Start mit 3 Fragen** (je mit „egal“, später im Profil änderbar): Plattformen (Pflicht, mehrere) · Zeit (Kurz < 10 Std. · Mittel 10–30 · Episch 30+) · Spielweise (Allein · Online zusammen · Couch zusammen · Gegeneinander).
+- **Abwärtskompatibel** (feste Tabelle): PS5 → auch PS4, Xbox Series → auch Xbox One, Switch 2 → auch Switch.
+- **Geschmack:** Startliste ca. 100 Spiele (Skript: bekannteste je Plattform-Familie, ca. 30 Indies, kurze Pflichtliste, auch ältere Plattformen), sortiert nach eigenen Plattformen. Knöpfe **Gespielt · Mag ich · Mag ich nicht · Merken**, ★ per Tipp aufs Cover. Suche nach Titel.
+- **Vorschläge:** ein Satz Begründung, Trailer, „ca. 12 Std.“ (wenn bekannt), Plattform-Hinweis, Couch-Hinweis („Koop für 2 auf einer Konsole“). **Merkliste.**
+- Wörter: „gespielt“ statt „gesehen“. Kein Konto, keine Kauf-Links. „Daten: IGDB.com“ mit Link auf Über-Seite und Spiele-Seiten.
+- Andere Reiter (Überrasch mich, Gruppenabend …) zeigen bei Spielen „kommt später“.
+
+### Datenmodell (nur erweitern)
+```json
+"games": { "113112": { "s": "loved", "t": 1763000000000, "n": "Hades", "g": [12, 31, 32], "y": 2020 } },
+"passedGame": [],
+"settings": { "areas": { "movie": true, "tv": true, "book": true, "game": false },
+              "gamePlatforms": [167, 130], "gameTime": "mid", "gameModes": ["solo", "couch"] }
+```
+Status wie bei Filmen (`seen` = „Gespielt“), Merken = `want`. Alte Profile/Sicherungen bekommen die Felder beim Laden; Zusammenführen wie bei Serien. Nebenbei: `rewatchShown` fehlt in `newProfile`/`migrate` – wird ergänzt.
+
+### Vorschläge für Spiele
+- **Ausschließen:** nicht auf eigener (oder abwärtskompatibler) Plattform · gewünschte Spielweise fehlt · noch nicht erschienen · schon markiert · Spielzeit zwei Stufen daneben (nur wenn bekannt) · MMO/Battle Royale (5/6) außer bei „Online zusammen“/„Gegeneinander“.
+- **Mindestqualität:** Bewertung ab 75 und ab 50 Stimmen, Indies ab 15 Stimmen.
+- **Punkte** (`RECOMMEND_GAME` in `config.js`, höchstens ~10 wie bei Filmen):
+
+| Grund | ★ / ♥ |
+|---|---|
+| gleiche Welt wie ein Film, eine Serie, ein Buch | **9** / 5 |
+| IGDB „ähnliches Spiel“ zu einem Spiel | 6 / 3 |
+| gleiches Genre wie gemochte Spiele | 4 / 2 (höchstens 2×) |
+| Spielzeit eine Stufe daneben | −5 |
+| Genre, das man nicht mochte | −3 |
+
+- **Mischung:** in jedem 20er-Block mindestens 5 Indies.
+- Begründung z. B. „Du liebst die Serie ‚The Last of Us‘ – das Spiel ist die Vorlage, ca. 15 Std.“ · „Ähnlich wie ‚Hades‘, das du liebst.“
+
+### Brücke „gleiche Welt“
+Von Hand gepflegte Liste (wie `PAIRS` bei Büchern), nur **gute** Spiele: The Last of Us, The Witcher, Arcane/League of Legends, Fallout, Cyberpunk (Edgerunners), Halo, Uncharted, Dune, Herr der Ringe, Star Wars, Resident Evil, Mass Effect, Castlevania, Sonic, Mario, Detective Pikachu. In beide Richtungen; bei Filmen/Serien/Büchern „🎮 Das Spiel dazu“ nur, wenn Spiele eingeschaltet sind.
+
+### Technik
+- Spiele werden **erst beim Umschalten** geladen (eine Stelle `loadGames()` in `app.js`, dynamischer Import). Start-Größe bei ausgeschalteten Spielen vorher/nachher messen.
+- Eigene Seitentabelle `GAME_PAGES`; Klick-Handler der Spiele geben `true` zurück. Spielzeit lädt über `data-playtime` (nicht `data-runtime`).
+- Neue Dateien: `games.js` (Abfragen), `seeds-games.js` (Startliste, `node scripts/make-seeds-games.js`), `game-taste.js`, `game-suggest.js`, `game-recommend.js`, `game-list.js`, `bridge-games.js`.
+
+### Bauschritte Spiele
+- **G1 (fertig):** `.gitattributes`, Versions-/Prüfskript für dynamische Importe, Twitch-Erkennung.
+- **G2 (fertig):** Worker `/igdb/…`, Prüfskript, dieser Plan.
+- **G3:** `settings.areas`, Umschalter bei 375/360 px, Spiele standardmäßig aus, `?spiele=1`.
+- **G4:** Profilfelder, `data-playtime`, alte Sicherungen laden.
+- **G5:** Startliste (Skript) und Geschmack mit den 3 Startfragen.
+- **G6:** Vorschläge mit harten Filtern und Punkten, Merkliste.
+- **G7:** Brücke „gleiche Welt“.
+- **G8:** Nachricht für die Tester·innen.
+
+### Später (nicht jetzt)
+**PIN-Schutz für den Worker** (auf Wunsch vorerst nicht) · „Heute Lust auf …“ und „Aus welcher Zeit“ für Spiele · Themen-Zuordnung zu IGDB und eigene Spiele-Themen (Offene Welt, Soulslike, Roguelike, Metroidvania, Gemütlich, Aufbau, Strategie, Rätsel, Schleichen, Rennen, Horror, Sandbox, Party) · Lieblingsstudios · „Abgebrochen“ · Story/Gameplay- und Schwierigkeits-Frage · Überrasch mich · Gruppenabend · Kinderspiele (USK/PEGI) · Lieblingsspiel · Steam-Import (nur mit öffentlichem Profil) · Handy-Spiele. **Keine** PlayStation-/Xbox-Anbindung – die bräuchte Zugangsdaten.
