@@ -1,6 +1,6 @@
 // Kurzer Rundgang für neue Profile: sechs Karten nacheinander, jederzeit überspringbar.
 // Danach (oder beim Überspringen) gilt er als gesehen; unter „Profil“ lässt er sich nochmal ansehen.
-import { dialog, esc } from './ui.js?v=1.28.1';
+import { dialog, esc } from './ui.js?v=1.28.2';
 
 const STEPS = [
   {
@@ -33,7 +33,7 @@ const STEPS = [
 // Spiele (Testversion) nur erwähnen, wenn eingeschaltet
 const GAME_STEP = {
   icon: '🎮', title: 'Spiele (Test)',
-  text: 'Bei <strong>Spiele</strong> fragt die App zuerst, worauf du spielst, wie viel Zeit du hast und ob allein oder zusammen. Dann markierst du Spiele (<strong>Gespielt</strong>, <strong>Mag ich</strong>, <strong>Mag ich nicht</strong>, <strong>Merken</strong>) und bekommst Vorschläge – nur für deine Plattformen. Ein- und ausblenden kannst du Bereiche unter <strong>Profil</strong>.',
+  text: 'Bei <strong>Spiele</strong> fragt die App zuerst, worauf du spielst, wie lang Spiele sein dürfen und ob allein oder zusammen. Dann markierst du Spiele (<strong>Gespielt</strong>, <strong>Mag ich</strong>, <strong>Mag ich nicht</strong>, <strong>Merken</strong>) und bekommst Vorschläge – nur für deine Plattformen. Ein- und ausblenden kannst du Bereiche unter <strong>Profil</strong>.',
 };
 export async function runTour(name = '', withGames = false) {
   const steps = withGames ? [...STEPS.slice(0, -1), GAME_STEP, STEPS.at(-1)] : STEPS;

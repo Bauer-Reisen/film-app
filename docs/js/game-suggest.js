@@ -1,11 +1,11 @@
 // Spiele: Vorschläge berechnen (harte Filter, Punkte, Indie-Mischung) und die Seite „Vorschläge“.
-import * as store from './store.js?v=1.28.1';
-import * as games from './games.js?v=1.28.1';
-import { esc, toast } from './ui.js?v=1.28.1';
-import { RECOMMEND_GAME as R } from './config.js?v=1.28.1';
-import { GENRES, INDIE } from './game-data.js?v=1.28.1';
-import { WORLDS } from './seeds-games.js?v=1.28.1';
-import { markButtons, moreBox } from './cards.js?v=1.28.1';
+import * as store from './store.js?v=1.28.2';
+import * as games from './games.js?v=1.28.2';
+import { esc, toast } from './ui.js?v=1.28.2';
+import { RECOMMEND_GAME as R } from './config.js?v=1.28.2';
+import { GENRES, INDIE } from './game-data.js?v=1.28.2';
+import { WORLDS } from './seeds-games.js?v=1.28.2';
+import { markButtons, moreBox } from './cards.js?v=1.28.2';
 
 const MAIN = [['known', '✓', 'Schon gespielt'], ['want', '+', 'Merken'], ['noInterest', '–', 'Nein danke']];
 const KNOWN = [['liked', '♥', 'Mag ich'], ['seen', '✓', 'Ganz okay'], ['disliked', '✕', 'Mag ich nicht']];
@@ -182,7 +182,7 @@ export async function mount(p) {
   const mine = ++run;
   if (!p.settings?.gameSetup) {
     box().innerHTML = `<div class="card placeholder"><p><strong>Erst drei kurze Fragen</strong></p>
-      <p class="muted">Plattform, Zeit und wie du spielst – dann kommen nur Spiele, die du auch spielen kannst.</p>
+      <p class="muted">Plattform, Spiellänge und wie du spielst – dann kommen nur Spiele, die du auch spielen kannst.</p>
       <p><button class="btn btn-primary btn-big" type="button" data-gsg="setup">Los geht’s</button></p></div>`;
     return;
   }
@@ -198,7 +198,7 @@ export async function mount(p) {
   const few = Object.values(p.games || {}).filter((m) => LIKED.has(m.s)).length < 3;
   if (!first.length) {
     box().innerHTML = `<div class="card placeholder"><p><strong>Gerade keine passenden Spiele.</strong></p>
-      <p class="muted">Vielleicht sind Zeit oder Spielweise zu eng gewählt? Oben auf „ändern“ tippen – oder unter „Geschmack“ weitere Spiele markieren.</p></div>`;
+      <p class="muted">Vielleicht sind Spiellänge oder Spielweise zu eng gewählt? Oben auf „ändern“ tippen – oder unter „Geschmack“ weitere Spiele markieren.</p></div>`;
     return;
   }
   box().innerHTML = `

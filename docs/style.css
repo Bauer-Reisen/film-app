@@ -262,7 +262,7 @@ body:has(.toast.show) .to-top, .no-tabs .to-top { display: none; } /* nicht mit 
   border-radius: 10px; border: 1px solid var(--line); background: var(--bg);
 }
 .radio { display: flex; align-items: center; gap: 10px; min-height: 44px; }
-.radio input { width: 22px; height: 22px; accent-color: var(--accent); }
+.radio input { flex: none; width: 22px; height: 22px; accent-color: var(--accent); }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }

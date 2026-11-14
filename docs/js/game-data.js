@@ -47,11 +47,11 @@ export function fitsMode(g, mode) {
   return true;
 }
 
-// Zeit (Startfrage): Kurz < 10 Std., Mittel 10–30, Episch > 30
+// Länge (Startfrage): wie lange man braucht, bis man durch ist – Kurz < 10 Std., Mittel 10–30, Lang > 30
 export const TIMES = [
-  { id: 'short', n: 'Kurz', d: 'unter 10 Std.' },
-  { id: 'mid', n: 'Mittel', d: '10–30 Std.' },
-  { id: 'epic', n: 'Episch', d: '30 Std. und mehr' },
+  { id: 'short', n: 'Kurz', d: 'an ein paar Abenden durch, unter 10 Std.' },
+  { id: 'mid', n: 'Mittel', d: 'ein paar Wochen, 10–30 Std.' },
+  { id: 'epic', n: 'Lang', d: 'darf mich monatelang begleiten, 30 Std. und mehr' },
 ];
 export const timeLevel = (hours) => (hours == null ? null : hours < 10 ? 0 : hours <= 30 ? 1 : 2);
 export const timeIndex = (id) => TIMES.findIndex((t) => t.id === id);

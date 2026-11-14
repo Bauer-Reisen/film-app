@@ -564,7 +564,7 @@ Feste Adressen: `/igdb/search?q=`, `/igdb/game/<id>`, `/igdb/games?ids=` (bis 50
 
 ### Bedienung
 - Umschalter oben: Filme · Serien · Bücher · **Spiele**. Bereiche im Profil ein-/ausblendbar (`settings.areas`); unter 480 px schmalere Knöpfe. Ist der gespeicherte Bereich aus → Filme.
-- **Start mit 3 Fragen** (je mit „egal“, später im Profil änderbar): Plattformen (Pflicht, mehrere) · Zeit (Kurz < 10 Std. · Mittel 10–30 · Episch 30+) · Spielweise (Allein · Online zusammen · Couch zusammen · Gegeneinander).
+- **Start mit 3 Fragen** (je mit „egal“, später im Profil änderbar): Plattformen (Pflicht, mehrere) · Spiellänge „Wie lang dürfen Spiele sein?“ (Kurz < 10 Std. · Mittel 10–30 · Lang 30+; gemeint ist die Gesamtlänge, nicht ein Abend) · Spielweise (Allein · Online zusammen · Couch zusammen · Gegeneinander).
 - **Abwärtskompatibel** (feste Tabelle): PS5 → auch PS4, Xbox Series → auch Xbox One, Switch 2 → auch Switch.
 - **Geschmack:** Startliste ca. 100 Spiele (Skript: bekannteste je Plattform-Familie, ca. 30 Indies, kurze Pflichtliste, auch ältere Plattformen), sortiert nach eigenen Plattformen. Knöpfe **Gespielt · Mag ich · Mag ich nicht · Merken**, ★ per Tipp aufs Cover. Suche nach Titel.
 - **Vorschläge:** ein Satz Begründung, Trailer, „ca. 12 Std.“ (wenn bekannt), Plattform-Hinweis, Couch-Hinweis („Koop für 2 auf einer Konsole“). **Merkliste.**

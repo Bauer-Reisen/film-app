@@ -1,11 +1,11 @@
 // Seite „Geschmack“ bei Spielen: 3 Startfragen, Startliste (ca. 100), Suche, „Weitere laden“.
 // Knöpfe: Gespielt · Mag ich · Mag ich nicht · Merken; Tipp aufs Cover = ★ Lieblingsspiel.
-import * as store from './store.js?v=1.28.1';
-import * as games from './games.js?v=1.28.1';
-import { esc, dialog, toast } from './ui.js?v=1.28.1';
-import { pressed } from './media.js?v=1.28.1';
-import { PLATFORMS, MODES, TIMES } from './game-data.js?v=1.28.1';
-import { SEED_GAMES } from './seeds-games.js?v=1.28.1';
+import * as store from './store.js?v=1.28.2';
+import * as games from './games.js?v=1.28.2';
+import { esc, dialog, toast } from './ui.js?v=1.28.2';
+import { pressed } from './media.js?v=1.28.2';
+import { PLATFORMS, MODES, TIMES } from './game-data.js?v=1.28.2';
+import { SEED_GAMES } from './seeds-games.js?v=1.28.2';
 
 const GAME_MARKS = [['seen', '✓', 'Gespielt'], ['liked', '♥', 'Mag ich'], ['disliked', '✕', 'Mag ich nicht'], ['want', '+', 'Merken']];
 const W = games.W;
@@ -34,7 +34,7 @@ export async function setupDialog(p) {
         ${box('plat_all', 1, 'Egal – alle', p.settings?.gameSetup && !s.plats.length)}
         <span class="muted small">PS5 spielt auch PS4-Spiele, Xbox Series auch Xbox One, Switch 2 auch Switch.</span>
       </fieldset>
-      <fieldset class="field"><legend><strong>Wie viel Zeit hast du meistens?</strong></legend>
+      <fieldset class="field"><legend><strong>Wie lang dürfen Spiele sein?</strong></legend>
         ${[{ id: '', n: 'Egal', d: '' }, ...TIMES].map((t) => `<label class="radio"><input type="radio" name="time" value="${t.id}"${s.time === t.id ? ' checked' : ''}> ${t.n}${t.d ? ` <span class="muted">(${t.d})</span>` : ''}</label>`).join('')}
       </fieldset>
       <fieldset class="field"><legend><strong>Wie spielst du am liebsten?</strong> (mehrere möglich)</legend>
@@ -82,7 +82,7 @@ export async function mount(p) {
   input?.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); clearTimeout(searchTimer); fillBody(); input.blur(); } });
   if (!p.settings?.gameSetup) {
     body().innerHTML = `<div class="card placeholder"><p><strong>Willkommen bei den Spielen!</strong></p>
-      <p class="muted">Erst drei kurze Fragen: Plattform, Zeit und wie du spielst. Dann zeigt die App nur Spiele, die du auch spielen kannst.</p>
+      <p class="muted">Erst drei kurze Fragen: Plattform, Spiellänge und wie du spielst. Dann zeigt die App nur Spiele, die du auch spielen kannst.</p>
       <p><button class="btn btn-primary btn-big" type="button" data-gtaste="setup">Los geht’s</button></p></div>`;
     return; // Fragen erst auf Knopfdruck (sonst kollidiert es mit dem Rundgang neuer Profile)
   }
