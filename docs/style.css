@@ -598,3 +598,8 @@ ul.plain { list-style: none; padding: 0; margin: 0; display: flex; flex-directio
 .upcoming-info p { margin: 0 0 4px; }
 .upcoming-actions { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .soon { margin: 2px 0 6px; font-weight: 600; }
+
+/* Willkommen (erster Start am Handy im Browser) */
+.welcome { max-width: 480px; margin: 0 auto; }
+.welcome-icon { font-size: 56px; text-align: center; margin: 12px 0 0; }
+.welcome .steps { margin: 0; }

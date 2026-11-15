@@ -41,6 +41,9 @@ const OL_ROUTES = [
 
 export default {
   async fetch(request, env, ctx) {
+    // Statistik-Seite: direkt im Browser aufrufen, mit Passwort (Secret STATS_KEY)
+    if (new URL(request.url).pathname === '/stats' && request.method === 'GET') return statsPage(request, env);
+
     const origin = request.headers.get('Origin') || '';
     const allowed = (env.ALLOWED_ORIGINS || '').split(',').map((s) => s.trim()).filter(Boolean);
     const cors = allowed.includes(origin)
@@ -61,7 +64,7 @@ export default {
     const olRoute = OL_ROUTES.find(([re]) => re.test(url.pathname));
     const game = isIgdb(url.pathname);
     const route = olRoute || ROUTES.find(([re]) => re.test(url.pathname));
-    if (!route && !game) return reply(403, { error: 'Adresse nicht erlaubt' });
+    if (!route && !game && url.pathname !== '/stats/ping') return reply(403, { error: 'Adresse nicht erlaubt' });
 
     if (env.RATE_LIMITER) {
       const ip = request.headers.get('CF-Connecting-IP') || 'unbekannt';
@@ -69,6 +72,7 @@ export default {
       if (!success) return reply(429, { error: 'Zu viele Anfragen – kurz warten' }, { 'Retry-After': '10' });
     }
 
+    if (url.pathname === '/stats/ping') return statsPing(url, env, ctx, reply);
     if (game) return handleIgdb(request, env, ctx, reply);
     if (olRoute) return openLibrary(url, olRoute[1], reply);
 
@@ -110,4 +114,74 @@ async function openLibrary(url, maxAge, reply) {
   const body = await upstream.text();
   const cache = upstream.ok ? { 'Cache-Control': `public, max-age=${maxAge}` } : { 'Cache-Control': 'no-store' };
   return reply(upstream.status, body, cache);
+}
+
+// ---------- Nutzungs-Zählung (anonym) ----------
+// Die App meldet einmal am Tag: Zufallsnummer des Geräts, Android/iPhone/Computer, installiert ja/nein.
+// Keine Namen, keine Markierungen, keine IP-Adresse wird gespeichert.
+const berlinDay = (t = new Date()) => t.toLocaleDateString('sv-SE', { timeZone: 'Europe/Berlin' });
+
+async function statsPing(url, env, ctx, reply) {
+  const id = url.searchParams.get('d') || '';
+  const platform = url.searchParams.get('p') || '';
+  const installed = url.searchParams.get('i') === '1' ? 1 : 0;
+  if (!/^[a-f0-9-]{16,40}$/.test(id) || !['android', 'ios', 'desktop'].includes(platform)) return reply(400, { error: 'Ungültig' });
+  if (!env.STATS) return reply(200, '{}');
+  const day = berlinDay();
+  ctx.waitUntil(env.STATS.batch([
+    env.STATS.prepare('INSERT OR IGNORE INTO visits (day, id) VALUES (?, ?)').bind(day, id),
+    env.STATS.prepare(`INSERT INTO devices (id, first_day, last_day, platform, installed) VALUES (?1, ?2, ?2, ?3, ?4)
+      ON CONFLICT(id) DO UPDATE SET last_day = ?2, platform = ?3, installed = MAX(installed, ?4)`).bind(id, day, platform, installed),
+  ]).catch(() => {}));
+  return reply(200, '{}', { 'Cache-Control': 'no-store' });
+}
+
+async function sameText(a, b) {
+  const enc = new TextEncoder();
+  const [x, y] = await Promise.all([crypto.subtle.digest('SHA-256', enc.encode(a)), crypto.subtle.digest('SHA-256', enc.encode(b))]);
+  return crypto.subtle.timingSafeEqual(x, y);
+}
+
+async function statsPage(request, env) {
+  const html = (status, body, extra = {}) => new Response(`<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>Statistik · Was schaue ich?</title>
+<style>body{font:16px/1.45 system-ui,sans-serif;margin:0;padding:16px;background:#121214;color:#eee}h1{font-size:22px}h2{font-size:18px;margin-top:28px}.big{display:flex;flex-wrap:wrap;gap:10px}.big div{background:#1f1f24;border-radius:10px;padding:10px 14px;min-width:120px}.big b{display:block;font-size:26px}table{border-collapse:collapse;width:100%;max-width:560px}td,th{padding:4px 6px;text-align:left;border-bottom:1px solid #333}td.n{text-align:right;width:3em}.bar{height:10px;background:#f5c518;border-radius:3px}.muted{color:#aaa;font-size:14px}</style></head><body>${body}</body></html>`,
+    { status, headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex', ...extra } });
+  if (!env.STATS_KEY) return html(503, '<h1>Statistik noch nicht eingerichtet</h1><p>Im Cloudflare-Dashboard beim Worker ein Secret <b>STATS_KEY</b> (dein Passwort) eintragen.</p>');
+  const auth = request.headers.get('Authorization') || '';
+  const pass = auth.startsWith('Basic ') ? (atob(auth.slice(6)).split(':').slice(1).join(':')) : '';
+  if (!pass || !(await sameText(pass, env.STATS_KEY))) {
+    return html(401, '<h1>Passwort nötig</h1><p class="muted">Benutzername egal, Passwort = dein STATS_KEY.</p>', { 'WWW-Authenticate': 'Basic realm="Statistik", charset="UTF-8"' });
+  }
+  if (!env.STATS) return html(500, '<h1>Datenbank fehlt</h1>');
+  const today = berlinDay();
+  const ago = (n) => berlinDay(new Date(Date.now() - n * 86400000));
+  const q = (sql, ...args) => env.STATS.prepare(sql).bind(...args);
+  const [tot, act7, act30, plat, newDays, actDays] = await env.STATS.batch([
+    q('SELECT COUNT(*) AS n, SUM(installed) AS inst FROM devices'),
+    q('SELECT COUNT(DISTINCT id) AS n FROM visits WHERE day >= ?', ago(6)),
+    q('SELECT COUNT(DISTINCT id) AS n FROM visits WHERE day >= ?', ago(29)),
+    q('SELECT platform, COUNT(*) AS n, SUM(installed) AS inst FROM devices GROUP BY platform ORDER BY n DESC'),
+    q('SELECT first_day AS day, COUNT(*) AS n FROM devices WHERE first_day >= ? GROUP BY first_day', ago(29)),
+    q('SELECT day, COUNT(*) AS n FROM visits WHERE day >= ? GROUP BY day', ago(29)),
+  ]);
+  const t = tot.results[0] || { n: 0, inst: 0 };
+  const nNew = Object.fromEntries(newDays.results.map((r) => [r.day, r.n]));
+  const nAct = Object.fromEntries(actDays.results.map((r) => [r.day, r.n]));
+  const max = Math.max(1, ...Object.values(nAct));
+  const names = { android: 'Android', ios: 'iPhone/iPad', desktop: 'Computer' };
+  const rows = Array.from({ length: 30 }, (_, i) => ago(i)).map((d) => `<tr><td>${d.slice(8)}.${d.slice(5, 7)}.</td><td class="n">${nNew[d] || 0}</td><td class="n">${nAct[d] || 0}</td><td><div class="bar" style="width:${Math.round(((nAct[d] || 0) / max) * 100)}%"></div></td></tr>`).join('');
+  return html(200, `
+    <h1>Was schaue ich? – Nutzung</h1>
+    <div class="big">
+      <div><b>${t.n}</b>Geräte insgesamt</div>
+      <div><b>${nNew[today] || 0}</b>neu heute</div>
+      <div><b>${act7.results[0].n}</b>aktiv (7 Tage)</div>
+      <div><b>${act30.results[0].n}</b>aktiv (30 Tage)</div>
+      <div><b>${t.inst || 0}</b>installiert</div>
+    </div>
+    <h2>Geräte</h2>
+    <table>${plat.results.map((r) => `<tr><td>${names[r.platform] || r.platform}</td><td class="n">${r.n}</td><td class="muted">davon installiert: ${r.inst || 0}</td></tr>`).join('')}</table>
+    <h2>Letzte 30 Tage</h2>
+    <table><tr><th>Tag</th><th>neu</th><th>aktiv</th><th></th></tr>${rows}</table>
+    <p class="muted">Gezählt wird ein Gerät, nicht eine Person. Ein iPhone zählt doppelt, wenn die App erst in Safari und dann vom Home-Bildschirm geöffnet wurde (getrennte Speicher). Gelöschte Browserdaten = neues Gerät.</p>`);
 }

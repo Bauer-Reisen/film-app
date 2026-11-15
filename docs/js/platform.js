@@ -1,5 +1,6 @@
 // Erkennt das Gerät und kümmert sich um „Auf den Home-Bildschirm“.
-import { device, updateDevice } from './store.js?v=1.30.1';
+import { device, updateDevice } from './store.js?v=1.31.0';
+import { WORKER_URL } from './config.js?v=1.31.0';
 
 export const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) ||
   (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
@@ -37,6 +38,12 @@ export function dismissHomeHint() {
   updateDevice({ homeHintShown: d.homeHintShown + 1, homeHintLast: Date.now() });
 }
 
+// Allererster Start im Browser am Handy, noch ohne Profil: zuerst „Auf den Startbildschirm“
+export const isMobile = isIOS || isAndroid;
+export const isIOSSafari = isIOS && !/CriOS|FxiOS|EdgiOS|OPiOS/.test(navigator.userAgent);
+export const shouldWelcome = (hasProfiles) => isMobile && !isStandalone && !hasProfiles && !device().welcomeDone;
+export function doneWelcome() { updateDevice({ welcomeDone: Date.now() }); if (isIOS) dismissHomeHint(); }
+
 // Android: einmal ein freundlicher Tipp
 // Erster Besuch auf diesem Gerät? Dann noch keinen Tipp – erst einmal die App kennenlernen
 const firstVisit = (() => { try { const d = device(); if (d.firstSeen) return false; updateDevice({ firstSeen: Date.now() }); return true; } catch { return false; } })();
@@ -47,3 +54,20 @@ export function dismissInstallTip() { updateDevice({ installTipShown: true }); }
 
 // Teilen-Symbol von Safari (Quadrat mit Pfeil nach oben)
 export const SHARE_ICON = '<svg class="inline-icon" viewBox="0 0 24 24" aria-label="Teilen-Symbol"><path d="M12 3v12M8 7l4-4 4 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 10H5v11h14V10h-2" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>';
+
+// Anonyme Nutzungs-Zählung: einmal am Tag „dieses Gerät war da“ (Zufallsnummer, Gerätetyp, installiert ja/nein).
+// Keine Namen, keine Markierungen. Lokal beim Entwickeln nur mit ?statstest=1.
+export function countVisit() {
+  try {
+    if (/^(localhost|127.0.0.1)$/.test(location.hostname) && !location.search.includes('statstest')) return;
+    const d = device();
+    const day = new Date().toLocaleDateString('sv-SE');
+    if (d.lastPing === day) return;
+    const id = d.sid || (crypto.randomUUID ? crypto.randomUUID() : Array.from(crypto.getRandomValues(new Uint8Array(16)), (b) => b.toString(16).padStart(2, '0')).join(''));
+    const kind = isIOS ? 'ios' : isAndroid ? 'android' : 'desktop';
+    fetch(`${WORKER_URL}/stats/ping?d=${id}&p=${kind}&i=${isStandalone ? 1 : 0}`)
+      .then((r) => { if (r.ok) updateDevice({ sid: id, lastPing: day }); })
+      .catch(() => {});
+    if (!d.sid) updateDevice({ sid: id });
+  } catch { /* Zählen ist nie wichtiger als die App */ }
+}

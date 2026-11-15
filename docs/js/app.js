@@ -1,30 +1,30 @@
 // Oberfläche: Seitenwechsel über die Adresse (#/vorschlaege usw.)
-import { VERSION, LANGUAGES } from './config.js?v=1.30.1';
-import * as store from './store.js?v=1.30.1';
-import { saveBackup, readBackup, findSameName, importAsNew, mergeInto } from './backup.js?v=1.30.1';
-import { esc, dialog, toast, formatDate } from './ui.js?v=1.30.1';
-import * as platform from './platform.js?v=1.30.1';
-import * as taste from './taste.js?v=1.30.1';
-import * as suggest from './suggest.js?v=1.30.1';
-import * as watchlist from './watchlist.js?v=1.30.1';
-import * as sneak from './sneak.js?v=1.30.1';
-import * as group from './group.js?v=1.30.1';
-import * as kids from './kids.js?v=1.30.1';
-import * as rewatch from './rewatch.js?v=1.30.1';
-import * as trailer from './trailer.js?v=1.30.1';
-import { handleKnown } from './cards.js?v=1.30.1';
-import { initRuntimes } from './runtime.js?v=1.30.1';
-import { mediaOf, areasOf, AREAS } from './media.js?v=1.30.1';
-import { runTour } from './tour.js?v=1.30.1';
-import { unseen, showNews, LATEST } from './news.js?v=1.30.1';
-import * as bookTaste from './book-taste.js?v=1.30.1';
-import * as bookList from './book-list.js?v=1.30.1';
-import * as scan from './scan.js?v=1.30.1';
-import * as bookRate from './book-rate.js?v=1.30.1';
-import * as bookSuggest from './book-suggest.js?v=1.30.1';
-import * as bookSneak from './book-sneak.js?v=1.30.1';
-import * as bookRewatch from './book-rewatch.js?v=1.30.1';
-import { initBookExtras } from './book-extra.js?v=1.30.1';
+import { VERSION, LANGUAGES } from './config.js?v=1.31.0';
+import * as store from './store.js?v=1.31.0';
+import { saveBackup, readBackup, findSameName, importAsNew, mergeInto } from './backup.js?v=1.31.0';
+import { esc, dialog, toast, formatDate } from './ui.js?v=1.31.0';
+import * as platform from './platform.js?v=1.31.0';
+import * as taste from './taste.js?v=1.31.0';
+import * as suggest from './suggest.js?v=1.31.0';
+import * as watchlist from './watchlist.js?v=1.31.0';
+import * as sneak from './sneak.js?v=1.31.0';
+import * as group from './group.js?v=1.31.0';
+import * as kids from './kids.js?v=1.31.0';
+import * as rewatch from './rewatch.js?v=1.31.0';
+import * as trailer from './trailer.js?v=1.31.0';
+import { handleKnown } from './cards.js?v=1.31.0';
+import { initRuntimes } from './runtime.js?v=1.31.0';
+import { mediaOf, areasOf, AREAS } from './media.js?v=1.31.0';
+import { runTour } from './tour.js?v=1.31.0';
+import { unseen, showNews, LATEST } from './news.js?v=1.31.0';
+import * as bookTaste from './book-taste.js?v=1.31.0';
+import * as bookList from './book-list.js?v=1.31.0';
+import * as scan from './scan.js?v=1.31.0';
+import * as bookRate from './book-rate.js?v=1.31.0';
+import * as bookSuggest from './book-suggest.js?v=1.31.0';
+import * as bookSneak from './book-sneak.js?v=1.31.0';
+import * as bookRewatch from './book-rewatch.js?v=1.31.0';
+import { initBookExtras } from './book-extra.js?v=1.31.0';
 
 const view = document.getElementById('view');
 const APP_URL = 'https://bauer-reisen.github.io/film-app/';
@@ -51,7 +51,7 @@ const gamesOn = (p) => areasOf(p).includes('game');
 let gamesMod = null;
 let gamesLoading = null;
 function loadGames() {
-  gamesLoading ||= import('./game-pages.js?v=1.30.1').then((m) => { gamesMod = m; return m; }).catch((err) => { gamesLoading = null; throw err; });
+  gamesLoading ||= import('./game-pages.js?v=1.31.0').then((m) => { gamesMod = m; return m; }).catch((err) => { gamesLoading = null; throw err; });
   return gamesLoading;
 }
 
@@ -86,6 +86,30 @@ const homeSteps = () => `
     <li>„Zum Home-Bildschirm“ wählen (evtl. etwas nach unten wischen)</li>
     <li>Oben rechts auf „Hinzufügen“ tippen</li>
   </ol>`;
+
+// Erster Start am Handy im Browser: zuerst auf den Startbildschirm (vor Profil und Rundgang)
+function welcomeScreen() {
+  const ios = platform.isIOS;
+  const how = ios
+    ? `<ol class="steps">
+        <li>Auf das Teilen-Symbol ${platform.SHARE_ICON} tippen – ${platform.isIOSSafari ? 'unten in der Leiste' : 'oben rechts neben der Adresse'}</li>
+        <li>„Zum Home-Bildschirm“ wählen (evtl. etwas nach unten wischen)</li>
+        <li>Oben rechts auf „Hinzufügen“ tippen</li>
+        <li><strong>Dann die App über das neue Symbol öffnen</strong> und dort dein Profil anlegen.</li>
+      </ol>`
+    : platform.canInstall()
+      ? '<p><button class="btn btn-primary btn-big" type="button" data-act="welcome-install">📲 App installieren</button></p>'
+      : '<ol class="steps"><li>Oben rechts im Browser-Menü ⋮ tippen</li><li>„App installieren“ oder „Zum Startbildschirm hinzufügen“ wählen</li><li>Danach die App über das neue Symbol öffnen.</li></ol>';
+  return `
+    <section class="welcome">
+      <div class="welcome-icon" aria-hidden="true">🎬</div>
+      <h1 class="center">Willkommen!</h1>
+      <p class="center"><strong>Als Erstes: Leg die App auf deinen ${ios ? 'Home-Bildschirm' : 'Startbildschirm'}.</strong> Dann öffnet sie sich mit einem Tipp wie eine richtige App – ohne Browser drumherum.</p>
+      <div class="card stack">${how}</div>
+      ${ios ? '<p class="muted small">Wichtig beim iPhone: Die App auf dem Home-Bildschirm hat ihren eigenen Speicher. Leg dein Profil deshalb erst dort an – sonst ist es nur hier im Browser.</p>' : ''}
+      <p class="center"><button class="btn" type="button" data-act="welcome-skip">Erst mal im Browser ausprobieren</button></p>
+    </section>`;
+}
 
 function homeHintCard() {
   if (!platform.shouldShowHomeHint()) return '';
@@ -148,6 +172,7 @@ const pages = {
     render: () => {
       const list = store.profilesForPicker();
       const last = store.lastProfileId();
+      if (platform.shouldWelcome(store.profiles().length > 0)) return welcomeScreen();
       return `
         ${homeHintCard()}
         ${platform.isIOS && platform.isStandalone && list.length === 0 ? '<section class="card hint"><p><strong>Kommst du aus Safari?</strong> Dann lade hier dein gesichertes Profil.</p></section>' : ''}
@@ -336,9 +361,11 @@ const pages = {
       <div class="card stack">
         <p>Es gibt keine Anmeldung und kein Konto. Deine Profile liegen nur auf diesem Gerät.</p>
         <p class="muted">Für Filmdaten fragt die App über einen kleinen Zwischenhändler (Cloudflare) bei TMDB an, für Bücher bei Open Library, für Buchreihen direkt bei Wikidata. Dabei werden keine Namen oder Markierungen übertragen, nur die Suche selbst.</p>
+        <p class="muted">Damit ich sehe, ob die App genutzt wird, meldet sie einmal am Tag anonym: „ein Gerät war heute da“ – mit einer Zufallsnummer, ob Android, iPhone oder Computer und ob die App installiert ist. Keine Namen, keine Markierungen, keine IP-Adresse wird gespeichert.</p>
         <p class="muted">Trailer kommen von YouTube. YouTube wird erst geladen, wenn du auf „Trailer“ tippst, in der datensparsamen Variante ohne Werbe-Cookies.</p>
         <p class="muted">Wo ein Film oder eine Serie läuft, zeigt die App nicht selbst an. Auf der Merkliste führt „Wo kann ich das schauen?“ zu JustWatch, auf der Leseliste „Bei Amazon ansehen“ zu Amazon – nur Links, die App sendet dabei nichts und verdient nichts daran.</p>
       </div>
+      <p class="muted small center">© 2026 Bauer-Reisen · Idee, Gestaltung und Umsetzung. Nur für private, nicht-kommerzielle Nutzung – Kopieren, Nachbauen mit diesem Code und kommerzielle Nutzung nicht erlaubt.</p>
       <p class="muted small center">Version ${VERSION}</p>`,
     mount: () => {
       const logo = view.querySelector('.tmdb-logo');
@@ -549,6 +576,13 @@ view.addEventListener('click', async (e) => {
     case 'rename': return renameDialog();
     case 'delete': return deleteDialog();
     case 'home-later': platform.dismissHomeHint(); return show();
+    case 'welcome-skip': platform.doneWelcome(); return show();
+    case 'welcome-install': {
+      const ok = await platform.install();
+      if (ok) { platform.dismissInstallTip(); toast('Installiert! Öffne die App jetzt über das neue Symbol auf deinem Startbildschirm.'); }
+      platform.doneWelcome();
+      return show();
+    }
     case 'install-later': platform.dismissInstallTip(); return show();
     case 'share-app': return shareApp();
     case 'tour': return tour();
@@ -591,6 +625,7 @@ window.addEventListener('scroll', () => {
 }, { passive: true });
 
 window.addEventListener('installable', () => show());
+setTimeout(platform.countVisit, 3000); // anonym zählen, ohne den Start zu bremsen
 
 // ---------- Anzeigen ----------
 let currentKey = null;

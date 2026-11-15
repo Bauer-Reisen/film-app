@@ -17,3 +17,10 @@ namespace_id = "1001"
   [ratelimits.simple]
   limit = 300
   period = 60
+
+# Nutzungs-Zählung (anonym): Zufallsnummer je Gerät, Tag, Android/iPhone/Computer, installiert ja/nein.
+# Die Statistik-Seite /stats ist mit dem Secret STATS_KEY geschützt (im Dashboard eintragen).
+[[d1_databases]]
+binding = "STATS"
+database_name = "film-app-stats"
+database_id = "9338bc9b-fcb7-4d57-b82c-3a8b60e8470d"

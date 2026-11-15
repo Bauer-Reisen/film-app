@@ -1,0 +1,3 @@
+CREATE TABLE IF NOT EXISTS devices (id TEXT PRIMARY KEY, first_day TEXT NOT NULL, last_day TEXT NOT NULL, platform TEXT NOT NULL, installed INTEGER NOT NULL DEFAULT 0);
+CREATE TABLE IF NOT EXISTS visits (day TEXT NOT NULL, id TEXT NOT NULL, PRIMARY KEY (day, id));
+CREATE INDEX IF NOT EXISTS devices_first ON devices(first_day);
