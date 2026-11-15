@@ -1,7 +1,7 @@
 // ALLE Einstellungen und Grenzwerte an einer Stelle.
 // Wer etwas nachjustieren will (z. B. Mindestbewertung), ändert es nur hier.
 
-export const VERSION = '1.29.2';
+export const VERSION = '1.30.0';
 
 // Adresse des Cloudflare Workers (nicht geheim – der Schlüssel liegt nur dort).
 export const WORKER_URL = 'https://film-app-tmdb.film-app.workers.dev';
@@ -75,6 +75,8 @@ export const UPCOMING = {
   max: 3,         // höchstens so viele Einträge
   people: 15, companies: 6, // so viele Lieblingspersonen/-studios abfragen
   sequelPages: 2, // so viele Seiten der bekanntesten kommenden Filme auf Fortsetzungen prüfen (je 20)
+  bookMonths: 18, // Bücher: so weit voraus (Verlage melden früh an)
+  bookAuthors: 8,  // Bücher: so viele Autor·innen bei der Nationalbibliothek abfragen
 };
 
 export const KIDS = {

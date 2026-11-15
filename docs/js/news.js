@@ -1,9 +1,13 @@
 // „Was ist neu?“ – nach einem Update einmal pro Profil, wenn man die App wieder öffnet.
 // Neue Profile bekommen stattdessen den Rundgang (tour.js) und sehen die alten Neuigkeiten nicht.
 // Neueste zuerst; nur Änderungen, die man sieht und kennen sollte.
-import { dialog } from './ui.js?v=1.29.2';
+import { dialog } from './ui.js?v=1.30.0';
 
 export const NEWS = [
+  {
+    v: '1.30.0', title: 'Demnächst – jetzt auch bei Büchern',
+    items: ['Bei den Buch-Vorschlägen steht oben ein kleiner Kasten, wenn es Neues gibt: <strong>neue Bände deiner Lieblingsreihen</strong> und neue Bücher deiner Autor·innen, noch bevor sie erscheinen. Gemerkte stehen mit Termin auf der Leseliste. (Nur bei Lesesprache Deutsch.)'],
+  },
   {
     v: '1.29.2', title: 'Demnächst von deinen Lieblingen',
     items: [

@@ -165,7 +165,7 @@ export function profilesForPicker() {
 // media: 'movie' (Feld movies), 'tv' (Feld shows) oder 'book' (Feld books). Bei Serien zusätzlich 'paused' | 'dropped',
 // bei Büchern 'dropped' (abgebrochen); 'seen' heißt bei Büchern „Gelesen“.
 const MARKS = { movie: 'movies', tv: 'shows', book: 'books', game: 'games' };
-const BOOK_META = ['a', 'ak', 'c', 'pg', 'r']; // Autor·in, Autor-Nummer, Cover, Seiten, r = in der Bewertungsrunde schon gefragt (seit 1.16.0)
+const BOOK_META = ['a', 'ak', 'c', 'pg', 'r', 'rd']; // Autor·in, Autor-Nummer, Cover, Seiten, r = in der Bewertungsrunde schon gefragt (seit 1.16.0), rd = erscheint (JJJJMM oder JJJJ, seit 1.30.0)
 const GAME_META = ['c', 'p', 'm', 'cm', 'on']; // Cover, Plattformen, Spielweisen, Couch-/Online-Koop
 export function setMark(profileId, media, movieId, status, meta = {}) {
   const p = getProfile(profileId);

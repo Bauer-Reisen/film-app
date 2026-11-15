@@ -1,16 +1,17 @@
 // Seite „Vorschläge“ bei Büchern: Liste mit Begründung, Rückmeldungen, Rückgängig, „Mehr“,
 // „Heute Lust auf …“ und „Aus welcher Zeit“.
-import * as store from './store.js?v=1.29.2';
-import * as books from './books.js?v=1.29.2';
-import { esc, toast } from './ui.js?v=1.29.2';
-import { THEMES, themeById } from './themes.js?v=1.29.2';
-import { MEDIA, stateLabel } from './media.js?v=1.29.2';
-import { computeBooks, visibleBooks, hasBookSources, BOOK_ERAS, bookEraById, BOOK_POINTS } from './book-recommend.js?v=1.29.2';
-import { coverImg, bookMetaHtml, rememberBooks } from './book-taste.js?v=1.29.2';
-import { movieHint } from './book-extra.js?v=1.29.2';
-import { fillSeriesSlots } from './book-series.js?v=1.29.2';
-import { markButtons, moreBox, filterBox } from './cards.js?v=1.29.2';
-import { BOOK_GENRES, bookGenreById } from './book-genres.js?v=1.29.2';
+import * as store from './store.js?v=1.30.0';
+import * as books from './books.js?v=1.30.0';
+import { esc, toast } from './ui.js?v=1.30.0';
+import { THEMES, themeById } from './themes.js?v=1.30.0';
+import { MEDIA, stateLabel } from './media.js?v=1.30.0';
+import { computeBooks, visibleBooks, hasBookSources, BOOK_ERAS, bookEraById, BOOK_POINTS } from './book-recommend.js?v=1.30.0';
+import { coverImg, bookMetaHtml, rememberBooks } from './book-taste.js?v=1.30.0';
+import { movieHint } from './book-extra.js?v=1.30.0';
+import { fillSeriesSlots } from './book-series.js?v=1.30.0';
+import { markButtons, moreBox, filterBox } from './cards.js?v=1.30.0';
+import { BOOK_GENRES, bookGenreById } from './book-genres.js?v=1.30.0';
+import * as upcoming from './book-upcoming.js?v=1.30.0';
 
 // Drei große Knöpfe; „Schon gelesen“ klappt die Bewertung auf
 const MAIN = [['known', '✓', 'Schon gelesen'], ['want', '+', 'Merken'], ['noInterest', '–', 'Nein danke']];
@@ -69,6 +70,7 @@ export function render(p) {
       <nav class="modes" aria-label="Besondere Vorschläge">
         <a class="mode" href="#/liebling"><span aria-hidden="true">★</span> ${W.fav}</a>
       </nav>`)}
+    ${active() ? '' : upcoming.upcomingSlot()}
     <div id="suggest-list" aria-live="polite"><p class="muted center">Suche passende Bücher …</p></div>`;
 }
 
@@ -98,6 +100,7 @@ export async function mount(p) {
       </div>`;
     return;
   }
+  if (!active()) upcoming.fill(profile); // kommt nach, ohne die Vorschläge aufzuhalten
   try {
     pool = await calc();
   } catch (err) {
@@ -204,6 +207,7 @@ async function more(btn) {
 }
 
 export function handleClick(e) {
+  if (upcoming.handleClick(e)) return true;
   const fb = e.target.closest('[data-bfb]');
   if (fb) { feedback(fb.closest('[data-sgbook]'), fb.dataset.bfb); return true; }
   const act = e.target.closest('[data-bsg]');

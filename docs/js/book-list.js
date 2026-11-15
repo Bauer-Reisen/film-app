@@ -1,13 +1,14 @@
 // Seite „Leseliste“: alle Bücher mit „Merken“ oder „Weiterlesen“ (liegen geblieben), neueste zuerst.
 // Titel und Cover in der Lesesprache des Profils.
-import * as store from './store.js?v=1.29.2';
-import * as books from './books.js?v=1.29.2';
-import { esc, toast } from './ui.js?v=1.29.2';
-import { stateLabel, amazonBookUrl, shopLink } from './media.js?v=1.29.2';
-import { coverImg, bookMetaHtml } from './book-taste.js?v=1.29.2';
-import { markButtons, moreBox } from './cards.js?v=1.29.2';
-import { movieHint } from './book-extra.js?v=1.29.2';
-import { fillSeriesSlots } from './book-series.js?v=1.29.2';
+import * as store from './store.js?v=1.30.0';
+import * as books from './books.js?v=1.30.0';
+import { esc, toast } from './ui.js?v=1.30.0';
+import { stateLabel, amazonBookUrl, shopLink } from './media.js?v=1.30.0';
+import { coverImg, bookMetaHtml } from './book-taste.js?v=1.30.0';
+import { markButtons, moreBox } from './cards.js?v=1.30.0';
+import { movieHint } from './book-extra.js?v=1.30.0';
+import { fillSeriesSlots } from './book-series.js?v=1.30.0';
+import { isComing, releaseText } from './book-upcoming.js?v=1.30.0';
 
 // Zwei große Knöpfe; „Gelesen“ klappt die Bewertung auf
 const MAIN = [['known', '✓', 'Gelesen'], ['remove', '–', 'Entfernen']];
@@ -41,8 +42,9 @@ export async function mount(p) {
   // Angaben vom Markieren sofort zeigen, Titel/Cover in der Lesesprache nachladen
   await Promise.all(list.map(async (m) => {
     let b = null;
-    try { b = await books.byId(m.id, lang); } catch { /* ohne Netz: gespeicherte Angaben */ }
-    info.set(m.id, { id: m.id, title: b?.title || m.n || 'Unbekanntes Buch', cover: b?.cover || m.c || null, a: b?.a || m.a, y: b?.y || m.y, pg: b?.pg || m.pg, g: m.g, ak: m.ak });
+    // „DNB…“ = Neuerscheinung aus „Demnächst“, die Open Library noch nicht kennt
+    if (!m.id.startsWith('DNB')) try { b = await books.byId(m.id, lang); } catch { /* ohne Netz: gespeicherte Angaben */ }
+    info.set(m.id, { id: m.id, title: b?.title || m.n || 'Unbekanntes Buch', cover: b?.cover || m.c || null, a: b?.a || m.a, y: b?.y || m.y, pg: b?.pg || m.pg, g: m.g, ak: m.ak, rd: m.rd });
   }));
   if (mine !== run || !box()) return;
   box().innerHTML = `
@@ -68,6 +70,7 @@ function card(m) {
       <div class="film-info">
         <h3 class="film-title">${esc(x.title)}</h3>
         <p class="book-meta muted small">${bookMetaHtml(x)}</p>
+        ${isComing(x.rd) ? `<p class="soon small">📅 Erscheint voraussichtlich ${esc(releaseText(x.rd))}</p>` : ''}
         ${m.s === 'paused' ? '<p class="small">⏸ Angefangen – liegt bereit zum Weiterlesen</p>' : ''}
         ${(profile.shelf || []).some((s) => s.id === m.id) ? '<p class="small">📚 Steht bei euch im Regal</p>' : ''}
         <div class="film-extra">${moreBox('<p class="muted">Lädt …</p>', `

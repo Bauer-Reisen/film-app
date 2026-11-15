@@ -1,6 +1,6 @@
 // Kurzer Rundgang für neue Profile: sechs Karten nacheinander, jederzeit überspringbar.
 // Danach (oder beim Überspringen) gilt er als gesehen; unter „Profil“ lässt er sich nochmal ansehen.
-import { dialog, esc } from './ui.js?v=1.29.2';
+import { dialog, esc } from './ui.js?v=1.30.0';
 
 const STEPS = [
   {
@@ -21,7 +21,7 @@ const STEPS = [
   },
   {
     icon: '📚', title: 'Bücher',
-    text: 'Bei <strong>Bücher</strong> fängst du am besten mit deinem Regal an: <strong>📷 Bücher scannen</strong> – Strichcode hinten auf dem Buch, eins nach dem anderen. Danach fragt die App kurz, wie du sie fandst, und zeigt dir weitere Bücher deiner Autor·innen und Reihen. Vorschläge passen auch zu deinen Filmen. Auf der <strong>Leseliste</strong> steht unter „Mehr dazu“ ein Link zu Amazon.',
+    text: 'Bei <strong>Bücher</strong> fängst du am besten mit deinem Regal an: <strong>📷 Bücher scannen</strong> – Strichcode hinten auf dem Buch, eins nach dem anderen. Danach fragt die App kurz, wie du sie fandst, und zeigt dir weitere Bücher deiner Autor·innen und Reihen. Vorschläge passen auch zu deinen Filmen; oben stehen neue Bände deiner Reihen, bevor sie erscheinen. Auf der <strong>Leseliste</strong> steht unter „Mehr dazu“ ein Link zu Amazon.',
   },
   {
     icon: '💾', title: 'Profil sichern',
