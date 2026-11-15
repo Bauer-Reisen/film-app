@@ -183,5 +183,5 @@ async function statsPage(request, env) {
     <table>${plat.results.map((r) => `<tr><td>${names[r.platform] || r.platform}</td><td class="n">${r.n}</td><td class="muted">davon installiert: ${r.inst || 0}</td></tr>`).join('')}</table>
     <h2>Letzte 30 Tage</h2>
     <table><tr><th>Tag</th><th>neu</th><th>aktiv</th><th></th></tr>${rows}</table>
-    <p class="muted">Gezählt wird ein Gerät, nicht eine Person. Ein iPhone zählt doppelt, wenn die App erst in Safari und dann vom Home-Bildschirm geöffnet wurde (getrennte Speicher). Gelöschte Browserdaten = neues Gerät.</p>`);
+    <p class="muted">Gezählt wird ein Gerät, nicht eine Person. iPhones im Browser zählen erst, wenn dort ein Profil angelegt wurde (sonst wäre jedes iPhone doppelt drin: Safari und Home-Bildschirm haben getrennte Speicher). Gelöschte Browserdaten = neues Gerät.</p>`);
 }

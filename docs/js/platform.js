@@ -1,6 +1,6 @@
 // Erkennt das Gerät und kümmert sich um „Auf den Home-Bildschirm“.
-import { device, updateDevice } from './store.js?v=1.31.0';
-import { WORKER_URL } from './config.js?v=1.31.0';
+import { device, updateDevice, profiles } from './store.js?v=1.31.1';
+import { WORKER_URL } from './config.js?v=1.31.1';
 
 export const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) ||
   (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
@@ -60,6 +60,9 @@ export const SHARE_ICON = '<svg class="inline-icon" viewBox="0 0 24 24" aria-lab
 export function countVisit() {
   try {
     if (/^(localhost|127.0.0.1)$/.test(location.hostname) && !location.search.includes('statstest')) return;
+    // iPhone im Browser erst zählen, wenn dort wirklich ein Profil angelegt wurde – sonst zählt jedes iPhone doppelt
+    // (erst Safari, dann die App vom Home-Bildschirm, die einen eigenen Speicher hat)
+    if (isIOS && !isStandalone && !profiles().length) return;
     const d = device();
     const day = new Date().toLocaleDateString('sv-SE');
     if (d.lastPing === day) return;
