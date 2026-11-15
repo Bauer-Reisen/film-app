@@ -1,8 +1,9 @@
 // Bücherliste weitergeben (z. B. per WhatsApp an jemanden im Haushalt) und einfügen.
 // Weitergegeben werden nur die Werk-Nummern der Bücher – keine Bewertungen, keine Namen.
 // Wer die Liste einfügt, bekommt die Bücher auf die Warteliste und bewertet sie selbst.
-import * as store from './store.js?v=1.30.0';
-import * as books from './books.js?v=1.30.0';
+import * as store from './store.js?v=1.30.1';
+import * as books from './books.js?v=1.30.1';
+import { dnbBook } from './book-upcoming.js?v=1.30.1';
 
 const APP_URL = 'https://bauer-reisen.github.io/film-app/';
 
@@ -14,7 +15,7 @@ export const takePaste = () => { const w = pasteWanted; pasteWanted = false; ret
 // Alle Bücher des Profils (markiert, wartend oder im Regal), ohne „Kein Interesse“
 export function shareIds(p) {
   const marked = Object.entries(p.books || {}).filter(([, m]) => m.s !== 'noInterest').map(([id]) => id);
-  return [...new Set([...marked, ...(p.pendingBooks || []).map((x) => x.id), ...(p.shelf || []).map((x) => x.id)])];
+  return [...new Set([...marked, ...(p.pendingBooks || []).map((x) => x.id), ...(p.shelf || []).map((x) => x.id)].map(books.canonical))];
 }
 
 export function shareText(p) {
@@ -27,8 +28,9 @@ Liste: ${ids.join(' ')}`;
 
 // Aus eingefügtem Text: Werk-Nummern (OL…W) und zur Sicherheit auch ISBN-Nummern
 export function parseList(text) {
-  const ids = [...new Set((String(text).match(/OL\d+W/g) || []).map(books.canonical))];
-  const isbns = [...new Set((String(text).replace(/OL\d+W/g, ' ').match(/\b(97[89][\d-]{10,14}|\d{9}[\dXx])\b/g) || []).map(books.cleanIsbn).filter(Boolean))];
+  // OL…W = Open Library, DNB… = Neuerscheinung aus „Demnächst“ (seit 1.30.1)
+  const ids = [...new Set((String(text).match(/OL\d+W|DNB\d{8,9}[\dX]/g) || []).map(books.canonical))];
+  const isbns = [...new Set((String(text).replace(/OL\d+W|DNB\d{8,9}[\dX]/g, ' ').match(/\b(97[89][\d-]{10,14}|\d{9}[\dXx])\b/g) || []).map(books.cleanIsbn).filter(Boolean))];
   return { ids, isbns };
 }
 
@@ -38,7 +40,12 @@ export async function importList(p, text) {
   const { ids, isbns } = parseList(text);
   const have = new Set([...Object.keys(p.books || {}), ...(p.pendingBooks || []).map((x) => x.id), ...(p.shelf || []).map((x) => x.id)]);
   const want = ids.filter((id) => !have.has(id));
-  const found = await books.byIds(want, lang);
+  const found = await books.byIds(want.filter((id) => id.startsWith('OL')), lang);
+  // Nicht in der Suche: zusammengelegte Werke (Weiterleitung) und Neuerscheinungen nachschlagen
+  for (const id of want.filter((x) => !found.has(x))) {
+    const b = id.startsWith('DNB') ? await dnbBook(id).catch(() => null) : await books.resolveWork(id, lang).catch(() => null);
+    if (b && !have.has(b.id)) found.set(id, b);
+  }
   for (const isbn of isbns) {
     const b = await books.byIsbn(isbn, lang).catch(() => null);
     if (b && !have.has(b.id)) found.set(b.id, b);

@@ -1,9 +1,9 @@
 // Buchdaten von Open Library (frei, ohne Schlüssel).
 // Erst über unseren Worker (/ol/…). Kennt der Worker die Adressen noch nicht, direkt bei Open Library
 // (die Seite erlaubt das ausdrücklich). Merkt sich Antworten für die Sitzung, höchstens 4 Anfragen gleichzeitig.
-import { WORKER_URL } from './config.js?v=1.30.0';
-import { SEED_BOOKS } from './seeds-books.js?v=1.30.0';
-import { genresOf } from './book-genres.js?v=1.30.0';
+import { WORKER_URL } from './config.js?v=1.30.1';
+import { SEED_BOOKS } from './seeds-books.js?v=1.30.1';
+import { genresOf } from './book-genres.js?v=1.30.1';
 
 const OL = 'https://openlibrary.org';
 const COVERS = 'https://covers.openlibrary.org';
@@ -79,7 +79,11 @@ export const seedBook = new Map(SEED_BOOKS.map((b) => [b.id, b]));
 export const FIELDS = 'key,title,author_name,author_key,first_publish_year,number_of_pages_median,subject_key,readinglog_count,ratings_average,ratings_count,cover_i,editions,editions.key,editions.title,editions.language,editions.cover_i';
 
 // Autor·in: lieber in lateinischer Schrift (Open Library nennt manchmal zuerst den Originalnamen, z. B. 川口俊和)
-const latinName = (names = []) => names.find((n) => /^[\p{Script=Latin}\p{P}\p{Zs}\d]+$/u.test(n)) || names[0];
+const latinName = (names = []) => names.find((n) => /^[\p{Script=Latin}\p{M}\p{P}\p{Zs}\d]+$/u.test(n)) || names[0];
+
+// Gespeicherter Name in fremder Schrift (ältere Markierungen, z. B. 村上春樹)? Dann der Name aus der Startliste
+const SEED_NAME = new Map(SEED_BOOKS.filter((b) => b.ak && latinName([b.a]) === b.a && /\p{Script=Latin}/u.test(b.a)).map((b) => [b.ak, b.a]));
+export const authorName = (a, ak) => (!a || /\p{Script=Latin}/u.test(a) ? a : SEED_NAME.get(String(ak || '').replace('/authors/', '')) || a);
 
 // Einheitliches Buch aus einem Suchtreffer
 export function fromDoc(d, lang = 'en') {
@@ -91,7 +95,7 @@ export function fromDoc(d, lang = 'en') {
     id,
     title: (seed && (seed.t[lang] || seed.t.en)) || (edOk && ed.title) || d.title,
     cover: (seed && (seed.c[lang] || seed.c.en)) || (edOk && ed.cover_i) || d.cover_i || ed?.cover_i || null,
-    a: seed?.a || latinName(d.author_name) || '',
+    a: latinName([seed?.a, ...(d.author_name || [])].filter(Boolean)) || '',
     ak: (d.author_key || [])[0] || seed?.ak || null,
     y: d.first_publish_year || seed?.y || null,
     pg: d.number_of_pages_median || seed?.pg || null,
@@ -136,11 +140,39 @@ export async function byIds(ids, lang = 'en') {
 }
 
 // Beschreibung des Werks (meist Englisch)
-export async function description(id) {
+const descText = (x) => (typeof x?.description === 'string' ? x.description : x?.description?.value) || '';
+// Open Library hängt oft Quellen und Links an – die schneiden wir ab
+const tidy = (d) => (d ? d.split(/\n\s*(-{3,}|\*{3,}|\(\[source\]|\[source\]|Also contained in:|Contains:)/i)[0].replace(/\[([^\]]+)\]\([^)]+\)/g, '$1').replace(/\*\*/g, '').trim() : '');
+// In lateinischer Schrift? (Japanische, chinesische, russische … Texte kann hier kaum jemand lesen)
+const latin = (s) => { const letters = s.match(/\p{L}/gu) || []; return letters.length > 0 && letters.filter((c) => /\p{Script=Latin}/u.test(c)).length / letters.length >= 0.8; };
+export async function description(id, lang = 'en') {
+  return (await describe(id, lang)).text;
+}
+// { text, lang } – lang ist die Sprache des Texts (für Vorlesen und Silbentrennung)
+export async function describe(id, lang = 'en') {
   const w = await get(`/works/${id}.json`);
-  const d = typeof w?.description === 'string' ? w.description : w?.description?.value;
-  // Open Library hängt oft Quellen und Links an – die schneiden wir ab
-  return d ? d.split(/\n\s*(-{3,}|\*{3,}|\(\[source\]|\[source\]|Also contained in:|Contains:)/i)[0].replace(/\[([^\]]+)\]\([^)]+\)/g, '$1').trim() : '';
+  const d = tidy(descText(w));
+  if (!d || latin(d)) return { text: d, lang: 'en' };
+  // Nur in fremder Schrift (oft beim japanischen Original): Text einer Ausgabe in der Lesesprache, sonst Englisch
+  const eds = (await get(`/works/${id}/editions.json`, { limit: 100 }).catch(() => null))?.entries || [];
+  for (const l of [...new Set([OL_LANG[lang], 'eng'])]) {
+    const ed = eds.find((e) => (e.languages || []).some((x) => x.key === `/languages/${l}`) && latin(tidy(descText(e))));
+    if (ed) return { text: tidy(descText(ed)), lang: l === 'ger' ? 'de' : 'en' };
+  }
+  return { text: '', lang: 'en' };
+}
+
+// Werk nicht in der Suche? Oft hat Open Library es mit einem anderen zusammengelegt (Weiterleitung) –
+// dann das neue Werk; sonst die Angaben direkt aus dem Werk. Für eingefügte Bücherlisten.
+export async function resolveWork(id, lang = 'en') {
+  let w = await get(`/works/${id}.json`).catch(() => null);
+  for (let i = 0; w?.type?.key === '/type/redirect' && w.location && i < 3; i++) w = await get(`${w.location}.json`).catch(() => null);
+  if (!w?.key || w.type?.key !== '/type/work') return null;
+  const nid = canonical(w.key.replace('/works/', ''));
+  if (nid !== id) { const b = await byId(nid, lang).catch(() => null); if (b) return b; }
+  const ak = w.authors?.[0]?.author?.key?.replace('/authors/', '') || null;
+  const au = ak ? await get(`/authors/${ak}.json`).catch(() => null) : null;
+  return { id: nid, title: w.title || '', cover: (w.covers || []).find((c) => c > 0) || null, a: au?.name || '', ak, y: null, pg: null, g: [], s: [], r: 0, rating: null };
 }
 
 // ISBN-10 oder ISBN-13 (Strichcode) prüfen und vereinheitlichen

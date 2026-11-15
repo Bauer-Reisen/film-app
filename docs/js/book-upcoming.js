@@ -4,11 +4,11 @@
 // Streng gefiltert: nur gedruckte Bücher auf Deutsch von der Autor·in selbst – keine Hörbücher, Neuauflagen,
 // Taschenbuch-Ausgaben schon erschienener Bücher, Sonderausgaben, Sammelbände oder Fanartikel.
 // Neue Bände deiner ★/♥-Reihen zählen am meisten. Höchstens drei Einträge; erscheint nur, wenn es etwas gibt.
-import * as store from './store.js?v=1.30.0';
-import * as books from './books.js?v=1.30.0';
-import { esc, toast } from './ui.js?v=1.30.0';
-import { seriesOf } from './book-series.js?v=1.30.0';
-import { UPCOMING as U } from './config.js?v=1.30.0';
+import * as store from './store.js?v=1.30.1';
+import * as books from './books.js?v=1.30.1';
+import { esc, toast } from './ui.js?v=1.30.1';
+import { seriesOf } from './book-series.js?v=1.30.1';
+import { UPCOMING as U } from './config.js?v=1.30.1';
 
 const SRU = 'https://services.dnb.de/sru/dnb';
 const LIKED = new Set(['liked', 'loved']);
@@ -138,6 +138,17 @@ async function appearedBefore(r) {
     const doc = await sru(`per="${nameParts(r.a).q}" and ${tq} and jhr<${r.year || Math.floor(ymNow() / 100)}`, 'oai_dc', 1);
     return count(doc) > 0;
   } catch { return true; } // im Zweifel weglassen
+}
+
+// Ein Buch nach seiner Nummer bei der Nationalbibliothek („DNB…“) – für eingefügte Bücherlisten
+export async function dnbBook(id) {
+  const idn = String(id).replace(/^DNB/, '');
+  const doc = await sru(`idn=${idn}`, 'MARC21-xml', 1);
+  const rec = [...doc.getElementsByTagName('record')].find((r) => r.getAttribute('type') === 'Bibliographic');
+  if (!rec) return null;
+  const r = parse(rec);
+  const [last, first = ''] = r.author.split(',').map((x) => x.trim());
+  return { id: `DNB${idn}`, title: r.title, a: [first, last].filter(Boolean).join(' '), ak: null, y: r.year, pg: null, g: [], cover: r.isbn ? `dnb:${r.isbn}` : null, rd: String(r.ym || r.year || '') };
 }
 
 // Wörter, an denen man eine Reihe erkennt („Bodenstein-Kirchhoff“, „Harry Potter“)

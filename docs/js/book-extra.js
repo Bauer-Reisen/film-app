@@ -2,10 +2,10 @@
 // - „Worum geht's?“: Beschreibung des Werks, wenn man es aufklappt
 // - „🎬 Verfilmt als …“: Suche bei TMDB, nur Treffer, deren Vorlage dieselbe Person geschrieben hat (wenn die Karte sichtbar wird)
 // - „📖 Das Buch dazu“ auf Film- und Serienkarten (Platzhalter bookSlot)
-import * as tmdb from './tmdb.js?v=1.30.0';
-import * as books from './books.js?v=1.30.0';
-import { esc } from './ui.js?v=1.30.0';
-import { writersOf, novelOf } from './bridge-books.js?v=1.30.0';
+import * as tmdb from './tmdb.js?v=1.30.1';
+import * as books from './books.js?v=1.30.1';
+import { esc } from './ui.js?v=1.30.1';
+import { writersOf, novelOf } from './bridge-books.js?v=1.30.1';
 
 const norm = (s) => (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]/g, '');
 const lastName = (n) => norm(String(n || '').split(' ').pop());
@@ -55,21 +55,21 @@ async function fillNovel(el, lang) {
   el.innerHTML = `📖 Das Buch dazu: „${esc(b.title)}“ von ${esc(b.writer || b.a)}`;
 }
 
-async function fillDesc(det) {
+async function fillDesc(det, lang) {
   if (det.dataset.done) return;
   det.dataset.done = '1';
   const p = det.querySelector('p');
   try {
-    const d = await books.description(det.dataset.bdesc);
-    p.textContent = d || 'Keine Beschreibung vorhanden.';
-    p.classList.toggle('muted', !d);
-    if (d) p.lang = 'en';
+    const d = await books.describe(det.dataset.bdesc, lang);
+    p.textContent = d.text || 'Keine Beschreibung vorhanden.';
+    p.classList.toggle('muted', !d.text);
+    if (d.text) p.lang = d.lang;
   } catch { p.textContent = 'Beschreibung gerade nicht erreichbar.'; delete det.dataset.done; }
 }
 
 // Einmal beim Start: beobachtet die Seite
 export function initBookExtras(root, getProfile) {
-  root.addEventListener('toggle', (e) => { const d = e.target; if (d.matches?.('details[data-bdesc]') && d.open) fillDesc(d); }, true);
+  root.addEventListener('toggle', (e) => { const d = e.target; if (d.matches?.('details[data-bdesc]') && d.open) fillDesc(d, books.readLang(getProfile())); }, true);
   const seen = new IntersectionObserver((entries) => {
     for (const e of entries) {
       if (!e.isIntersecting) continue;

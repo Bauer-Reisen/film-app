@@ -1,16 +1,16 @@
 // Seite „Geschmack“ bei Büchern: Autor·innen, Themen und Genres in Stufen, Bücher markieren, Suche (auch ISBN), Scannen.
-import * as store from './store.js?v=1.30.0';
-import * as books from './books.js?v=1.30.0';
-import { esc, toast } from './ui.js?v=1.30.0';
-import { SEED_BOOKS, SEED_AUTHORS } from './seeds-books.js?v=1.30.0';
-import { THEMES, themeById } from './themes.js?v=1.30.0';
-import { BOOK_GENRES, bookGenreById } from './book-genres.js?v=1.30.0';
-import { MEDIA, stateLabel, pressed } from './media.js?v=1.30.0';
-import { TASTE_HINT_AFTER } from './config.js?v=1.30.0';
-import { authorsFromFilms } from './bridge-books.js?v=1.30.0';
-import { unrated } from './book-rate.js?v=1.30.0';
-import { requestPaste } from './book-share.js?v=1.30.0';
-import { seriesBooks, fillSeriesSlots as seriesSlots } from './book-series.js?v=1.30.0';
+import * as store from './store.js?v=1.30.1';
+import * as books from './books.js?v=1.30.1';
+import { esc, toast } from './ui.js?v=1.30.1';
+import { SEED_BOOKS, SEED_AUTHORS } from './seeds-books.js?v=1.30.1';
+import { THEMES, themeById } from './themes.js?v=1.30.1';
+import { BOOK_GENRES, bookGenreById } from './book-genres.js?v=1.30.1';
+import { MEDIA, stateLabel, pressed } from './media.js?v=1.30.1';
+import { TASTE_HINT_AFTER } from './config.js?v=1.30.1';
+import { authorsFromFilms } from './bridge-books.js?v=1.30.1';
+import { unrated } from './book-rate.js?v=1.30.1';
+import { requestPaste } from './book-share.js?v=1.30.1';
+import { seriesBooks, fillSeriesSlots as seriesSlots } from './book-series.js?v=1.30.1';
 
 const STEP = 20;
 const SCAN = true; // Knopf „Bücher scannen“
@@ -244,8 +244,9 @@ function ownAuthors() {
   const W8 = { loved: 3, liked: 2, seen: 1.5, want: 1 };
   for (const [id, m] of Object.entries(marks())) {
     if (!W8[m.s] || !m.ak) continue;
-    const key = personKey(m.a) || m.ak;
-    const e = found.get(key) || { id: m.ak, n: m.a || 'Unbekannt', score: 0, title: m.n, ids: [], per: {} };
+    const a = books.authorName(m.a, m.ak);
+    const key = personKey(a) || m.ak;
+    const e = found.get(key) || { id: m.ak, n: a || 'Unbekannt', score: 0, title: m.n, ids: [], per: {} };
     e.score += W8[m.s]; e.ids.push(id);
     e.per[m.ak] = (e.per[m.ak] || 0) + 1;
     e.id = Object.entries(e.per).sort((a, b) => b[1] - a[1])[0][0];
