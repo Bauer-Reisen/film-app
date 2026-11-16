@@ -2,13 +2,13 @@
 // Erkennung: eingebaute Strichcode-Erkennung des Browsers (Android/Chrome) oder die freie Bibliothek ZXing
 // (docs/vendor/zxing.min.js, Apache-Lizenz, wird erst hier geladen – iPhone/Safari kann es nicht von sich aus).
 // Das Kamerabild bleibt auf dem Gerät, gesendet wird nur die erkannte ISBN.
-import * as store from './store.js?v=1.31.1';
-import * as books from './books.js?v=1.31.1';
-import { esc, toast, dialog } from './ui.js?v=1.31.1';
-import { coverImg, bookMeta } from './book-taste.js?v=1.31.1';
-import { stateLabel } from './media.js?v=1.31.1';
-import { startRating, takeAutoCamera } from './book-rate.js?v=1.31.1';
-import { shareIds, shareText, importList, takePaste } from './book-share.js?v=1.31.1';
+import * as store from './store.js?v=1.31.2';
+import * as books from './books.js?v=1.31.2';
+import { esc, toast, dialog } from './ui.js?v=1.31.2';
+import { coverImg, bookMeta } from './book-taste.js?v=1.31.2';
+import { stateLabel } from './media.js?v=1.31.2';
+import { startRating, takeAutoCamera } from './book-rate.js?v=1.31.2';
+import { shareIds, shareText, importList, takePaste } from './book-share.js?v=1.31.2';
 
 
 let profile = null;

@@ -2,10 +2,10 @@
 // - „Worum geht's?“: Beschreibung des Werks, wenn man es aufklappt
 // - „🎬 Verfilmt als …“: Suche bei TMDB, nur Treffer, deren Vorlage dieselbe Person geschrieben hat (wenn die Karte sichtbar wird)
 // - „📖 Das Buch dazu“ auf Film- und Serienkarten (Platzhalter bookSlot)
-import * as tmdb from './tmdb.js?v=1.31.1';
-import * as books from './books.js?v=1.31.1';
-import { esc } from './ui.js?v=1.31.1';
-import { writersOf, novelOf } from './bridge-books.js?v=1.31.1';
+import * as tmdb from './tmdb.js?v=1.31.2';
+import * as books from './books.js?v=1.31.2';
+import { esc } from './ui.js?v=1.31.2';
+import { writersOf, novelOf } from './bridge-books.js?v=1.31.2';
 
 const norm = (s) => (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]/g, '');
 const lastName = (n) => norm(String(n || '').split(' ').pop());
