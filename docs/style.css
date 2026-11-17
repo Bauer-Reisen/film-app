@@ -622,3 +622,7 @@ ul.plain { list-style: none; padding: 0; margin: 0; display: flex; flex-directio
 .sneak-limits { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px; margin: 10px 0 0; }
 .sneak-limits .btn[aria-pressed="true"] { background: var(--accent); color: var(--accent-text); border-color: var(--accent); font-weight: 700; }
 .credits-tip { margin: 6px 0; }
+/* „Wo war ich?“ */
+.ep-still { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: var(--radius); background: var(--surface); margin: 4px 0; }
+.ep-still.noimg { display: flex; align-items: center; justify-content: center; text-align: center; padding: 12px; aspect-ratio: auto; min-height: 120px; border: 1px dashed var(--line); }
+.ep-check summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; }

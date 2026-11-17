@@ -1,12 +1,16 @@
 // „Was ist neu?“ – nach einem Update einmal pro Profil, wenn man die App wieder öffnet.
 // Neue Profile bekommen stattdessen den Rundgang (tour.js) und sehen die alten Neuigkeiten nicht.
 // Neueste zuerst; nur Änderungen, die man sieht und kennen sollte.
-import { dialog } from './ui.js?v=1.35.0';
+import { dialog } from './ui.js?v=1.36.0';
 
 // PFLICHT bei jedem Eintrag: „tour“ nennt die Rundgang-Karte(n) aus tour.js, die die Neuerung erklären,
 // oder 'klein', wenn sie nicht in den Rundgang gehört. Größere Umbauten: Kartentext ergänzen und dort
 // „stand“ auf diese Version setzen. Der Wächter scripts/check-tour.js stoppt sonst das Hochladen.
 export const NEWS = [
+  {
+    v: '1.36.0', tour: ['mehr'], title: 'Serie: Wo war ich nochmal?',
+    items: ['Lange nicht weitergeschaut? Unter <strong>Weiterschauen → Stelle ändern</strong> hilft <strong>🤔 Weiß nicht mehr</strong>: ein paar Stichworte, woran du dich erinnerst, dann zeigt die App Bilder aus Folgen – „Kennst du das?“. Nach etwa 5–7 Fragen weißt du, wo du warst. Verraten wird dabei nichts.'],
+  },
   {
     v: '1.35.0', tour: 'klein', title: 'Sitzen bleiben nach dem Abspann?',
     items: ['Kommt bei einem Film noch eine Szene während oder nach dem Abspann, steht unter <strong>Mehr dazu</strong> ein kleiner Hinweis 🍿 – bei Filmen, bei denen das sicher bekannt ist.'],

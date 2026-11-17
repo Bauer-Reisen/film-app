@@ -1,8 +1,9 @@
 // Serien: Wo bin ich gerade? (Staffel/Folge) – und was ist neu?
 // Gespeichert an der Markierung der Serie: ep = [Staffel, Folge] (bis hierher gesehen), epT = wann eingetragen.
 // Die Folgen-Daten kommen aus den Serien-Details von TMDB (seasons, last_episode_to_air, next_episode_to_air).
-import * as store from './store.js?v=1.35.0';
-import { dialog, esc } from './ui.js?v=1.35.0';
+import * as store from './store.js?v=1.36.0';
+import { dialog, esc } from './ui.js?v=1.36.0';
+import { findEp } from './ep-find.js?v=1.36.0';
 
 const cmp = (a, b) => a[0] - b[0] || a[1] - b[1];
 const day = (t) => new Date(t).toLocaleDateString('sv-SE'); // JJJJ-MM-TT
@@ -87,7 +88,7 @@ export async function pickEp(d, mark, title) {
         <label class="field">Staffel <select name="s">${aired.map((s) => `<option value="${s.season_number}" ${s.season_number === cur[0] ? 'selected' : ''}>Staffel ${s.season_number}</option>`).join('')}</select></label>
         <label class="field">Folge <select name="e">${epOptions(cur[0], cur[1])}</select></label>
       </div>`,
-    buttons: [{ label: 'Abbrechen', value: null }, { label: 'Speichern', value: 'ok', primary: true }],
+    buttons: [{ label: 'Abbrechen', value: null }, { label: '🤔 Weiß nicht mehr', value: 'find' }, { label: 'Speichern', value: 'ok', primary: true }],
   });
   setTimeout(() => {
     const dlg = [...document.querySelectorAll('dialog.dlg')].at(-1);
@@ -96,6 +97,7 @@ export async function pickEp(d, mark, title) {
     if (sSel && eSel) sSel.onchange = () => { eSel.innerHTML = epOptions(Number(sSel.value), 1); };
   }, 0);
   const res = await pr;
+  if (res?.value === 'find') return findEp(d, title); // Hilfe: Stichworte + Bilder
   if (!res || res.value !== 'ok') return null;
   return [Number(res.fields.s), Number(res.fields.e)];
 }
