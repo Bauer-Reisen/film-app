@@ -646,3 +646,9 @@ main { padding-bottom: 24px; }
 .abo-switch .seg { flex: 1; min-width: 0; min-height: 44px; padding: 0 8px; }
 .where { margin: 2px 0 4px; font-weight: 600; }
 .abos .btn { flex: 0 0 auto; }
+/* Merkliste: „Nein danke“ zurückholen */
+.undo-box { margin: 24px 0 8px; }
+.undo-box summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; color: var(--muted, inherit); }
+.undo-list { list-style: none; padding: 0; margin: 8px 0; }
+.undo-list li { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 10px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.undo-list .row { gap: 8px; }

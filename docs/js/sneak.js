@@ -1,14 +1,14 @@
 // Seite „Überrasch mich“: Vorhang → Aufdecken → Rückmeldung oder anderer Film.
-import * as store from './store.js?v=1.37.0';
-import * as tmdb from './tmdb.js?v=1.37.0';
-import { esc, toast } from './ui.js?v=1.37.0';
-import { markButtons } from './cards.js?v=1.37.0';
-import { trailerBtn } from './trailer.js?v=1.37.0';
-import { draw, genreName } from './surprise.js?v=1.37.0';
-import { currentIds } from './suggest.js?v=1.37.0';
-import { MEDIA, mediaOf, marksOf, tvLength, askStarted, stateLabel, STARTED, pressed, pressedExact, pageEl } from './media.js?v=1.37.0';
-import { seenToast } from './via.js?v=1.37.0';
-import { creditsSlot, fillCredits } from './credits.js?v=1.37.0';
+import * as store from './store.js?v=1.38.0';
+import * as tmdb from './tmdb.js?v=1.38.0';
+import { esc, toast } from './ui.js?v=1.38.0';
+import { markButtons } from './cards.js?v=1.38.0';
+import { trailerBtn } from './trailer.js?v=1.38.0';
+import { draw, genreName } from './surprise.js?v=1.38.0';
+import { currentIds } from './suggest.js?v=1.38.0';
+import { MEDIA, mediaOf, marksOf, tvLength, askStarted, stateLabel, STARTED, pressed, pressedExact, pageEl } from './media.js?v=1.38.0';
+import { seenToast } from './via.js?v=1.38.0';
+import { creditsSlot, fillCredits } from './credits.js?v=1.38.0';
 
 // Drei große Knöpfe; „Schon gesehen“ klappt die Bewertung auf
 const MAIN = [['known', '✓', 'Schon gesehen'], ['want', '+', 'Merken'], ['noInterest', '–', 'Nein danke']];

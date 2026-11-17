@@ -1,12 +1,19 @@
 // „Was ist neu?“ – nach einem Update einmal pro Profil, wenn man die App wieder öffnet.
 // Neue Profile bekommen stattdessen den Rundgang (tour.js) und sehen die alten Neuigkeiten nicht.
 // Neueste zuerst; nur Änderungen, die man sieht und kennen sollte.
-import { dialog } from './ui.js?v=1.37.0';
+import { dialog } from './ui.js?v=1.38.0';
 
 // PFLICHT bei jedem Eintrag: „tour“ nennt die Rundgang-Karte(n) aus tour.js, die die Neuerung erklären,
 // oder 'klein', wenn sie nicht in den Rundgang gehört. Größere Umbauten: Kartentext ergänzen und dort
 // „stand“ auf diese Version setzen. Der Wächter scripts/check-tour.js stoppt sonst das Hochladen.
 export const NEWS = [
+  {
+    v: '1.38.0', tour: 'klein', title: 'Zwei kleine Helfer',
+    items: [
+      'Auch bei „Aus allem“ steht jetzt <strong>📺 Bei Netflix</strong> & Co., wenn ein Vorschlag zufällig in einem deiner Abos läuft.',
+      'Aus Versehen „Nein danke“ getippt? Ganz unten auf der <strong>Merkliste</strong> stehen die letzten 10 – mit „+ Merken“ oder „Zurückholen“.',
+    ],
+  },
   {
     v: '1.37.0', tour: ['vorschlaege'], title: 'Nur aus meinen Abos',
     items: [

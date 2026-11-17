@@ -1,22 +1,22 @@
 // Seite „Vorschläge“: Liste mit Begründung, fünf Rückmeldungen, Rückgängig, „Mehr“.
-import * as store from './store.js?v=1.37.0';
-import * as tmdb from './tmdb.js?v=1.37.0';
-import { esc, toast } from './ui.js?v=1.37.0';
-import { runtimeSlot, titleText } from './runtime.js?v=1.37.0';
-import { trailerBtn } from './trailer.js?v=1.37.0';
-import { compute, computeFiltered, visible, hasSources, erasFor, eraById } from './recommend.js?v=1.37.0';
-import { MEDIA, mediaOf, marksOf, askStarted, stateLabel, pageEl } from './media.js?v=1.37.0';
-import { THEMES, themeById } from './themes.js?v=1.37.0';
-import { RECOMMEND } from './config.js?v=1.37.0';
-import { GENRES, GENRES_TV } from './surprise.js?v=1.37.0';
-import { bookSlot } from './book-extra.js?v=1.37.0';
-import { peopleSlot, fillPeopleSlots } from './people.js?v=1.37.0';
-import { markButtons, moreBox, filterBox } from './cards.js?v=1.37.0';
-import * as upcoming from './upcoming.js?v=1.37.0';
-import * as tvNew from './tv-new.js?v=1.37.0';
-import { seenToast } from './via.js?v=1.37.0';
-import { creditsSlot } from './credits.js?v=1.37.0';
-import { abosOf, aboOn, discoverAbo, whereMine, SOURCE } from './providers.js?v=1.37.0';
+import * as store from './store.js?v=1.38.0';
+import * as tmdb from './tmdb.js?v=1.38.0';
+import { esc, toast } from './ui.js?v=1.38.0';
+import { runtimeSlot, titleText } from './runtime.js?v=1.38.0';
+import { trailerBtn } from './trailer.js?v=1.38.0';
+import { compute, computeFiltered, visible, hasSources, erasFor, eraById } from './recommend.js?v=1.38.0';
+import { MEDIA, mediaOf, marksOf, askStarted, stateLabel, pageEl } from './media.js?v=1.38.0';
+import { THEMES, themeById } from './themes.js?v=1.38.0';
+import { RECOMMEND } from './config.js?v=1.38.0';
+import { GENRES, GENRES_TV } from './surprise.js?v=1.38.0';
+import { bookSlot } from './book-extra.js?v=1.38.0';
+import { peopleSlot, fillPeopleSlots } from './people.js?v=1.38.0';
+import { markButtons, moreBox, filterBox } from './cards.js?v=1.38.0';
+import * as upcoming from './upcoming.js?v=1.38.0';
+import * as tvNew from './tv-new.js?v=1.38.0';
+import { seenToast } from './via.js?v=1.38.0';
+import { creditsSlot } from './credits.js?v=1.38.0';
+import { abosOf, aboOn, discoverAbo, whereMine, SOURCE } from './providers.js?v=1.38.0';
 
 // Drei große Knöpfe; „Schon gesehen“ klappt die Bewertung auf
 const MAIN = [['known', '✓', 'Schon gesehen'], ['want', '+', 'Merken'], ['noInterest', '–', 'Nein danke']];
@@ -65,6 +65,19 @@ async function keepMine(list) {
     chunk.forEach((x, j) => { if (where[j].length) out.push({ ...x, where: where[j] }); });
   }
   return out;
+}
+// „Aus allem“: läuft ein Titel zufällig in einem meiner Abos? Dann die Zeile nachtragen
+function fillWhere(root) {
+  if (!root || !abosOf(profile).length) return;
+  const mine = md;
+  root.querySelectorAll('[data-where-for]:not([data-done])').forEach((el) => {
+    el.dataset.done = '1';
+    whereMine(profile, Number(el.dataset.whereFor), mine).then((w) => {
+      if (!w.length || md !== mine) return;
+      el.textContent = `📺 Bei ${w.join(' und ')}`;
+      el.hidden = false;
+    });
+  });
 }
 const loadingText = () => (aboOn(profile) ? 'Suche in deinen Abos …' : `Suche passende ${W().many} …`);
 const aboSwitch = () => (abosOf(profile).length ? `
@@ -175,6 +188,7 @@ export async function mount(p) {
     <div class="row center-row"><button class="btn btn-primary" type="button" data-sg="more">Mehr Vorschläge</button></div>
     ${aboOn(profile) ? `<p class="muted small center">${SOURCE}</p>` : ''}`;
   fillPeopleSlots(box());
+  fillWhere(box());
   if (md === 'movie' && !activeText() && !aboOn(profile)) upcoming.fill(profile); // kommt nach, ohne die Vorschläge aufzuhalten
   if (md === 'tv' && !activeText()) tvNew.fill(profile);
 }
@@ -195,7 +209,7 @@ function card(x) {
       <div class="film-info">
         <h3 class="film-title">${titleText(m.title, m.id, md) || esc(m.title)} <span class="year">${y || ''}${runtimeSlot(m.id, md)}</span></h3>
         <p class="reason">${listed ? '🔖 Steht schon auf deiner Merkliste' : esc(x.text)}</p>
-        ${x.where ? `<p class="where small">📺 Bei ${esc(x.where.join(' und '))}</p>` : ''}
+        ${x.where ? `<p class="where small">📺 Bei ${esc(x.where.join(' und '))}</p>` : abosOf(profile).length ? `<p class="where small" data-where-for="${m.id}" hidden></p>` : ''}
         <div class="film-extra">${moreBox(m.overview ? `<p>${esc(m.overview)}</p>` : '', `
           ${peopleSlot(m.id, md)}
           <p class="rating muted small">TMDB-Note ${m.vote_average.toFixed(1).replace('.', ',')}</p>
@@ -218,6 +232,7 @@ function append(items) {
   items.forEach((x) => shown.push(x.movie.id));
   list.insertAdjacentHTML('beforeend', items.map(card).join(''));
   fillPeopleSlots(list);
+  fillWhere(list);
 }
 
 // Nach jeder Rückmeldung neu rechnen (höchstens eine neue Abfrage, der Rest ist gemerkt)

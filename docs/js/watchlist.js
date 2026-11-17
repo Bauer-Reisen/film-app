@@ -1,19 +1,19 @@
 // Seite „Merkliste“: alle Filme bzw. Serien mit „Merken“, neueste zuerst.
 // Bei Serien steht oben „Weiterschauen“ (angefangen, will ich zu Ende schauen).
 // Titel und Poster kommen immer in der Profilsprache (Startliste oder TMDB).
-import * as store from './store.js?v=1.37.0';
-import * as tmdb from './tmdb.js?v=1.37.0';
-import { esc, toast } from './ui.js?v=1.37.0';
-import { trailerBtn } from './trailer.js?v=1.37.0';
-import { titleText } from './runtime.js?v=1.37.0';
-import { SEED_MOVIES } from './seeds.js?v=1.37.0';
-import { SEED_SHOWS } from './seeds-tv.js?v=1.37.0';
-import { peopleSlot, fillPeopleSlots } from './people.js?v=1.37.0';
-import { markButtons, moreBox } from './cards.js?v=1.37.0';
-import { isUpcoming, startText } from './upcoming.js?v=1.37.0';
-import * as eps from './episodes.js?v=1.37.0';
-import { creditsSlot } from './credits.js?v=1.37.0';
-import { MEDIA, mediaOf, marksOf, tvLength, askStarted, stateLabel, justWatchUrl, shopLink, pageEl } from './media.js?v=1.37.0';
+import * as store from './store.js?v=1.38.0';
+import * as tmdb from './tmdb.js?v=1.38.0';
+import { esc, toast } from './ui.js?v=1.38.0';
+import { trailerBtn } from './trailer.js?v=1.38.0';
+import { titleText } from './runtime.js?v=1.38.0';
+import { SEED_MOVIES } from './seeds.js?v=1.38.0';
+import { SEED_SHOWS } from './seeds-tv.js?v=1.38.0';
+import { peopleSlot, fillPeopleSlots } from './people.js?v=1.38.0';
+import { markButtons, moreBox } from './cards.js?v=1.38.0';
+import { isUpcoming, startText } from './upcoming.js?v=1.38.0';
+import * as eps from './episodes.js?v=1.38.0';
+import { creditsSlot } from './credits.js?v=1.38.0';
+import { MEDIA, mediaOf, marksOf, tvLength, askStarted, stateLabel, justWatchUrl, shopLink, pageEl } from './media.js?v=1.38.0';
 
 const seedById = { movie: new Map(SEED_MOVIES.map((m) => [m.id, m])), tv: new Map(SEED_SHOWS.map((m) => [m.id, m])) };
 // Zwei große Knöpfe; „Gesehen“ klappt die Bewertung auf
@@ -47,7 +47,7 @@ export async function mount(p) {
     box().innerHTML = `<div class="card placeholder">
       <p><strong>Noch nichts gemerkt.</strong></p>
       <p class="muted">Tippe bei ${w.ofA} auf „+ Merken“ – unter „Vorschläge“ oder „Geschmack“. Dann steht ${md === 'tv' ? 'sie' : 'er'} hier.${md === 'tv' ? ' Serien mit „Angefangen → Will ich weiterschauen“ stehen ganz oben.' : ''}</p>
-      <p><a class="btn btn-primary btn-big" href="#/vorschlaege">Zu den Vorschlägen</a></p></div>`;
+      <p><a class="btn btn-primary btn-big" href="#/vorschlaege">Zu den Vorschlägen</a></p></div>${undoBox()}`;
     return;
   }
   const lang = profile.language.slice(0, 2);
@@ -79,9 +79,34 @@ export async function mount(p) {
     ${paused.length ? `<h2>Weiterschauen</h2><p class="muted small">Angefangen und liegen geblieben – die willst du noch zu Ende schauen.</p>
       <div class="suggestions">${paused.map(card).join('')}</div>${wanted.length ? '<h2>Gemerkt</h2>' : ''}` : ''}
     <p class="muted small" id="watch-count"></p>
-    <div class="suggestions">${wanted.map(card).join('')}</div>`;
+    <div class="suggestions">${wanted.map(card).join('')}</div>
+    ${undoBox()}`;
   updateCount();
   fillPeopleSlots(box());
+}
+
+// Aus Versehen „Nein danke“ getippt und das Rückgängig verpasst? Die letzten 10 zum Zurückholen (seit 1.37.1)
+const UNDO_MAX = 10;
+function undoBox() {
+  const list = listOf('noInterest').filter((m) => m.n).slice(0, UNDO_MAX);
+  if (!list.length) return '';
+  return `<details class="undo-box">
+    <summary>Aus Versehen weggeklickt? Die letzten ${list.length} mit „Nein danke“</summary>
+    <ul class="undo-list">${list.map((m) => `<li data-wlundo="${m.id}"><span>${esc(m.n)}${m.y ? ` <span class="muted">${m.y}</span>` : ''}</span>
+      <span class="row"><button type="button" class="btn btn-small" data-undo="want">+ Merken</button><button type="button" class="btn btn-small" data-undo="back">Zurückholen</button></span></li>`).join('')}</ul>
+    <p class="muted small">„Zurückholen“ heißt: Er kann wieder bei den Vorschlägen auftauchen.</p>
+  </details>`;
+}
+function undoAct(btn) {
+  const li = btn.closest('[data-wlundo]');
+  const id = Number(li.dataset.wlundo);
+  const md = media();
+  const m = marksOf(profile)[id];
+  if (!m) return;
+  const want = btn.dataset.undo === 'want';
+  const old = store.setMark(profile.id, md, id, want ? 'want' : null, { g: m.g, l: m.l, y: m.y, n: m.n });
+  toast(want ? `Gemerkt: ${m.n}` : `Zurückgeholt: ${m.n} – kann wieder vorgeschlagen werden`, { label: 'Rückgängig', run: () => { store.restoreMark(profile.id, md, id, old); mount(profile); } });
+  mount(profile);
 }
 
 function updateCount() {
@@ -119,6 +144,8 @@ function card(m) {
 }
 
 export function handleClick(e) {
+  const un = e.target.closest('[data-undo]');
+  if (un) { undoAct(un); return true; }
   const ep = e.target.closest('[data-ep]');
   if (ep) { epAct(ep); return true; }
   const btn = e.target.closest('[data-wl]');
