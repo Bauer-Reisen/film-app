@@ -626,3 +626,18 @@ ul.plain { list-style: none; padding: 0; margin: 0; display: flex; flex-directio
 .ep-still { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: var(--radius); background: var(--surface); margin: 4px 0; }
 .ep-still.noimg { display: flex; align-items: center; justify-content: center; text-align: center; padding: 12px; aspect-ratio: auto; min-height: 120px; border: 1px dashed var(--line); }
 .ep-check summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; }
+
+/* ===== Fester Rahmen (gegen hüpfende Leiste auf dem iPhone) =====
+   Die Seite selbst scrollt nicht mehr. Nur der Bereich #scroller zwischen Kopf und Leiste scrollt,
+   die Leiste steht im normalen Seitenaufbau und kann sich deshalb nicht bewegen. */
+html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
+body { min-height: 0; display: flex; flex-direction: column; }
+.scroller { flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; }
+.topbar { position: relative; flex: none; }
+/* Handy: Inhalt endet über der Tab-Leiste, nichts rutscht darunter */
+.scroller { margin-bottom: calc(var(--tab-h) + env(safe-area-inset-bottom)); }
+main { padding-bottom: 24px; }
+@media (min-width: 768px) {
+  .scroller { margin-bottom: 0; }
+  main { padding-bottom: 48px; }
+}

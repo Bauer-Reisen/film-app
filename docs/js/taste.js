@@ -1,14 +1,14 @@
 // Seite „Geschmack“: Personen, Studios/Sender und Themen in Stufen wählen, Filme oder Serien markieren, Suche.
-import * as store from './store.js?v=1.36.2';
-import * as tmdb from './tmdb.js?v=1.36.2';
-import { esc, toast } from './ui.js?v=1.36.2';
-import { runtimeSlot, titleText } from './runtime.js?v=1.36.2';
-import { SEED_MOVIES, SEED_PEOPLE, SEED_STUDIOS } from './seeds.js?v=1.36.2';
-import { SEED_SHOWS, SEED_TV_PEOPLE, SEED_NETWORKS } from './seeds-tv.js?v=1.36.2';
-import { THEMES, themeById, themeQuery } from './themes.js?v=1.36.2';
-import { MEDIA, mediaOf, marksOf, excludedGenre, askStarted, stateLabel, STARTED, creditsOf, pressed, pageEl } from './media.js?v=1.36.2';
-import { TASTE_HINT_AFTER } from './config.js?v=1.36.2';
-import { personLink } from './people.js?v=1.36.2';
+import * as store from './store.js?v=1.36.3';
+import * as tmdb from './tmdb.js?v=1.36.3';
+import { esc, toast } from './ui.js?v=1.36.3';
+import { runtimeSlot, titleText } from './runtime.js?v=1.36.3';
+import { SEED_MOVIES, SEED_PEOPLE, SEED_STUDIOS } from './seeds.js?v=1.36.3';
+import { SEED_SHOWS, SEED_TV_PEOPLE, SEED_NETWORKS } from './seeds-tv.js?v=1.36.3';
+import { THEMES, themeById, themeQuery } from './themes.js?v=1.36.3';
+import { MEDIA, mediaOf, marksOf, excludedGenre, askStarted, stateLabel, STARTED, creditsOf, pressed, pageEl } from './media.js?v=1.36.3';
+import { TASTE_HINT_AFTER } from './config.js?v=1.36.3';
+import { personLink } from './people.js?v=1.36.3';
 
 const STEP = 20;
 const MARKS = [
@@ -448,7 +448,7 @@ async function fillPersonView() {
     <h2>${c.w.many} ${x.r === 'director' ? 'von' : 'mit'} ${esc(x.n)}</h2>
     <p class="muted small">Tipp an, was du kennst – die bekanntesten stehen oben. <strong>Aufs Poster tippen = ★ ${c.w.fav}.</strong> Die ${otherWord} siehst du, wenn du oben auf „${otherWord}“ umschaltest.</p>
     <div id="person-films"><p class="muted center">Lädt …</p></div>`;
-  window.scrollTo({ top: 0 });
+  document.getElementById('scroller').scrollTo({ top: 0 });
   fillPersonInfo(v, x);
   let d;
   try { d = await tmdb.get(`person/${x.id}/${c.credits}`, { language: profile.language }); } catch (err) {
@@ -655,7 +655,7 @@ export function handleClick(e) {
     const back = ui.view?.back;
     ui.view = null;
     if (back) { location.hash = back; return true; }
-    fillBody(); window.scrollTo({ top: 0 });
+    fillBody(); document.getElementById('scroller').scrollTo({ top: 0 });
     return true;
   }
   if (act === 'view-retry') { fillBody(); return true; }

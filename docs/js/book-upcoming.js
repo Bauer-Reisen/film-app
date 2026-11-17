@@ -4,12 +4,12 @@
 // Streng gefiltert: nur gedruckte Bücher auf Deutsch von der Autor·in selbst – keine Hörbücher, Neuauflagen,
 // Taschenbuch-Ausgaben schon erschienener Bücher, Sonderausgaben, Sammelbände oder Fanartikel.
 // Neue Bände deiner ★/♥-Reihen zählen am meisten. Höchstens drei Einträge; erscheint nur, wenn es etwas gibt.
-import * as store from './store.js?v=1.36.2';
-import * as books from './books.js?v=1.36.2';
-import { esc, toast } from './ui.js?v=1.36.2';
-import { seriesOf } from './book-series.js?v=1.36.2';
-import { UPCOMING as U } from './config.js?v=1.36.2';
-import { pageEl } from './media.js?v=1.36.2';
+import * as store from './store.js?v=1.36.3';
+import * as books from './books.js?v=1.36.3';
+import { esc, toast } from './ui.js?v=1.36.3';
+import { seriesOf } from './book-series.js?v=1.36.3';
+import { UPCOMING as U } from './config.js?v=1.36.3';
+import { pageEl } from './media.js?v=1.36.3';
 
 const SRU = 'https://services.dnb.de/sru/dnb';
 const LIKED = new Set(['liked', 'loved']);

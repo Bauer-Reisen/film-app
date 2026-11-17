@@ -1,6 +1,6 @@
 // Kurzer Rundgang für neue Profile: sechs Karten nacheinander, jederzeit überspringbar.
 // Danach (oder beim Überspringen) gilt er als gesehen; unter „Profil“ lässt er sich nochmal ansehen.
-import { dialog, esc } from './ui.js?v=1.36.2';
+import { dialog, esc } from './ui.js?v=1.36.3';
 
 // Jede Karte hat eine Kennung (id) und den Stand (Version), in dem ihr Text zuletzt geprüft wurde.
 // Der Wächter scripts/check-tour.js prüft vor jedem Hochladen, ob jede Neuerung hier erklärt ist.

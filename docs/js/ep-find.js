@@ -2,9 +2,9 @@
 // 1. Stichworte (was man noch weiß) → werden in Titeln und Inhaltsangaben der Folgen gesucht, gezeigt wird kein Text.
 // 2. Standbilder: „Kennst du das?“ – Ja = gesehen, weiter hinten suchen; Nein = weiter vorne (Halbieren, ~7 Fragen bei 100 Folgen).
 // 3. Ergebnis: Zur Kontrolle darf man die Inhaltsangabe der zuletzt gesehenen Folge lesen – die kennt man ja schon.
-import * as tmdb from './tmdb.js?v=1.36.2';
-import { dialog, esc, toast } from './ui.js?v=1.36.2';
-import { seasonsOf, se } from './episodes.js?v=1.36.2';
+import * as tmdb from './tmdb.js?v=1.36.3';
+import { dialog, esc, toast } from './ui.js?v=1.36.3';
+import { seasonsOf, se } from './episodes.js?v=1.36.3';
 
 const STOP = new Set('und oder aber der die das den dem des ein eine einen einem einer eines mit von vom zum zur bei auf aus nach vor für über unter ist war sind waren hat hatte haben wird wurde werden sich sie er es ich wir ihr ihm ihn ihre sein seine noch auch dann als wie wo was wer the and with from that this'.split(' '));
 const norm = (s) => String(s || '').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim();

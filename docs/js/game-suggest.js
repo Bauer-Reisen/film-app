@@ -1,13 +1,13 @@
 // Spiele: Vorschläge berechnen (harte Filter, Punkte, Indie-Mischung) und die Seite „Vorschläge“.
-import * as store from './store.js?v=1.36.2';
-import * as games from './games.js?v=1.36.2';
-import { esc, toast } from './ui.js?v=1.36.2';
-import { RECOMMEND_GAME as R } from './config.js?v=1.36.2';
-import { GENRES, INDIE, MODES } from './game-data.js?v=1.36.2';
-import { WORLDS } from './seeds-games.js?v=1.36.2';
-import { markButtons, moreBox, filterBox } from './cards.js?v=1.36.2';
-import { seenToast } from './via.js?v=1.36.2';
-import { pageEl } from './media.js?v=1.36.2';
+import * as store from './store.js?v=1.36.3';
+import * as games from './games.js?v=1.36.3';
+import { esc, toast } from './ui.js?v=1.36.3';
+import { RECOMMEND_GAME as R } from './config.js?v=1.36.3';
+import { GENRES, INDIE, MODES } from './game-data.js?v=1.36.3';
+import { WORLDS } from './seeds-games.js?v=1.36.3';
+import { markButtons, moreBox, filterBox } from './cards.js?v=1.36.3';
+import { seenToast } from './via.js?v=1.36.3';
+import { pageEl } from './media.js?v=1.36.3';
 
 const MAIN = [['known', '✓', 'Schon gespielt'], ['want', '+', 'Merken'], ['noInterest', '–', 'Nein danke']];
 const KNOWN = [['liked', '♥', 'Mag ich'], ['seen', '✓', 'Ganz okay'], ['disliked', '✕', 'Mag ich nicht']];

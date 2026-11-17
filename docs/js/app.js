@@ -1,31 +1,31 @@
 // Oberfläche: Seitenwechsel über die Adresse (#/vorschlaege usw.)
-import { VERSION, LANGUAGES } from './config.js?v=1.36.2';
-import * as store from './store.js?v=1.36.2';
-import { saveBackup, readBackup, findSameName, importAsNew, mergeInto } from './backup.js?v=1.36.2';
-import { esc, dialog, toast, formatDate } from './ui.js?v=1.36.2';
-import * as platform from './platform.js?v=1.36.2';
-import * as taste from './taste.js?v=1.36.2';
-import * as suggest from './suggest.js?v=1.36.2';
-import * as watchlist from './watchlist.js?v=1.36.2';
-import * as sneak from './sneak.js?v=1.36.2';
-import * as group from './group.js?v=1.36.2';
-import * as kids from './kids.js?v=1.36.2';
-import * as rewatch from './rewatch.js?v=1.36.2';
-import * as trailer from './trailer.js?v=1.36.2';
-import { handleKnown } from './cards.js?v=1.36.2';
-import { initRuntimes } from './runtime.js?v=1.36.2';
-import { mediaOf, areasOf, AREAS } from './media.js?v=1.36.2';
-import { runTour } from './tour.js?v=1.36.2';
-import { hitStats } from './via.js?v=1.36.2';
-import { unseen, showNews, LATEST } from './news.js?v=1.36.2';
-import * as bookTaste from './book-taste.js?v=1.36.2';
-import * as bookList from './book-list.js?v=1.36.2';
-import * as scan from './scan.js?v=1.36.2';
-import * as bookRate from './book-rate.js?v=1.36.2';
-import * as bookSuggest from './book-suggest.js?v=1.36.2';
-import * as bookSneak from './book-sneak.js?v=1.36.2';
-import * as bookRewatch from './book-rewatch.js?v=1.36.2';
-import { initBookExtras } from './book-extra.js?v=1.36.2';
+import { VERSION, LANGUAGES } from './config.js?v=1.36.3';
+import * as store from './store.js?v=1.36.3';
+import { saveBackup, readBackup, findSameName, importAsNew, mergeInto } from './backup.js?v=1.36.3';
+import { esc, dialog, toast, formatDate } from './ui.js?v=1.36.3';
+import * as platform from './platform.js?v=1.36.3';
+import * as taste from './taste.js?v=1.36.3';
+import * as suggest from './suggest.js?v=1.36.3';
+import * as watchlist from './watchlist.js?v=1.36.3';
+import * as sneak from './sneak.js?v=1.36.3';
+import * as group from './group.js?v=1.36.3';
+import * as kids from './kids.js?v=1.36.3';
+import * as rewatch from './rewatch.js?v=1.36.3';
+import * as trailer from './trailer.js?v=1.36.3';
+import { handleKnown } from './cards.js?v=1.36.3';
+import { initRuntimes } from './runtime.js?v=1.36.3';
+import { mediaOf, areasOf, AREAS } from './media.js?v=1.36.3';
+import { runTour } from './tour.js?v=1.36.3';
+import { hitStats } from './via.js?v=1.36.3';
+import { unseen, showNews, LATEST } from './news.js?v=1.36.3';
+import * as bookTaste from './book-taste.js?v=1.36.3';
+import * as bookList from './book-list.js?v=1.36.3';
+import * as scan from './scan.js?v=1.36.3';
+import * as bookRate from './book-rate.js?v=1.36.3';
+import * as bookSuggest from './book-suggest.js?v=1.36.3';
+import * as bookSneak from './book-sneak.js?v=1.36.3';
+import * as bookRewatch from './book-rewatch.js?v=1.36.3';
+import { initBookExtras } from './book-extra.js?v=1.36.3';
 
 const view = document.getElementById('view');
 const APP_URL = 'https://bauer-reisen.github.io/film-app/';
@@ -52,7 +52,7 @@ const gamesOn = (p) => areasOf(p).includes('game');
 let gamesMod = null;
 let gamesLoading = null;
 function loadGames() {
-  gamesLoading ||= import('./game-pages.js?v=1.36.2').then((m) => { gamesMod = m; return m; }).catch((err) => { gamesLoading = null; throw err; });
+  gamesLoading ||= import('./game-pages.js?v=1.36.3').then((m) => { gamesMod = m; return m; }).catch((err) => { gamesLoading = null; throw err; });
   return gamesLoading;
 }
 
@@ -634,13 +634,14 @@ tabs.forEach((a) => a.addEventListener('click', (e) => {
 
 // ---------- Nach oben ----------
 const topBtn = document.getElementById('to-top');
-const toTop = () => window.scrollTo({ top: 0, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+const scroller = document.getElementById('scroller'); // nur dieser Bereich scrollt (fester Rahmen)
+const toTop = () => scroller.scrollTo({ top: 0, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
 topBtn.addEventListener('click', toTop);
 let topTick = false;
-window.addEventListener('scroll', () => {
+scroller.addEventListener('scroll', () => {
   if (topTick) return;
   topTick = true;
-  requestAnimationFrame(() => { topBtn.hidden = window.scrollY < 1200; topTick = false; });
+  requestAnimationFrame(() => { topBtn.hidden = scroller.scrollTop < 1200; topTick = false; });
 }, { passive: true });
 
 window.addEventListener('installable', () => show());
@@ -690,7 +691,7 @@ function show() {
   });
   whoBtn.textContent = p ? p.name : 'Wer schaut?';
   whoBtn.setAttribute('aria-label', p ? `Profil ${p.name} – Profil wechseln` : 'Profil wählen');
-  window.scrollTo(0, 0);
+  document.getElementById('scroller').scrollTo(0, 0);
   if (p && !page.noTabs) maybeNews(p);
   if (p && gamesOn(p) && media !== 'game') loadGames().then((m) => m.decorate(view, media)).catch(() => {});
 }

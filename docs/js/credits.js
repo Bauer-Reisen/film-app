@@ -1,7 +1,7 @@
 // Kleiner Hinweis unter „Mehr dazu“: Gibt es eine Szene während oder nach dem Abspann?
 // Quelle: TMDB-Stichwörter. Nur wenn der Film sicher so markiert ist – sonst erscheint nichts.
 // Geladen wird erst, wenn man „Mehr dazu“ aufklappt.
-import * as tmdb from './tmdb.js?v=1.36.2';
+import * as tmdb from './tmdb.js?v=1.36.3';
 
 const AFTER = 179430; // aftercreditsstinger
 const DURING = 179431; // duringcreditsstinger

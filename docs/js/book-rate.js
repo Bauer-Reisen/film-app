@@ -1,12 +1,12 @@
 // Seite „Wie fandst du sie?“: Bücher eins nach dem anderen kurz bewerten.
 // Kommt direkt nach dem Scannen oder dem Einfügen einer geteilten Liste; auch später über „Geschmack“ erreichbar.
 // Offen sind: Bücher auf der Warteliste (pendingBooks, noch gar nicht markiert) und ältere, nur als „Gelesen“ markierte.
-import * as store from './store.js?v=1.36.2';
-import { esc } from './ui.js?v=1.36.2';
-import { MEDIA } from './media.js?v=1.36.2';
-import { coverImg, bookMetaHtml, openSub, openSeries } from './book-taste.js?v=1.36.2';
-import { seriesOf } from './book-series.js?v=1.36.2';
-import { readLang } from './books.js?v=1.36.2';
+import * as store from './store.js?v=1.36.3';
+import { esc } from './ui.js?v=1.36.3';
+import { MEDIA } from './media.js?v=1.36.3';
+import { coverImg, bookMetaHtml, openSub, openSeries } from './book-taste.js?v=1.36.3';
+import { seriesOf } from './book-series.js?v=1.36.3';
+import { readLang } from './books.js?v=1.36.3';
 
 const W = MEDIA.book.w;
 // Zu Ende gelesen → wie war's? Angefangen → abgebrochen oder liegen geblieben?
@@ -125,7 +125,7 @@ function answer(choice) {
   profile = store.getProfile(profile.id);
   pos++;
   paint();
-  window.scrollTo({ top: 0 });
+  document.getElementById('scroller').scrollTo({ top: 0 });
 }
 
 function back() {

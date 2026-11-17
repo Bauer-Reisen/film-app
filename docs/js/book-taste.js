@@ -1,16 +1,16 @@
 // Seite „Geschmack“ bei Büchern: Autor·innen, Themen und Genres in Stufen, Bücher markieren, Suche (auch ISBN), Scannen.
-import * as store from './store.js?v=1.36.2';
-import * as books from './books.js?v=1.36.2';
-import { esc, toast } from './ui.js?v=1.36.2';
-import { SEED_BOOKS, SEED_AUTHORS } from './seeds-books.js?v=1.36.2';
-import { THEMES, themeById } from './themes.js?v=1.36.2';
-import { BOOK_GENRES, bookGenreById } from './book-genres.js?v=1.36.2';
-import { MEDIA, stateLabel, pressed, pageEl } from './media.js?v=1.36.2';
-import { TASTE_HINT_AFTER } from './config.js?v=1.36.2';
-import { authorsFromFilms } from './bridge-books.js?v=1.36.2';
-import { unrated } from './book-rate.js?v=1.36.2';
-import { requestPaste } from './book-share.js?v=1.36.2';
-import { seriesBooks, fillSeriesSlots as seriesSlots } from './book-series.js?v=1.36.2';
+import * as store from './store.js?v=1.36.3';
+import * as books from './books.js?v=1.36.3';
+import { esc, toast } from './ui.js?v=1.36.3';
+import { SEED_BOOKS, SEED_AUTHORS } from './seeds-books.js?v=1.36.3';
+import { THEMES, themeById } from './themes.js?v=1.36.3';
+import { BOOK_GENRES, bookGenreById } from './book-genres.js?v=1.36.3';
+import { MEDIA, stateLabel, pressed, pageEl } from './media.js?v=1.36.3';
+import { TASTE_HINT_AFTER } from './config.js?v=1.36.3';
+import { authorsFromFilms } from './bridge-books.js?v=1.36.3';
+import { unrated } from './book-rate.js?v=1.36.3';
+import { requestPaste } from './book-share.js?v=1.36.3';
+import { seriesBooks, fillSeriesSlots as seriesSlots } from './book-series.js?v=1.36.3';
 
 const STEP = 20;
 const SCAN = true; // Knopf „Bücher scannen“
@@ -323,7 +323,8 @@ async function fillListView() {
     <h2>${esc(title)}</h2>
     <p class="muted small">${esc(hint)}</p>
     <div id="author-books"><p class="muted center">Lädt …</p></div>`;
-  window.scrollTo({ top: Math.max(0, el.getBoundingClientRect().top + window.scrollY - 80) }); // gleich zur Liste, nicht zum Scan-Hinweis
+  const sc = document.getElementById('scroller');
+  sc.scrollTo({ top: Math.max(0, el.getBoundingClientRect().top - sc.getBoundingClientRect().top + sc.scrollTop - 16) }); // gleich zur Liste, nicht zum Scan-Hinweis
   if (v.kind === 'author') fillAuthorInfo(v);
   let list = [];
   try { list = await viewList(v); } catch (err) {
@@ -603,7 +604,7 @@ export function handleClick(e) {
     const back = ui.view?.back;
     ui.view = null;
     if (back) { location.hash = back; return true; }
-    L.done = null; window.scrollTo({ top: 0 });
+    L.done = null; document.getElementById('scroller').scrollTo({ top: 0 });
     fillBody();
     return true;
   }
