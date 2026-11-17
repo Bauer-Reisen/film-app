@@ -24,6 +24,8 @@ const ROUTES = [
   [/^\/3\/tv\/\d+$/, DAY], // täglich frisch: neue Folgen und Termine
   [/^\/3\/tv\/\d+\/(recommendations|keywords|aggregate_credits|content_ratings)$/, 7 * DAY],
   [/^\/3\/tv\/\d+\/season\/\d+$/, DAY], // Folgen einer Staffel („Wo war ich?“)
+  [/^\/3\/(movie|tv)\/\d+\/watch\/providers$/, DAY], // Wo läuft das? (Daten von JustWatch, „Nur meine Abos“)
+  [/^\/3\/watch\/providers\/(movie|tv)$/, 7 * DAY],
   [/^\/3\/person\/\d+\/tv_credits$/, 7 * DAY],
   [/^\/3\/search\/tv$/, 3600],
   [/^\/3\/network\/\d+$/, 7 * DAY],

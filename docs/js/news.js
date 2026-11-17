@@ -1,12 +1,19 @@
 // „Was ist neu?“ – nach einem Update einmal pro Profil, wenn man die App wieder öffnet.
 // Neue Profile bekommen stattdessen den Rundgang (tour.js) und sehen die alten Neuigkeiten nicht.
 // Neueste zuerst; nur Änderungen, die man sieht und kennen sollte.
-import { dialog } from './ui.js?v=1.36.3';
+import { dialog } from './ui.js?v=1.37.0';
 
 // PFLICHT bei jedem Eintrag: „tour“ nennt die Rundgang-Karte(n) aus tour.js, die die Neuerung erklären,
 // oder 'klein', wenn sie nicht in den Rundgang gehört. Größere Umbauten: Kartentext ergänzen und dort
 // „stand“ auf diese Version setzen. Der Wächter scripts/check-tour.js stoppt sonst das Hochladen.
 export const NEWS = [
+  {
+    v: '1.37.0', tour: ['vorschlaege'], title: 'Nur aus meinen Abos',
+    items: [
+      'Unter <strong>Profil → Meine Abos</strong> tippst du an, was du hast – Netflix, Prime Video, Disney+, WOW, Joyn, RTL+ und mehr, auch die Mediatheken.',
+      'Bei den Vorschlägen schaltest du dann oben um: <strong>📺 Nur meine Abos</strong> oder aus allem. Auf jeder Karte steht, wo der Film oder die Serie läuft.',
+    ],
+  },
   {
     v: '1.36.0', tour: ['mehr'], title: 'Serie: Wo war ich nochmal?',
     items: ['Lange nicht weitergeschaut? Unter <strong>Weiterschauen → Stelle ändern</strong> hilft <strong>🤔 Weiß nicht mehr</strong>: ein paar Stichworte, woran du dich erinnerst, dann zeigt die App Bilder aus Folgen – „Kennst du das?“. Nach etwa 5–7 Fragen weißt du, wo du warst. Verraten wird dabei nichts.'],

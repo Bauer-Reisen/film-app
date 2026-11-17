@@ -1,31 +1,32 @@
 // Oberfläche: Seitenwechsel über die Adresse (#/vorschlaege usw.)
-import { VERSION, LANGUAGES } from './config.js?v=1.36.3';
-import * as store from './store.js?v=1.36.3';
-import { saveBackup, readBackup, findSameName, importAsNew, mergeInto } from './backup.js?v=1.36.3';
-import { esc, dialog, toast, formatDate } from './ui.js?v=1.36.3';
-import * as platform from './platform.js?v=1.36.3';
-import * as taste from './taste.js?v=1.36.3';
-import * as suggest from './suggest.js?v=1.36.3';
-import * as watchlist from './watchlist.js?v=1.36.3';
-import * as sneak from './sneak.js?v=1.36.3';
-import * as group from './group.js?v=1.36.3';
-import * as kids from './kids.js?v=1.36.3';
-import * as rewatch from './rewatch.js?v=1.36.3';
-import * as trailer from './trailer.js?v=1.36.3';
-import { handleKnown } from './cards.js?v=1.36.3';
-import { initRuntimes } from './runtime.js?v=1.36.3';
-import { mediaOf, areasOf, AREAS } from './media.js?v=1.36.3';
-import { runTour } from './tour.js?v=1.36.3';
-import { hitStats } from './via.js?v=1.36.3';
-import { unseen, showNews, LATEST } from './news.js?v=1.36.3';
-import * as bookTaste from './book-taste.js?v=1.36.3';
-import * as bookList from './book-list.js?v=1.36.3';
-import * as scan from './scan.js?v=1.36.3';
-import * as bookRate from './book-rate.js?v=1.36.3';
-import * as bookSuggest from './book-suggest.js?v=1.36.3';
-import * as bookSneak from './book-sneak.js?v=1.36.3';
-import * as bookRewatch from './book-rewatch.js?v=1.36.3';
-import { initBookExtras } from './book-extra.js?v=1.36.3';
+import { VERSION, LANGUAGES } from './config.js?v=1.37.0';
+import * as store from './store.js?v=1.37.0';
+import { saveBackup, readBackup, findSameName, importAsNew, mergeInto } from './backup.js?v=1.37.0';
+import { esc, dialog, toast, formatDate } from './ui.js?v=1.37.0';
+import * as platform from './platform.js?v=1.37.0';
+import * as taste from './taste.js?v=1.37.0';
+import * as suggest from './suggest.js?v=1.37.0';
+import * as watchlist from './watchlist.js?v=1.37.0';
+import * as sneak from './sneak.js?v=1.37.0';
+import * as group from './group.js?v=1.37.0';
+import * as kids from './kids.js?v=1.37.0';
+import * as rewatch from './rewatch.js?v=1.37.0';
+import * as trailer from './trailer.js?v=1.37.0';
+import { handleKnown } from './cards.js?v=1.37.0';
+import { initRuntimes } from './runtime.js?v=1.37.0';
+import { mediaOf, areasOf, AREAS } from './media.js?v=1.37.0';
+import { runTour } from './tour.js?v=1.37.0';
+import { hitStats } from './via.js?v=1.37.0';
+import { unseen, showNews, LATEST } from './news.js?v=1.37.0';
+import * as bookTaste from './book-taste.js?v=1.37.0';
+import * as bookList from './book-list.js?v=1.37.0';
+import * as scan from './scan.js?v=1.37.0';
+import * as bookRate from './book-rate.js?v=1.37.0';
+import * as bookSuggest from './book-suggest.js?v=1.37.0';
+import * as bookSneak from './book-sneak.js?v=1.37.0';
+import * as bookRewatch from './book-rewatch.js?v=1.37.0';
+import { initBookExtras } from './book-extra.js?v=1.37.0';
+import { PROVIDERS, abosOf } from './providers.js?v=1.37.0';
 
 const view = document.getElementById('view');
 const APP_URL = 'https://bauer-reisen.github.io/film-app/';
@@ -52,7 +53,7 @@ const gamesOn = (p) => areasOf(p).includes('game');
 let gamesMod = null;
 let gamesLoading = null;
 function loadGames() {
-  gamesLoading ||= import('./game-pages.js?v=1.36.3').then((m) => { gamesMod = m; return m; }).catch((err) => { gamesLoading = null; throw err; });
+  gamesLoading ||= import('./game-pages.js?v=1.37.0').then((m) => { gamesMod = m; return m; }).catch((err) => { gamesLoading = null; throw err; });
   return gamesLoading;
 }
 
@@ -281,6 +282,14 @@ const pages = {
           <p class="muted small">Was du nicht brauchst, blendest du aus. Markierungen bleiben erhalten.</p>
           ${gamesOn(p) ? `<p><button class="btn" type="button" data-act="game-setup">Spiele: Plattform, Zeit, Spielweise</button></p>` : ''}
         </section>
+
+        ${areasOf(p).some((a) => a === 'movie' || a === 'tv') ? `<section class="card stack">
+          <h2 id="abos-h">Meine Abos</h2>
+          <div class="row abos" role="group" aria-labelledby="abos-h">
+            ${PROVIDERS.map(([k, n]) => `<button type="button" class="btn toggle" data-abo="${k}" aria-pressed="${abosOf(p).includes(k)}">${esc(n)}</button>`).join('')}
+          </div>
+          <p class="muted small">Tipp an, was du hast. Bei den Vorschlägen kannst du dann umschalten: <strong>Nur meine Abos</strong> oder aus allem. Gilt für Filme und Serien in Deutschland.</p>
+        </section>` : ''}
 
         ${hitCard(p)}
 
@@ -577,6 +586,17 @@ view.addEventListener('click', async (e) => {
     store.updateProfile(currentId, { settings: { ...(p.settings || {}), bookLang: blang.dataset.blang } });
     toast(`Bücher jetzt auf ${blang.dataset.blang === 'de' ? 'Deutsch' : 'Englisch'}.`);
     return show();
+  }
+
+  const abo = e.target.closest('[data-abo]');
+  if (abo) {
+    const p = current();
+    const k = abo.dataset.abo;
+    const list = abosOf(p);
+    const next = list.includes(k) ? list.filter((x) => x !== k) : [...list, k];
+    store.updateProfile(currentId, { settings: { ...(p.settings || {}), abos: next, aboOnly: next.length ? (p.settings?.aboOnly ?? true) : false } });
+    abo.setAttribute('aria-pressed', String(next.includes(k)));
+    return;
   }
 
   const lang = e.target.closest('[data-lang]');

@@ -1,21 +1,22 @@
 // Seite „Vorschläge“: Liste mit Begründung, fünf Rückmeldungen, Rückgängig, „Mehr“.
-import * as store from './store.js?v=1.36.3';
-import * as tmdb from './tmdb.js?v=1.36.3';
-import { esc, toast } from './ui.js?v=1.36.3';
-import { runtimeSlot, titleText } from './runtime.js?v=1.36.3';
-import { trailerBtn } from './trailer.js?v=1.36.3';
-import { compute, computeFiltered, visible, hasSources, erasFor, eraById } from './recommend.js?v=1.36.3';
-import { MEDIA, mediaOf, marksOf, askStarted, stateLabel, pageEl } from './media.js?v=1.36.3';
-import { THEMES, themeById } from './themes.js?v=1.36.3';
-import { RECOMMEND } from './config.js?v=1.36.3';
-import { GENRES, GENRES_TV } from './surprise.js?v=1.36.3';
-import { bookSlot } from './book-extra.js?v=1.36.3';
-import { peopleSlot, fillPeopleSlots } from './people.js?v=1.36.3';
-import { markButtons, moreBox, filterBox } from './cards.js?v=1.36.3';
-import * as upcoming from './upcoming.js?v=1.36.3';
-import * as tvNew from './tv-new.js?v=1.36.3';
-import { seenToast } from './via.js?v=1.36.3';
-import { creditsSlot } from './credits.js?v=1.36.3';
+import * as store from './store.js?v=1.37.0';
+import * as tmdb from './tmdb.js?v=1.37.0';
+import { esc, toast } from './ui.js?v=1.37.0';
+import { runtimeSlot, titleText } from './runtime.js?v=1.37.0';
+import { trailerBtn } from './trailer.js?v=1.37.0';
+import { compute, computeFiltered, visible, hasSources, erasFor, eraById } from './recommend.js?v=1.37.0';
+import { MEDIA, mediaOf, marksOf, askStarted, stateLabel, pageEl } from './media.js?v=1.37.0';
+import { THEMES, themeById } from './themes.js?v=1.37.0';
+import { RECOMMEND } from './config.js?v=1.37.0';
+import { GENRES, GENRES_TV } from './surprise.js?v=1.37.0';
+import { bookSlot } from './book-extra.js?v=1.37.0';
+import { peopleSlot, fillPeopleSlots } from './people.js?v=1.37.0';
+import { markButtons, moreBox, filterBox } from './cards.js?v=1.37.0';
+import * as upcoming from './upcoming.js?v=1.37.0';
+import * as tvNew from './tv-new.js?v=1.37.0';
+import { seenToast } from './via.js?v=1.37.0';
+import { creditsSlot } from './credits.js?v=1.37.0';
+import { abosOf, aboOn, discoverAbo, whereMine, SOURCE } from './providers.js?v=1.37.0';
 
 // Drei große Knöpfe; „Schon gesehen“ klappt die Bewertung auf
 const MAIN = [['known', '✓', 'Schon gesehen'], ['want', '+', 'Merken'], ['noInterest', '–', 'Nein danke']];
@@ -37,7 +38,40 @@ const genreMap = () => (md === 'tv' ? GENRES_TV : GENRES);
 const genreList = () => Object.entries(genreMap()).map(([id, n]) => ({ id, n: n[0] })).sort((a, b) => a.n.localeCompare(b.n, 'de'));
 const activeText = () => [genre && genreMap()[genre]?.[0], mood && themeById.get(mood)?.n, era && eraById(md).get(era)?.n].filter(Boolean).join(' · ');
 let md = 'movie'; // Filme oder Serien – wie gerade oben eingestellt
-const calc = () => (mood || era || genre ? computeFiltered(profile, { theme: mood, era, genre }, page, md) : compute(profile, page, md));
+const calcAll = () => (mood || era || genre ? computeFiltered(profile, { theme: mood, era, genre }, page, md) : compute(profile, page, md));
+const calc = async () => { const list = await calcAll(); return aboOn(profile) ? keepMine(list) : list; };
+
+// „Nur meine Abos“: die Vorschläge der Reihe nach prüfen, wo sie laufen (gemerkt), dazu gut bewertete Titel
+// aus den Abos (nur ohne Thema/Zeit-Filter – die könnte diese Abfrage nicht einhalten)
+async function keepMine(list) {
+  const c = MEDIA[md];
+  let extra = [];
+  if (!mood && !era) {
+    try {
+      const res = await Promise.all(Array.from({ length: page }, (_, i) => tmdb.get(c.discover, {
+        language: profile.language, without_genres: c.without, sort_by: 'vote_count.desc', 'vote_average.gte': 7, 'vote_count.gte': md === 'tv' ? 200 : 500,
+        ...(genre ? { with_genres: genre } : {}), ...discoverAbo(profile), page: i + 1,
+      })));
+      const have = new Set(list.map((x) => x.movie.id));
+      extra = res.flatMap((r) => r.results || []).filter((m) => m.poster_path && !have.has(m.id)).map((m) => ({ movie: m, text: 'Gut bewertet und beliebt' }));
+    } catch { /* dann nur die eigenen Vorschläge */ }
+  }
+  const cand = visible(profile, [...list, ...extra], md);
+  const need = page * RECOMMEND.blockSize + 10;
+  const out = [];
+  for (let i = 0; i < cand.length && out.length < need && i < 80 * page; i += 12) {
+    const chunk = cand.slice(i, i + 12);
+    const where = await Promise.all(chunk.map((x) => whereMine(profile, x.movie.id, md)));
+    chunk.forEach((x, j) => { if (where[j].length) out.push({ ...x, where: where[j] }); });
+  }
+  return out;
+}
+const loadingText = () => (aboOn(profile) ? 'Suche in deinen Abos …' : `Suche passende ${W().many} …`);
+const aboSwitch = () => (abosOf(profile).length ? `
+    <div class="segmented abo-switch" role="group" aria-label="Woher die Vorschläge kommen">
+      <button type="button" class="seg" data-sgabo="0" aria-pressed="${!aboOn(profile)}">Aus allem</button>
+      <button type="button" class="seg" data-sgabo="1" aria-pressed="${aboOn(profile)}">📺 Nur meine Abos</button>
+    </div>` : '');
 const W = () => MEDIA[md].w;
 
 function moodPicker() {
@@ -82,9 +116,10 @@ export function render(p) {
         <a class="mode" href="#/kinder"><span aria-hidden="true">🧸</span> ${W().kids}</a>
         <a class="mode" href="#/liebling"><span aria-hidden="true">★</span> ${W().fav}</a>
       </nav>`)}
-    ${md === 'movie' && !activeText() ? upcoming.upcomingSlot() : ''}
+    ${aboSwitch()}
+    ${md === 'movie' && !activeText() && !aboOn(p) ? upcoming.upcomingSlot() : ''}
     ${md === 'tv' && !activeText() ? tvNew.slot() : ''}
-    <div id="suggest-list" aria-live="polite"><p class="muted center">Suche passende ${W().many} …</p></div>`;
+    <div id="suggest-list" aria-live="polite"><p class="muted center">${loadingText()}</p></div>`;
 }
 
 export async function mount(p) {
@@ -102,7 +137,7 @@ export async function mount(p) {
     genre = selGenre.value;
     const now = document.querySelector('.filters-now');
     if (now) now.textContent = activeText() || 'alles, was zu dir passt';
-    box().innerHTML = `<p class="muted center">Suche passende ${W().many} …</p>`;
+    box().innerHTML = `<p class="muted center">${loadingText()}</p>`;
     mount(profile);
   };
   if (!hasSources(p, md) && !mood && !era && !genre) {
@@ -124,6 +159,11 @@ export async function mount(p) {
   pool.forEach((x) => byId.set(x.movie.id, x));
   const first = visible(profile, pool, md).slice(0, RECOMMEND.blockSize);
   shown = first.map((x) => x.movie.id);
+  if (!first.length && aboOn(profile)) {
+    box().innerHTML = `<div class="card placeholder"><p><strong>In deinen Abos gerade nichts Passendes gefunden.</strong></p>
+      <p class="muted">Schalte oben auf „Aus allem“ – oder trag unter „Profil“ weitere Abos ein.</p></div>`;
+    return;
+  }
   if (!first.length) {
     box().innerHTML = `<div class="card placeholder"><p><strong>Gerade keine neuen Vorschläge.</strong></p>
       <p class="muted">Markiere unter „Geschmack“ weitere ${W().many} oder Personen – dann kommen neue dazu.</p></div>`;
@@ -132,9 +172,10 @@ export async function mount(p) {
   box().innerHTML = `
     <p class="muted small">${activeText() ? `${esc(activeText())} – sortiert nach deinem Geschmack.` : 'Passend zu dem, was du magst.'} Tipp aufs Poster = ★ ${W().fav}.</p>
     <div class="suggestions">${first.map(card).join('')}</div>
-    <div class="row center-row"><button class="btn btn-primary" type="button" data-sg="more">Mehr Vorschläge</button></div>`;
+    <div class="row center-row"><button class="btn btn-primary" type="button" data-sg="more">Mehr Vorschläge</button></div>
+    ${aboOn(profile) ? `<p class="muted small center">${SOURCE}</p>` : ''}`;
   fillPeopleSlots(box());
-  if (md === 'movie' && !activeText()) upcoming.fill(profile); // kommt nach, ohne die Vorschläge aufzuhalten
+  if (md === 'movie' && !activeText() && !aboOn(profile)) upcoming.fill(profile); // kommt nach, ohne die Vorschläge aufzuhalten
   if (md === 'tv' && !activeText()) tvNew.fill(profile);
 }
 
@@ -154,6 +195,7 @@ function card(x) {
       <div class="film-info">
         <h3 class="film-title">${titleText(m.title, m.id, md) || esc(m.title)} <span class="year">${y || ''}${runtimeSlot(m.id, md)}</span></h3>
         <p class="reason">${listed ? '🔖 Steht schon auf deiner Merkliste' : esc(x.text)}</p>
+        ${x.where ? `<p class="where small">📺 Bei ${esc(x.where.join(' und '))}</p>` : ''}
         <div class="film-extra">${moreBox(m.overview ? `<p>${esc(m.overview)}</p>` : '', `
           ${peopleSlot(m.id, md)}
           <p class="rating muted small">TMDB-Note ${m.vote_average.toFixed(1).replace('.', ',')}</p>
@@ -225,6 +267,19 @@ export function handleClick(e) {
   if (tvNew.handleClick(e)) return true;
   const fb = e.target.closest('[data-fb]');
   if (fb) { feedback(fb.closest('[data-sgfilm]'), fb.dataset.fb); return true; }
+  const ab = e.target.closest('[data-sgabo]');
+  if (ab) {
+    const on = ab.dataset.sgabo === '1';
+    if (on === aboOn(profile)) return true;
+    store.updateProfile(profile.id, { settings: { ...(profile.settings || {}), aboOnly: on } });
+    profile = store.getProfile(profile.id);
+    document.querySelectorAll('[data-sgabo]').forEach((b) => b.setAttribute('aria-pressed', String((b.dataset.sgabo === '1') === on)));
+    const up = document.getElementById('upcoming');
+    if (up && on) up.hidden = true;
+    box().innerHTML = `<p class="muted center">${loadingText()}</p>`;
+    mount(profile);
+    return true;
+  }
   const act = e.target.closest('[data-sg]');
   if (act?.dataset.sg === 'more') { more(act); return true; }
   if (act?.dataset.sg === 'retry') { mount(profile); return true; }

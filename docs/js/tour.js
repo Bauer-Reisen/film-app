@@ -1,6 +1,6 @@
 // Kurzer Rundgang für neue Profile: sechs Karten nacheinander, jederzeit überspringbar.
 // Danach (oder beim Überspringen) gilt er als gesehen; unter „Profil“ lässt er sich nochmal ansehen.
-import { dialog, esc } from './ui.js?v=1.36.3';
+import { dialog, esc } from './ui.js?v=1.37.0';
 
 // Jede Karte hat eine Kennung (id) und den Stand (Version), in dem ihr Text zuletzt geprüft wurde.
 // Der Wächter scripts/check-tour.js prüft vor jedem Hochladen, ob jede Neuerung hier erklärt ist.
@@ -14,8 +14,8 @@ export const STEPS = [
     text: 'Markiere Titel, die du kennst: <strong>Gesehen</strong>, <strong>Mag ich</strong>, <strong>Mag ich nicht</strong> oder <strong>Merken</strong>. Aufs Poster tippen = ★ Liebling. Personen, Studios, Sender und Themen bewertest du mit „Liebe“ oder „Gern“. Schon 5–10 reichen für den Anfang.',
   },
   {
-    id: 'vorschlaege', stand: '1.32.0', icon: '☆', title: 'Vorschläge',
-    text: 'Hier kommen Titel, die zu dir passen – jeweils mit einem Satz, warum. Pro Titel drei Knöpfe: <strong>✓ Schon gesehen</strong> (danach sagst du, wie du ihn fandst), <strong>+ Merken</strong> und <strong>– Nein danke</strong>. Unter <strong>Mehr dazu</strong> stehen Inhalt, Darsteller·innen und Links – Namen kannst du antippen. Kommt bald ein neuer Film deiner Lieblinge ins Kino (oder ein neuer Teil deiner Lieblingsreihe), steht er oben in einem kleinen Kasten. Hast du einen Vorschlag wirklich geschaut, tipp danach in der Meldung auf <strong>👍 Wegen Vorschlag geschaut</strong> – unter „Profil“ siehst du dann deine Trefferquote.',
+    id: 'vorschlaege', stand: '1.37.0', icon: '☆', title: 'Vorschläge',
+    text: 'Hier kommen Titel, die zu dir passen – jeweils mit einem Satz, warum. Pro Titel drei Knöpfe: <strong>✓ Schon gesehen</strong> (danach sagst du, wie du ihn fandst), <strong>+ Merken</strong> und <strong>– Nein danke</strong>. Unter <strong>Mehr dazu</strong> stehen Inhalt, Darsteller·innen und Links – Namen kannst du antippen. Kommt bald ein neuer Film deiner Lieblinge ins Kino (oder ein neuer Teil deiner Lieblingsreihe), steht er oben in einem kleinen Kasten. Trägst du unter „Profil“ <strong>Meine Abos</strong> ein (z. B. Netflix, Prime), schaltest du oben auf <strong>📺 Nur meine Abos</strong> – dann steht bei jedem Titel, wo er läuft. Hast du einen Vorschlag wirklich geschaut, tipp danach in der Meldung auf <strong>👍 Wegen Vorschlag geschaut</strong> – unter „Profil“ siehst du dann deine Trefferquote.',
   },
   {
     id: 'mehr', stand: '1.36.0', icon: '🍿', title: 'Noch mehr',
