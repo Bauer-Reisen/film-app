@@ -1,12 +1,11 @@
 // Buchdaten von Open Library (frei, ohne Schlüssel).
 // Erst über unseren Worker (/ol/…). Kennt der Worker die Adressen noch nicht, direkt bei Open Library
 // (die Seite erlaubt das ausdrücklich). Merkt sich Antworten für die Sitzung, höchstens 4 Anfragen gleichzeitig.
-import { WORKER_URL } from './config.js?v=1.36.0';
-import { SEED_BOOKS } from './seeds-books.js?v=1.36.0';
-import { genresOf } from './book-genres.js?v=1.36.0';
+import { WORKER_URL } from './config.js?v=1.36.1';
+import { SEED_BOOKS } from './seeds-books.js?v=1.36.1';
+import { genresOf } from './book-genres.js?v=1.36.1';
 
 const OL = 'https://openlibrary.org';
-const COVERS = 'https://covers.openlibrary.org';
 let direct = false;
 try { direct = sessionStorage.getItem('filmapp.olDirect') === '1'; } catch { /* egal */ }
 
@@ -63,11 +62,13 @@ export const readLang = (profile) => (profile?.settings?.bookLang === 'de' ? 'de
 const OL_LANG = { en: 'eng', de: 'ger' };
 
 // ---------- Bilder ----------
+// Cover über den Worker: Cloudflare hebt sie 30 Tage auf (der Bild-Server von Open Library ist oft langsam, seit 1.36.1)
+const COVER_CACHE = `${WORKER_URL}/cover`;
 // „dnb:ISBN“ = Cover einer Neuerscheinung von der Nationalbibliothek (Kasten „Demnächst“, seit 1.30.0)
 export const cover = (id, size = 'M') => (!id ? null : String(id).startsWith('dnb:')
   ? `https://portal.dnb.de/opac/mvb/cover?isbn=${String(id).slice(4)}&size=${{ S: 's', M: 'm', L: 'l' }[size] || 'm'}`
-  : `${COVERS}/b/id/${id}-${size}.jpg`);
-export const authorPhoto = (olid, size = 'M') => `${COVERS}/a/olid/${olid}-${size}.jpg?default=false`;
+  : `${COVER_CACHE}/b/id/${id}-${size}.jpg`);
+export const authorPhoto = (olid, size = 'M') => `${COVER_CACHE}/a/olid/${olid}-${size}.jpg`;
 
 // ---------- Werk-Nummern: doppelt angelegte Werke auf eins abbilden ----------
 const ALIAS = new Map();

@@ -47,6 +47,14 @@ export default {
 
     const origin = request.headers.get('Origin') || '';
     const allowed = (env.ALLOWED_ORIGINS || '').split(',').map((s) => s.trim()).filter(Boolean);
+
+    // Buch-Cover: Bilder schicken keinen Origin-Kopf, darum hier vorab (nur feste Bild-Adressen)
+    const coverPath = new URL(request.url).pathname;
+    if (request.method === 'GET' && COVER_RE.test(coverPath)) {
+      const ref = request.headers.get('Referer') || '';
+      if (ref && !allowed.some((o) => ref.startsWith(o))) return new Response('Herkunft nicht erlaubt', { status: 403 });
+      return cover(coverPath);
+    }
     const cors = allowed.includes(origin)
       ? { 'Access-Control-Allow-Origin': origin, 'Access-Control-Allow-Methods': 'GET, OPTIONS', Vary: 'Origin' }
       : {};
@@ -98,6 +106,27 @@ export default {
     return reply(upstream.status, body, { ...cache, ...(retry ? { 'Retry-After': retry } : {}) });
   },
 };
+
+// Buch-Cover von Open Library, 30 Tage bei Cloudflare zwischengespeichert – der Bild-Server dort ist oft langsam
+const COVER_RE = /^\/cover\/(b\/id\/\d+|a\/olid\/OL\d+A)-[SML]\.jpg$/;
+async function cover(path) {
+  const target = `https://covers.openlibrary.org${path.slice(6)}${path.includes('/a/olid/') ? '?default=false' : ''}`;
+  try {
+    const up = await fetch(target, {
+      headers: { 'User-Agent': 'film-app-worker/1.0' },
+      redirect: 'follow',
+      cf: { cacheTtl: 30 * DAY, cacheEverything: true },
+      signal: AbortSignal.timeout(15000),
+    });
+    if (!up.ok) return new Response(null, { status: up.status === 404 ? 404 : 502, headers: { 'Cache-Control': 'no-store' } });
+    return new Response(up.body, {
+      status: 200,
+      headers: { 'Content-Type': up.headers.get('Content-Type') || 'image/jpeg', 'Cache-Control': `public, max-age=${30 * DAY}` },
+    });
+  } catch {
+    return new Response(null, { status: 504, headers: { 'Cache-Control': 'no-store' } });
+  }
+}
 
 // Open Library: ohne Schlüssel, Antworten bei Cloudflare zwischenspeichern (schont Open Library)
 async function openLibrary(url, maxAge, reply) {

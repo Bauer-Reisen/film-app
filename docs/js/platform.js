@@ -1,7 +1,7 @@
 // Erkennt das Gerät und kümmert sich um „Auf den Home-Bildschirm“.
-import { device, updateDevice, profiles } from './store.js?v=1.36.0';
-import { hitStats } from './via.js?v=1.36.0';
-import { WORKER_URL } from './config.js?v=1.36.0';
+import { device, updateDevice, profiles } from './store.js?v=1.36.1';
+import { hitStats } from './via.js?v=1.36.1';
+import { WORKER_URL } from './config.js?v=1.36.1';
 
 export const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) ||
   (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
