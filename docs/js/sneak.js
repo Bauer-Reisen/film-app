@@ -1,13 +1,14 @@
 // Seite „Überrasch mich“: Vorhang → Aufdecken → Rückmeldung oder anderer Film.
-import * as store from './store.js?v=1.34.1';
-import * as tmdb from './tmdb.js?v=1.34.1';
-import { esc, toast } from './ui.js?v=1.34.1';
-import { markButtons } from './cards.js?v=1.34.1';
-import { trailerBtn } from './trailer.js?v=1.34.1';
-import { draw, genreName } from './surprise.js?v=1.34.1';
-import { currentIds } from './suggest.js?v=1.34.1';
-import { MEDIA, mediaOf, marksOf, tvLength, askStarted, stateLabel, STARTED, pressed, pressedExact } from './media.js?v=1.34.1';
-import { seenToast } from './via.js?v=1.34.1';
+import * as store from './store.js?v=1.35.0';
+import * as tmdb from './tmdb.js?v=1.35.0';
+import { esc, toast } from './ui.js?v=1.35.0';
+import { markButtons } from './cards.js?v=1.35.0';
+import { trailerBtn } from './trailer.js?v=1.35.0';
+import { draw, genreName } from './surprise.js?v=1.35.0';
+import { currentIds } from './suggest.js?v=1.35.0';
+import { MEDIA, mediaOf, marksOf, tvLength, askStarted, stateLabel, STARTED, pressed, pressedExact } from './media.js?v=1.35.0';
+import { seenToast } from './via.js?v=1.35.0';
+import { creditsSlot, fillCredits } from './credits.js?v=1.35.0';
 
 // Drei große Knöpfe; „Schon gesehen“ klappt die Bewertung auf
 const MAIN = [['known', '✓', 'Schon gesehen'], ['want', '+', 'Merken'], ['noInterest', '–', 'Nein danke']];
@@ -86,12 +87,14 @@ function paint() {
         <h2 class="reveal-title">${esc(m.title)}${y ? ` <span class="year">${y}</span>` : ''}</h2>
         <p class="muted small">${esc([genres, md === 'tv' ? tvLength(m) : m.runtime ? `${m.runtime} Min.` : null, m.vote_average ? `TMDB-Note ${m.vote_average.toFixed(1).replace('.', ',')}` : null].filter(Boolean).join(' · '))}</p>
         <p>${m.overview ? esc(m.overview) : '<span class="muted">Keine Inhaltsangabe.</span>'}</p>
+        ${creditsSlot(m.id, md)}
         <p>${trailerBtn(m.id, m.title, false, md)}</p>
         <p class="film-state">${s ? esc(stateLabel(md, s)) : ''}</p>
         ${markButtons('data-snfb', m.title, MAIN, md === 'tv' ? KNOWN_TV : KNOWN, { s, pressed: pressedExact })}
         <p class="center"><button class="btn btn-primary btn-big" type="button" data-sn="draw">${other()}</button></p>
       </div>
     </article>`;
+  fillCredits(el.querySelector('[data-credits-for]')); // hier ist alles offen sichtbar
 }
 
 const other = () => (md === 'tv' ? 'Andere Serie' : cur?.max < 0 ? 'Anderes Epos' : `Anderen Film${cur?.max ? ` (${limitText(cur.max)})` : ''}`);

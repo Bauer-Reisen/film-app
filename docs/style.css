@@ -621,3 +621,4 @@ ul.plain { list-style: none; padding: 0; margin: 0; display: flex; flex-directio
 /* Überrasch mich: Länge */
 .sneak-limits { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px; margin: 10px 0 0; }
 .sneak-limits .btn[aria-pressed="true"] { background: var(--accent); color: var(--accent-text); border-color: var(--accent); font-weight: 700; }
+.credits-tip { margin: 6px 0; }

@@ -1,9 +1,9 @@
 // Spiele: Abfragen an IGDB (immer über den Worker), Karten-Bausteine, Spielzeit.
 // Wird erst geladen, wenn man oben auf „Spiele“ umschaltet (app.js: loadGames).
-import { WORKER_URL } from './config.js?v=1.34.1';
-import { esc } from './ui.js?v=1.34.1';
-import { compact, GENRES, PLATFORM_SHORT, PLATFORMS, platformIds, MODES, fitsMode, timeLevel, timeIndex } from './game-data.js?v=1.34.1';
-import { MEDIA, stateLabel } from './media.js?v=1.34.1';
+import { WORKER_URL } from './config.js?v=1.35.0';
+import { esc } from './ui.js?v=1.35.0';
+import { compact, GENRES, PLATFORM_SHORT, PLATFORMS, platformIds, MODES, fitsMode, timeLevel, timeIndex } from './game-data.js?v=1.35.0';
+import { MEDIA, stateLabel } from './media.js?v=1.35.0';
 
 export const W = MEDIA.game.w;
 const memo = new Map();

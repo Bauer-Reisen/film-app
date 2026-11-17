@@ -1,18 +1,19 @@
 // Seite „Merkliste“: alle Filme bzw. Serien mit „Merken“, neueste zuerst.
 // Bei Serien steht oben „Weiterschauen“ (angefangen, will ich zu Ende schauen).
 // Titel und Poster kommen immer in der Profilsprache (Startliste oder TMDB).
-import * as store from './store.js?v=1.34.1';
-import * as tmdb from './tmdb.js?v=1.34.1';
-import { esc, toast } from './ui.js?v=1.34.1';
-import { trailerBtn } from './trailer.js?v=1.34.1';
-import { titleText } from './runtime.js?v=1.34.1';
-import { SEED_MOVIES } from './seeds.js?v=1.34.1';
-import { SEED_SHOWS } from './seeds-tv.js?v=1.34.1';
-import { peopleSlot, fillPeopleSlots } from './people.js?v=1.34.1';
-import { markButtons, moreBox } from './cards.js?v=1.34.1';
-import { isUpcoming, startText } from './upcoming.js?v=1.34.1';
-import * as eps from './episodes.js?v=1.34.1';
-import { MEDIA, mediaOf, marksOf, tvLength, askStarted, stateLabel, justWatchUrl, shopLink } from './media.js?v=1.34.1';
+import * as store from './store.js?v=1.35.0';
+import * as tmdb from './tmdb.js?v=1.35.0';
+import { esc, toast } from './ui.js?v=1.35.0';
+import { trailerBtn } from './trailer.js?v=1.35.0';
+import { titleText } from './runtime.js?v=1.35.0';
+import { SEED_MOVIES } from './seeds.js?v=1.35.0';
+import { SEED_SHOWS } from './seeds-tv.js?v=1.35.0';
+import { peopleSlot, fillPeopleSlots } from './people.js?v=1.35.0';
+import { markButtons, moreBox } from './cards.js?v=1.35.0';
+import { isUpcoming, startText } from './upcoming.js?v=1.35.0';
+import * as eps from './episodes.js?v=1.35.0';
+import { creditsSlot } from './credits.js?v=1.35.0';
+import { MEDIA, mediaOf, marksOf, tvLength, askStarted, stateLabel, justWatchUrl, shopLink } from './media.js?v=1.35.0';
 
 const seedById = { movie: new Map(SEED_MOVIES.map((m) => [m.id, m])), tv: new Map(SEED_SHOWS.map((m) => [m.id, m])) };
 // Zwei große Knöpfe; „Gesehen“ klappt die Bewertung auf
@@ -110,6 +111,7 @@ function card(m) {
         ${x.det ? eps.progressBox(x.det, marksOf(profile, md)[m.id]) : ''}
         <div class="film-extra">${moreBox(x.overview ? `<p>${esc(x.overview)}</p>` : '', `
           ${peopleSlot(m.id, md)}
+          ${creditsSlot(m.id, md)}
           <p class="shop-links">${shopLink(esc(justWatchUrl(x.title, profile.language)), '📺 Wo kann ich das schauen?')}</p>`)}${trailerBtn(m.id, x.title, false, md)}</div>
         ${markButtons('data-wl', x.title, MAIN, md === 'tv' ? KNOWN_TV : KNOWN)}
       </div>

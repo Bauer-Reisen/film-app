@@ -1,17 +1,18 @@
 // Seite „Kinderfilme“ bzw. „Kinderserien“: gute Titel mit passender Altersfreigabe.
 // Zwei Arten: „Unterhaltung“ (gut bewertet und beliebt, dazu deutsche und neuere Titel)
 // und „Wissen & Natur“ (bekannte Wissensformate und Dokus zu einem Thema).
-import { KIDS, KIDS_TV } from './config.js?v=1.34.1';
-import * as store from './store.js?v=1.34.1';
-import * as tmdb from './tmdb.js?v=1.34.1';
-import { esc, toast } from './ui.js?v=1.34.1';
-import { markButtons, moreBox } from './cards.js?v=1.34.1';
-import { runtimeSlot } from './runtime.js?v=1.34.1';
-import { trailerBtn } from './trailer.js?v=1.34.1';
-import { ageOk, ageOf } from './age.js?v=1.34.1';
-import { MEDIA, mediaOf, marksOf, askStarted, stateLabel, pressedExact } from './media.js?v=1.34.1';
-import { seenToast } from './via.js?v=1.34.1';
-import { TOPICS, handFor, topicOf } from './kids-wissen.js?v=1.34.1';
+import { KIDS, KIDS_TV } from './config.js?v=1.35.0';
+import * as store from './store.js?v=1.35.0';
+import * as tmdb from './tmdb.js?v=1.35.0';
+import { esc, toast } from './ui.js?v=1.35.0';
+import { markButtons, moreBox } from './cards.js?v=1.35.0';
+import { runtimeSlot } from './runtime.js?v=1.35.0';
+import { trailerBtn } from './trailer.js?v=1.35.0';
+import { ageOk, ageOf } from './age.js?v=1.35.0';
+import { MEDIA, mediaOf, marksOf, askStarted, stateLabel, pressedExact } from './media.js?v=1.35.0';
+import { seenToast } from './via.js?v=1.35.0';
+import { creditsSlot } from './credits.js?v=1.35.0';
+import { TOPICS, handFor, topicOf } from './kids-wissen.js?v=1.35.0';
 
 // Drei große Knöpfe; „Schon gesehen“ klappt die Bewertung auf
 const MAIN = [['known', '✓', 'Schon gesehen'], ['want', '+', 'Merken'], ['noInterest', '–', 'Nein danke']];
@@ -259,6 +260,7 @@ function card(x) {
         ${hint ? `<p class="reason">${hint}</p>` : ''}
         <div class="film-extra">${moreBox(m.overview ? `<p>${esc(m.overview)}</p>` : '', `
           <p class="rating muted small">TMDB-Note ${(m.vote_average || 0).toFixed(1).replace('.', ',')}</p>
+          ${creditsSlot(m.id, md)}
           <p class="row">${flimmoLink(title)}${md === 'movie' ? fbwLink(title) : ''}</p>`)}${trailerBtn(m.id, m.title, false, md)}</div>
         ${markButtons('data-kfb', m.title, MAIN, md === 'tv' ? KNOWN_TV : KNOWN, { s, pressed: pressedExact })}
       </div>

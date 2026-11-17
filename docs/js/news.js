@@ -1,12 +1,16 @@
 // „Was ist neu?“ – nach einem Update einmal pro Profil, wenn man die App wieder öffnet.
 // Neue Profile bekommen stattdessen den Rundgang (tour.js) und sehen die alten Neuigkeiten nicht.
 // Neueste zuerst; nur Änderungen, die man sieht und kennen sollte.
-import { dialog } from './ui.js?v=1.34.1';
+import { dialog } from './ui.js?v=1.35.0';
 
 // PFLICHT bei jedem Eintrag: „tour“ nennt die Rundgang-Karte(n) aus tour.js, die die Neuerung erklären,
 // oder 'klein', wenn sie nicht in den Rundgang gehört. Größere Umbauten: Kartentext ergänzen und dort
 // „stand“ auf diese Version setzen. Der Wächter scripts/check-tour.js stoppt sonst das Hochladen.
 export const NEWS = [
+  {
+    v: '1.35.0', tour: 'klein', title: 'Sitzen bleiben nach dem Abspann?',
+    items: ['Kommt bei einem Film noch eine Szene während oder nach dem Abspann, steht unter <strong>Mehr dazu</strong> ein kleiner Hinweis 🍿 – bei Filmen, bei denen das sicher bekannt ist.'],
+  },
   {
     v: '1.34.0', tour: ['mehr'], title: 'Kinderfilme neu – und Überraschungen nicht zu lang',
     items: [
