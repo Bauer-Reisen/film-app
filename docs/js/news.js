@@ -1,12 +1,19 @@
 // „Was ist neu?“ – nach einem Update einmal pro Profil, wenn man die App wieder öffnet.
 // Neue Profile bekommen stattdessen den Rundgang (tour.js) und sehen die alten Neuigkeiten nicht.
 // Neueste zuerst; nur Änderungen, die man sieht und kennen sollte.
-import { dialog } from './ui.js?v=1.31.2';
+import { dialog } from './ui.js?v=1.32.0';
 
 // PFLICHT bei jedem Eintrag: „tour“ nennt die Rundgang-Karte(n) aus tour.js, die die Neuerung erklären,
 // oder 'klein', wenn sie nicht in den Rundgang gehört. Größere Umbauten: Kartentext ergänzen und dort
 // „stand“ auf diese Version setzen. Der Wächter scripts/check-tour.js stoppt sonst das Hochladen.
 export const NEWS = [
+  {
+    v: '1.32.0', tour: ['vorschlaege'], title: 'Deine Trefferquote',
+    items: [
+      'Einen Vorschlag wirklich geschaut, gelesen oder gespielt? Nach „Schon gesehen“ steht in der Meldung unten <strong>👍 Wegen Vorschlag geschaut</strong> – ein Tipp genügt. Was du aus den Vorschlägen gemerkt und später abgehakt hast, zählt von selbst.',
+      'Unter <strong>Profil</strong> siehst du, wie viele davon dir gefallen haben.',
+    ],
+  },
   {
     v: '1.30.0', tour: ['buecher'], title: 'Demnächst – jetzt auch bei Büchern',
     items: ['Bei den Buch-Vorschlägen steht oben ein kleiner Kasten, wenn es Neues gibt: <strong>neue Bände deiner Lieblingsreihen</strong> und neue Bücher deiner Autor·innen, noch bevor sie erscheinen. Gemerkte stehen mit Termin auf der Leseliste. (Nur bei Lesesprache Deutsch.)'],

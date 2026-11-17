@@ -1,6 +1,7 @@
 // Erkennt das Gerät und kümmert sich um „Auf den Home-Bildschirm“.
-import { device, updateDevice, profiles } from './store.js?v=1.31.2';
-import { WORKER_URL } from './config.js?v=1.31.2';
+import { device, updateDevice, profiles } from './store.js?v=1.32.0';
+import { hitStats } from './via.js?v=1.32.0';
+import { WORKER_URL } from './config.js?v=1.32.0';
 
 export const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) ||
   (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
@@ -68,7 +69,10 @@ export function countVisit() {
     if (d.lastPing === day) return;
     const id = d.sid || (crypto.randomUUID ? crypto.randomUUID() : Array.from(crypto.getRandomValues(new Uint8Array(16)), (b) => b.toString(16).padStart(2, '0')).join(''));
     const kind = isIOS ? 'ios' : isAndroid ? 'android' : 'desktop';
-    fetch(`${WORKER_URL}/stats/ping?d=${id}&p=${kind}&i=${isStandalone ? 1 : 0}`)
+    // Trefferquote aller Profile auf diesem Gerät, nur als drei Zahlen (gefallen / okay / nicht)
+    const hit = { good: 0, ok: 0, bad: 0 };
+    for (const p of profiles()) for (const r of Object.values(hitStats(p))) { hit.good += r.good; hit.ok += r.ok; hit.bad += r.bad; }
+    fetch(`${WORKER_URL}/stats/ping?d=${id}&p=${kind}&i=${isStandalone ? 1 : 0}&hg=${hit.good}&ho=${hit.ok}&hb=${hit.bad}`)
       .then((r) => { if (r.ok) updateDevice({ sid: id, lastPing: day }); })
       .catch(() => {});
     if (!d.sid) updateDevice({ sid: id });

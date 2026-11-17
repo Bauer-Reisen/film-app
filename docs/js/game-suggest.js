@@ -1,11 +1,12 @@
 // Spiele: Vorschläge berechnen (harte Filter, Punkte, Indie-Mischung) und die Seite „Vorschläge“.
-import * as store from './store.js?v=1.31.2';
-import * as games from './games.js?v=1.31.2';
-import { esc, toast } from './ui.js?v=1.31.2';
-import { RECOMMEND_GAME as R } from './config.js?v=1.31.2';
-import { GENRES, INDIE, MODES } from './game-data.js?v=1.31.2';
-import { WORLDS } from './seeds-games.js?v=1.31.2';
-import { markButtons, moreBox, filterBox } from './cards.js?v=1.31.2';
+import * as store from './store.js?v=1.32.0';
+import * as games from './games.js?v=1.32.0';
+import { esc, toast } from './ui.js?v=1.32.0';
+import { RECOMMEND_GAME as R } from './config.js?v=1.32.0';
+import { GENRES, INDIE, MODES } from './game-data.js?v=1.32.0';
+import { WORLDS } from './seeds-games.js?v=1.32.0';
+import { markButtons, moreBox, filterBox } from './cards.js?v=1.32.0';
+import { seenToast } from './via.js?v=1.32.0';
 
 const MAIN = [['known', '✓', 'Schon gespielt'], ['want', '+', 'Merken'], ['noInterest', '–', 'Nein danke']];
 const KNOWN = [['liked', '♥', 'Mag ich'], ['seen', '✓', 'Ganz okay'], ['disliked', '✕', 'Mag ich nicht']];
@@ -254,12 +255,12 @@ async function feedback(el, status) {
   const id = Number(el.dataset.sggame);
   const x = byId.get(id);
   if (!x) return;
-  const old = store.setMark(profile.id, 'game', id, status, games.markMeta(x.g));
+  const old = store.setMark(profile.id, 'game', id, status, { ...games.markMeta(x.g), o: 1 });
   el.hidden = true;
-  toast(`${games.label(status) || 'Nein danke'}: ${x.g.n}`, {
+  seenToast(`${games.label(status) || 'Nein danke'}: ${x.g.n}`, {
     label: 'Rückgängig',
     run: () => { store.restoreMark(profile.id, 'game', id, old); el.hidden = false; },
-  });
+  }, profile.id, 'game', id, status);
   append(1);
 }
 function append(n) {

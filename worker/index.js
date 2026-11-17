@@ -125,13 +125,15 @@ async function statsPing(url, env, ctx, reply) {
   const id = url.searchParams.get('d') || '';
   const platform = url.searchParams.get('p') || '';
   const installed = url.searchParams.get('i') === '1' ? 1 : 0;
+  const num = (k) => Math.min(100000, Math.max(0, parseInt(url.searchParams.get(k), 10) || 0));
+  const [hg, ho, hb] = [num('hg'), num('ho'), num('hb')]; // Trefferquote dieses Geräts: gefallen / okay / nicht
   if (!/^[a-f0-9-]{16,40}$/.test(id) || !['android', 'ios', 'desktop'].includes(platform)) return reply(400, { error: 'Ungültig' });
   if (!env.STATS) return reply(200, '{}');
   const day = berlinDay();
   ctx.waitUntil(env.STATS.batch([
     env.STATS.prepare('INSERT OR IGNORE INTO visits (day, id) VALUES (?, ?)').bind(day, id),
-    env.STATS.prepare(`INSERT INTO devices (id, first_day, last_day, platform, installed) VALUES (?1, ?2, ?2, ?3, ?4)
-      ON CONFLICT(id) DO UPDATE SET last_day = ?2, platform = ?3, installed = MAX(installed, ?4)`).bind(id, day, platform, installed),
+    env.STATS.prepare(`INSERT INTO devices (id, first_day, last_day, platform, installed, hit_good, hit_ok, hit_bad) VALUES (?1, ?2, ?2, ?3, ?4, ?5, ?6, ?7)
+      ON CONFLICT(id) DO UPDATE SET last_day = ?2, platform = ?3, installed = MAX(installed, ?4), hit_good = ?5, hit_ok = ?6, hit_bad = ?7`).bind(id, day, platform, installed, hg, ho, hb),
   ]).catch(() => {}));
   return reply(200, '{}', { 'Cache-Control': 'no-store' });
 }
@@ -157,7 +159,7 @@ async function statsPage(request, env) {
   const ago = (n) => berlinDay(new Date(Date.now() - n * 86400000));
   const q = (sql, ...args) => env.STATS.prepare(sql).bind(...args);
   const [tot, act7, act30, plat, newDays, actDays] = await env.STATS.batch([
-    q('SELECT COUNT(*) AS n, SUM(installed) AS inst FROM devices'),
+    q('SELECT COUNT(*) AS n, SUM(installed) AS inst, SUM(hit_good) AS hg, SUM(hit_ok) AS ho, SUM(hit_bad) AS hb FROM devices'),
     q('SELECT COUNT(DISTINCT id) AS n FROM visits WHERE day >= ?', ago(6)),
     q('SELECT COUNT(DISTINCT id) AS n FROM visits WHERE day >= ?', ago(29)),
     q('SELECT platform, COUNT(*) AS n, SUM(installed) AS inst FROM devices GROUP BY platform ORDER BY n DESC'),
@@ -179,6 +181,9 @@ async function statsPage(request, env) {
       <div><b>${act30.results[0].n}</b>aktiv (30 Tage)</div>
       <div><b>${t.inst || 0}</b>installiert</div>
     </div>
+    <h2>Trefferquote der Vorschläge</h2>
+    ${(t.hg || 0) + (t.ho || 0) + (t.hb || 0) ? `<p>Wegen eines Vorschlags geschaut, gelesen oder gespielt: <b>${(t.hg || 0) + (t.ho || 0) + (t.hb || 0)}</b> – davon gefallen <b>${t.hg || 0}</b> (${Math.round(((t.hg || 0) / ((t.hg || 0) + (t.ho || 0) + (t.hb || 0))) * 100)} %), okay ${t.ho || 0}, nicht gefallen ${t.hb || 0}.</p>` : '<p class="muted">Noch nichts gezählt.</p>'}
+    <p class="muted">Stand: letzte Meldung jedes Geräts (einmal am Tag).</p>
     <h2>Geräte</h2>
     <table>${plat.results.map((r) => `<tr><td>${names[r.platform] || r.platform}</td><td class="n">${r.n}</td><td class="muted">davon installiert: ${r.inst || 0}</td></tr>`).join('')}</table>
     <h2>Letzte 30 Tage</h2>

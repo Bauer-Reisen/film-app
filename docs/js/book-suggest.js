@@ -1,17 +1,18 @@
 // Seite „Vorschläge“ bei Büchern: Liste mit Begründung, Rückmeldungen, Rückgängig, „Mehr“,
 // „Heute Lust auf …“ und „Aus welcher Zeit“.
-import * as store from './store.js?v=1.31.2';
-import * as books from './books.js?v=1.31.2';
-import { esc, toast } from './ui.js?v=1.31.2';
-import { THEMES, themeById } from './themes.js?v=1.31.2';
-import { MEDIA, stateLabel } from './media.js?v=1.31.2';
-import { computeBooks, visibleBooks, hasBookSources, BOOK_ERAS, bookEraById, BOOK_POINTS } from './book-recommend.js?v=1.31.2';
-import { coverImg, bookMetaHtml, rememberBooks } from './book-taste.js?v=1.31.2';
-import { movieHint } from './book-extra.js?v=1.31.2';
-import { fillSeriesSlots } from './book-series.js?v=1.31.2';
-import { markButtons, moreBox, filterBox } from './cards.js?v=1.31.2';
-import { BOOK_GENRES, bookGenreById } from './book-genres.js?v=1.31.2';
-import * as upcoming from './book-upcoming.js?v=1.31.2';
+import * as store from './store.js?v=1.32.0';
+import * as books from './books.js?v=1.32.0';
+import { esc, toast } from './ui.js?v=1.32.0';
+import { THEMES, themeById } from './themes.js?v=1.32.0';
+import { MEDIA, stateLabel } from './media.js?v=1.32.0';
+import { computeBooks, visibleBooks, hasBookSources, BOOK_ERAS, bookEraById, BOOK_POINTS } from './book-recommend.js?v=1.32.0';
+import { coverImg, bookMetaHtml, rememberBooks } from './book-taste.js?v=1.32.0';
+import { movieHint } from './book-extra.js?v=1.32.0';
+import { fillSeriesSlots } from './book-series.js?v=1.32.0';
+import { markButtons, moreBox, filterBox } from './cards.js?v=1.32.0';
+import { BOOK_GENRES, bookGenreById } from './book-genres.js?v=1.32.0';
+import * as upcoming from './book-upcoming.js?v=1.32.0';
+import { seenToast } from './via.js?v=1.32.0';
 
 // Drei große Knöpfe; „Schon gelesen“ klappt die Bewertung auf
 const MAIN = [['known', '✓', 'Schon gelesen'], ['want', '+', 'Merken'], ['noInterest', '–', 'Nein danke']];
@@ -181,12 +182,12 @@ async function feedback(cardEl, status) {
   const x = byId.get(id);
   if (!x) return;
   const b = x.book;
-  const old = store.setMark(profile.id, 'book', id, status, books.markMeta(b));
+  const old = store.setMark(profile.id, 'book', id, status, { ...books.markMeta(b), o: 1 });
   cardEl.hidden = true;
-  toast(`${label(status)}: ${b.title}`, {
+  seenToast(`${label(status)}: ${b.title}`, {
     label: 'Rückgängig',
     run: () => { store.restoreMark(profile.id, 'book', id, old); cardEl.hidden = false; },
-  });
+  }, profile.id, 'book', id, status);
   await refreshPool();
   append(nextFromPool(1));
 }

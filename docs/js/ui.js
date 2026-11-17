@@ -59,11 +59,14 @@ export function dialog({ title, body = '', buttons = [{ label: 'OK', value: true
 
 // Meldung über der Tab-Leiste, optional mit Knopf (z. B. „Rückgängig“)
 let toastTimer;
+// action: ein Knopf { label, run } oder mehrere als Liste
 export function toast(text, action) {
   const el = document.getElementById('toast');
   clearTimeout(toastTimer);
-  el.innerHTML = `<span>${esc(text)}</span>${action ? `<button class="btn btn-small" type="button">${esc(action.label)}</button>` : ''}`;
+  const acts = (Array.isArray(action) ? action : [action]).filter(Boolean);
+  el.innerHTML = `<span>${esc(text)}</span>${acts.map((a) => `<button class="btn btn-small" type="button">${esc(a.label)}</button>`).join('')}`;
   el.classList.add('show');
-  if (action) el.querySelector('button').onclick = () => { el.classList.remove('show'); action.run(); };
-  toastTimer = setTimeout(() => el.classList.remove('show'), action ? 6000 : 4000);
+  el.classList.toggle('multi', acts.length > 1); // Text oben, Knöpfe darunter
+  el.querySelectorAll('button').forEach((b, i) => { b.onclick = () => { el.classList.remove('show'); acts[i].run(); }; });
+  toastTimer = setTimeout(() => el.classList.remove('show'), acts.length > 1 ? 9000 : acts.length ? 6000 : 4000);
 }

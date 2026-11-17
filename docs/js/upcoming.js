@@ -1,12 +1,12 @@
 // Kasten „Demnächst von deinen Lieblingen“ oben bei den Vorschlägen (nur Filme).
 // Neue Filme deiner Lieblingspersonen und -studios und neue Teile deiner ★/♥-Filmreihen.
 // Erscheint nur, wenn es etwas gibt; höchstens drei Einträge. „Kein Interesse“ = „Nein danke“ (kommt nie wieder).
-import * as store from './store.js?v=1.31.2';
-import * as tmdb from './tmdb.js?v=1.31.2';
-import { esc, toast } from './ui.js?v=1.31.2';
-import { trailerBtn } from './trailer.js?v=1.31.2';
-import { marksOf, creditsOf } from './media.js?v=1.31.2';
-import { UPCOMING as U } from './config.js?v=1.31.2';
+import * as store from './store.js?v=1.32.0';
+import * as tmdb from './tmdb.js?v=1.32.0';
+import { esc, toast } from './ui.js?v=1.32.0';
+import { trailerBtn } from './trailer.js?v=1.32.0';
+import { marksOf, creditsOf } from './media.js?v=1.32.0';
+import { UPCOMING as U } from './config.js?v=1.32.0';
 
 const LIKED = new Set(['liked', 'loved']);
 let profile = null;
@@ -136,7 +136,7 @@ export function handleClick(e) {
   if (!x) return true;
   const m = x.movie;
   const status = b.dataset.up;
-  const old = store.setMark(profile.id, 'movie', id, status, { g: m.genre_ids, l: m.original_language, y: tmdb.year(m.release_date), n: m.title });
+  const old = store.setMark(profile.id, 'movie', id, status, { g: m.genre_ids, l: m.original_language, y: tmdb.year(m.release_date), n: m.title, o: 1 });
   profile = store.getProfile(profile.id);
   x.done = status === 'want'; // gemerkte bleiben mit „Gemerkt“ stehen
   paint();

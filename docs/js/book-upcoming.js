@@ -4,11 +4,11 @@
 // Streng gefiltert: nur gedruckte Bücher auf Deutsch von der Autor·in selbst – keine Hörbücher, Neuauflagen,
 // Taschenbuch-Ausgaben schon erschienener Bücher, Sonderausgaben, Sammelbände oder Fanartikel.
 // Neue Bände deiner ★/♥-Reihen zählen am meisten. Höchstens drei Einträge; erscheint nur, wenn es etwas gibt.
-import * as store from './store.js?v=1.31.2';
-import * as books from './books.js?v=1.31.2';
-import { esc, toast } from './ui.js?v=1.31.2';
-import { seriesOf } from './book-series.js?v=1.31.2';
-import { UPCOMING as U } from './config.js?v=1.31.2';
+import * as store from './store.js?v=1.32.0';
+import * as books from './books.js?v=1.32.0';
+import { esc, toast } from './ui.js?v=1.32.0';
+import { seriesOf } from './book-series.js?v=1.32.0';
+import { UPCOMING as U } from './config.js?v=1.32.0';
 
 const SRU = 'https://services.dnb.de/sru/dnb';
 const LIKED = new Set(['liked', 'loved']);
@@ -307,7 +307,7 @@ export function handleClick(e) {
   if (!x) return true;
   const b = x.book;
   const status = btn.dataset.bup;
-  const old = store.setMark(profile.id, 'book', id, status, { ...books.markMeta(b), rd: b.rd });
+  const old = store.setMark(profile.id, 'book', id, status, { ...books.markMeta(b), rd: b.rd, o: 1 });
   profile = store.getProfile(profile.id);
   x.done = status === 'want'; // gemerkte bleiben mit „Gemerkt“ stehen
   paint();

@@ -1,13 +1,13 @@
 // Seite „Gruppenabend“: ein Film (oder eine Serie), der zu dir passt und in eine Runde passt.
 // Jedes Handy rechnet für sich – man zeigt sich die Vorschläge und stimmt ab.
-import { GROUP, GROUP_TV } from './config.js?v=1.31.2';
-import * as store from './store.js?v=1.31.2';
-import * as tmdb from './tmdb.js?v=1.31.2';
-import { esc, toast } from './ui.js?v=1.31.2';
-import { trailerBtn } from './trailer.js?v=1.31.2';
-import { compute, hasSources, genreTilt } from './recommend.js?v=1.31.2';
-import { ageOk, discoverAge } from './age.js?v=1.31.2';
-import { MEDIA, mediaOf, marksOf, tvLength, episodeMinutes } from './media.js?v=1.31.2';
+import { GROUP, GROUP_TV } from './config.js?v=1.32.0';
+import * as store from './store.js?v=1.32.0';
+import * as tmdb from './tmdb.js?v=1.32.0';
+import { esc, toast } from './ui.js?v=1.32.0';
+import { trailerBtn } from './trailer.js?v=1.32.0';
+import { compute, hasSources, genreTilt } from './recommend.js?v=1.32.0';
+import { ageOk, discoverAge } from './age.js?v=1.32.0';
+import { MEDIA, mediaOf, marksOf, tvLength, episodeMinutes } from './media.js?v=1.32.0';
 
 const COMEDY = 35;
 const LIKED = new Set(['liked', 'loved']);
@@ -248,7 +248,7 @@ export function handleClick(e) {
     // Schon gemocht? Dann bleibt „Mag ich“ – nur für heute übersprungen
     if (!LIKED.has(s)) {
       const mine = md;
-      const old = store.setMark(profile.id, mine, m.id, 'seen', meta(m));
+      const old = store.setMark(profile.id, mine, m.id, 'seen', { ...meta(m), o: 1 });
       toast(`Gesehen: ${m.title}`, { label: 'Rückgängig', run: () => store.restoreMark(profile.id, mine, m.id, old) });
     }
     next();
@@ -256,14 +256,14 @@ export function handleClick(e) {
   }
   if (act === 'watch') {
     // Eine Serie schaut man nicht an einem Abend – sie bleibt, wie sie ist
-    if (md === 'movie' && (!s || s === 'want')) store.setMark(profile.id, md, m.id, 'seen', meta(m));
+    if (md === 'movie' && (!s || s === 'want')) store.setMark(profile.id, md, m.id, 'seen', { ...meta(m), o: 1, v: 1 }); // „Den schauen wir“ = wegen des Vorschlags
     phase = 'watching';
     paint();
     return true;
   }
   if (act === 'rate-liked' || act === 'rate-disliked') {
     const status = act === 'rate-liked' ? (s === 'loved' ? 'loved' : 'liked') : 'disliked';
-    store.setMark(profile.id, md, m.id, status, meta(m));
+    store.setMark(profile.id, md, m.id, status, { ...meta(m), o: 1 });
     toast(status === 'disliked' ? `Mag ich nicht: ${m.title}` : `Mag ich: ${m.title}`);
     phase = 'pick'; skipped.add(m.id); cur = null;
     location.hash = '#/vorschlaege';

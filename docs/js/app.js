@@ -1,30 +1,31 @@
 // Oberfläche: Seitenwechsel über die Adresse (#/vorschlaege usw.)
-import { VERSION, LANGUAGES } from './config.js?v=1.31.2';
-import * as store from './store.js?v=1.31.2';
-import { saveBackup, readBackup, findSameName, importAsNew, mergeInto } from './backup.js?v=1.31.2';
-import { esc, dialog, toast, formatDate } from './ui.js?v=1.31.2';
-import * as platform from './platform.js?v=1.31.2';
-import * as taste from './taste.js?v=1.31.2';
-import * as suggest from './suggest.js?v=1.31.2';
-import * as watchlist from './watchlist.js?v=1.31.2';
-import * as sneak from './sneak.js?v=1.31.2';
-import * as group from './group.js?v=1.31.2';
-import * as kids from './kids.js?v=1.31.2';
-import * as rewatch from './rewatch.js?v=1.31.2';
-import * as trailer from './trailer.js?v=1.31.2';
-import { handleKnown } from './cards.js?v=1.31.2';
-import { initRuntimes } from './runtime.js?v=1.31.2';
-import { mediaOf, areasOf, AREAS } from './media.js?v=1.31.2';
-import { runTour } from './tour.js?v=1.31.2';
-import { unseen, showNews, LATEST } from './news.js?v=1.31.2';
-import * as bookTaste from './book-taste.js?v=1.31.2';
-import * as bookList from './book-list.js?v=1.31.2';
-import * as scan from './scan.js?v=1.31.2';
-import * as bookRate from './book-rate.js?v=1.31.2';
-import * as bookSuggest from './book-suggest.js?v=1.31.2';
-import * as bookSneak from './book-sneak.js?v=1.31.2';
-import * as bookRewatch from './book-rewatch.js?v=1.31.2';
-import { initBookExtras } from './book-extra.js?v=1.31.2';
+import { VERSION, LANGUAGES } from './config.js?v=1.32.0';
+import * as store from './store.js?v=1.32.0';
+import { saveBackup, readBackup, findSameName, importAsNew, mergeInto } from './backup.js?v=1.32.0';
+import { esc, dialog, toast, formatDate } from './ui.js?v=1.32.0';
+import * as platform from './platform.js?v=1.32.0';
+import * as taste from './taste.js?v=1.32.0';
+import * as suggest from './suggest.js?v=1.32.0';
+import * as watchlist from './watchlist.js?v=1.32.0';
+import * as sneak from './sneak.js?v=1.32.0';
+import * as group from './group.js?v=1.32.0';
+import * as kids from './kids.js?v=1.32.0';
+import * as rewatch from './rewatch.js?v=1.32.0';
+import * as trailer from './trailer.js?v=1.32.0';
+import { handleKnown } from './cards.js?v=1.32.0';
+import { initRuntimes } from './runtime.js?v=1.32.0';
+import { mediaOf, areasOf, AREAS } from './media.js?v=1.32.0';
+import { runTour } from './tour.js?v=1.32.0';
+import { hitStats } from './via.js?v=1.32.0';
+import { unseen, showNews, LATEST } from './news.js?v=1.32.0';
+import * as bookTaste from './book-taste.js?v=1.32.0';
+import * as bookList from './book-list.js?v=1.32.0';
+import * as scan from './scan.js?v=1.32.0';
+import * as bookRate from './book-rate.js?v=1.32.0';
+import * as bookSuggest from './book-suggest.js?v=1.32.0';
+import * as bookSneak from './book-sneak.js?v=1.32.0';
+import * as bookRewatch from './book-rewatch.js?v=1.32.0';
+import { initBookExtras } from './book-extra.js?v=1.32.0';
 
 const view = document.getElementById('view');
 const APP_URL = 'https://bauer-reisen.github.io/film-app/';
@@ -51,7 +52,7 @@ const gamesOn = (p) => areasOf(p).includes('game');
 let gamesMod = null;
 let gamesLoading = null;
 function loadGames() {
-  gamesLoading ||= import('./game-pages.js?v=1.31.2').then((m) => { gamesMod = m; return m; }).catch((err) => { gamesLoading = null; throw err; });
+  gamesLoading ||= import('./game-pages.js?v=1.32.0').then((m) => { gamesMod = m; return m; }).catch((err) => { gamesLoading = null; throw err; });
   return gamesLoading;
 }
 
@@ -80,6 +81,22 @@ function leaveProfile() {
 }
 
 // ---------- Bausteine ----------
+// Trefferquote: Wie gut passten die Vorschläge, die man wegen der App geschaut/gelesen/gespielt hat?
+const HIT_NAMES = { movie: ['Filme', 'geschaut'], tv: ['Serien', 'geschaut'], book: ['Bücher', 'gelesen'], game: ['Spiele', 'gespielt'] };
+function hitCard(p) {
+  const st = hitStats(p);
+  const rows = Object.entries(st).map(([md, r]) => {
+    const n = r.good + r.ok + r.bad;
+    const [name, verb] = HIT_NAMES[md];
+    return `<li><strong>${name}:</strong> ${n} wegen eines Vorschlags ${verb} – ${r.good} ${r.good === 1 ? 'hat' : 'haben'} dir gefallen (★ ${r.loved} · ♥ ${r.liked}), ${r.ok} okay, ${r.bad} nicht.</li>`;
+  });
+  return `
+    <section class="card stack">
+      <h2>Deine Trefferquote</h2>
+      ${rows.length ? `<ul class="hits">${rows.join('')}</ul>` : '<p class="muted small">Noch nichts gezählt. Wenn du einen Vorschlag geschaut, gelesen oder gespielt hast: nach „Schon gesehen“ in der Meldung unten auf „👍 Wegen Vorschlag …“ tippen. Was du aus den Vorschlägen gemerkt und später abgehakt hast, zählt von selbst.</p>'}
+    </section>`;
+}
+
 const homeSteps = () => `
   <ol class="steps">
     <li>Unten auf das Teilen-Symbol ${platform.SHARE_ICON} tippen</li>
@@ -265,6 +282,8 @@ const pages = {
           ${gamesOn(p) ? `<p><button class="btn" type="button" data-act="game-setup">Spiele: Plattform, Zeit, Spielweise</button></p>` : ''}
         </section>
 
+        ${hitCard(p)}
+
         <section class="card stack">
           <h2>Sichern</h2>
           <p class="muted small">Zuletzt gesichert: ${p.lastBackup ? formatDate(p.lastBackup) : 'nie'}</p>
@@ -361,7 +380,7 @@ const pages = {
       <div class="card stack">
         <p>Es gibt keine Anmeldung und kein Konto. Deine Profile liegen nur auf diesem Gerät.</p>
         <p class="muted">Für Filmdaten fragt die App über einen kleinen Zwischenhändler (Cloudflare) bei TMDB an, für Bücher bei Open Library, für Buchreihen direkt bei Wikidata. Dabei werden keine Namen oder Markierungen übertragen, nur die Suche selbst.</p>
-        <p class="muted">Damit ich sehe, ob die App genutzt wird, meldet sie einmal am Tag anonym: „ein Gerät war heute da“ – mit einer Zufallsnummer, ob Android, iPhone oder Computer und ob die App installiert ist. Keine Namen, keine Markierungen, keine IP-Adresse wird gespeichert.</p>
+        <p class="muted">Damit ich sehe, ob die App genutzt wird, meldet sie einmal am Tag anonym: „ein Gerät war heute da“ – mit einer Zufallsnummer, ob Android, iPhone oder Computer, ob die App installiert ist und wie viele Vorschläge dir gefallen haben (nur drei Zahlen, keine Titel). Keine Namen, keine Markierungen, keine IP-Adresse wird gespeichert.</p>
         <p class="muted">Trailer kommen von YouTube. YouTube wird erst geladen, wenn du auf „Trailer“ tippst, in der datensparsamen Variante ohne Werbe-Cookies.</p>
         <p class="muted">Wo ein Film oder eine Serie läuft, zeigt die App nicht selbst an. Auf der Merkliste führt „Wo kann ich das schauen?“ zu JustWatch, auf der Leseliste „Bei Amazon ansehen“ zu Amazon – nur Links, die App sendet dabei nichts und verdient nichts daran.</p>
       </div>

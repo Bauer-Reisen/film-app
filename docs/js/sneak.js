@@ -1,12 +1,13 @@
 // Seite „Überrasch mich“: Vorhang → Aufdecken → Rückmeldung oder anderer Film.
-import * as store from './store.js?v=1.31.2';
-import * as tmdb from './tmdb.js?v=1.31.2';
-import { esc, toast } from './ui.js?v=1.31.2';
-import { markButtons } from './cards.js?v=1.31.2';
-import { trailerBtn } from './trailer.js?v=1.31.2';
-import { draw, genreName } from './surprise.js?v=1.31.2';
-import { currentIds } from './suggest.js?v=1.31.2';
-import { MEDIA, mediaOf, marksOf, tvLength, askStarted, stateLabel, STARTED, pressed, pressedExact } from './media.js?v=1.31.2';
+import * as store from './store.js?v=1.32.0';
+import * as tmdb from './tmdb.js?v=1.32.0';
+import { esc, toast } from './ui.js?v=1.32.0';
+import { markButtons } from './cards.js?v=1.32.0';
+import { trailerBtn } from './trailer.js?v=1.32.0';
+import { draw, genreName } from './surprise.js?v=1.32.0';
+import { currentIds } from './suggest.js?v=1.32.0';
+import { MEDIA, mediaOf, marksOf, tvLength, askStarted, stateLabel, STARTED, pressed, pressedExact } from './media.js?v=1.32.0';
+import { seenToast } from './via.js?v=1.32.0';
 
 // Drei große Knöpfe; „Schon gesehen“ klappt die Bewertung auf
 const MAIN = [['known', '✓', 'Schon gesehen'], ['want', '+', 'Merken'], ['noInterest', '–', 'Nein danke']];
@@ -118,6 +119,7 @@ async function feedback(key) {
   else if (key === 'started') { now = await askStarted(m.title); if (!now) return; }
   else now = key;
   // Eine Überraschung, die man mag, wird ein ganz normaler gemochter Titel
-  store.setMark(profile.id, mine, m.id, now, { g: m.genre_ids || (m.genres || []).map((g) => g.id), l: m.original_language, y: tmdb.year(m.release_date), n: m.title });
+  store.setMark(profile.id, mine, m.id, now, { g: m.genre_ids || (m.genres || []).map((g) => g.id), l: m.original_language, y: tmdb.year(m.release_date), n: m.title, o: 1 });
   paint();
+  if (now) seenToast(`${stateLabel(mine, now).replace(/^[^\p{L}]+/u, '')}: ${m.title}`, null, profile.id, mine, m.id, now);
 }

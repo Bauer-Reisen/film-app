@@ -1,18 +1,19 @@
 // Seite „Vorschläge“: Liste mit Begründung, fünf Rückmeldungen, Rückgängig, „Mehr“.
-import * as store from './store.js?v=1.31.2';
-import * as tmdb from './tmdb.js?v=1.31.2';
-import { esc, toast } from './ui.js?v=1.31.2';
-import { runtimeSlot, titleText } from './runtime.js?v=1.31.2';
-import { trailerBtn } from './trailer.js?v=1.31.2';
-import { compute, computeFiltered, visible, hasSources, erasFor, eraById } from './recommend.js?v=1.31.2';
-import { MEDIA, mediaOf, marksOf, askStarted, stateLabel } from './media.js?v=1.31.2';
-import { THEMES, themeById } from './themes.js?v=1.31.2';
-import { RECOMMEND } from './config.js?v=1.31.2';
-import { GENRES, GENRES_TV } from './surprise.js?v=1.31.2';
-import { bookSlot } from './book-extra.js?v=1.31.2';
-import { peopleSlot, fillPeopleSlots } from './people.js?v=1.31.2';
-import { markButtons, moreBox, filterBox } from './cards.js?v=1.31.2';
-import * as upcoming from './upcoming.js?v=1.31.2';
+import * as store from './store.js?v=1.32.0';
+import * as tmdb from './tmdb.js?v=1.32.0';
+import { esc, toast } from './ui.js?v=1.32.0';
+import { runtimeSlot, titleText } from './runtime.js?v=1.32.0';
+import { trailerBtn } from './trailer.js?v=1.32.0';
+import { compute, computeFiltered, visible, hasSources, erasFor, eraById } from './recommend.js?v=1.32.0';
+import { MEDIA, mediaOf, marksOf, askStarted, stateLabel } from './media.js?v=1.32.0';
+import { THEMES, themeById } from './themes.js?v=1.32.0';
+import { RECOMMEND } from './config.js?v=1.32.0';
+import { GENRES, GENRES_TV } from './surprise.js?v=1.32.0';
+import { bookSlot } from './book-extra.js?v=1.32.0';
+import { peopleSlot, fillPeopleSlots } from './people.js?v=1.32.0';
+import { markButtons, moreBox, filterBox } from './cards.js?v=1.32.0';
+import * as upcoming from './upcoming.js?v=1.32.0';
+import { seenToast } from './via.js?v=1.32.0';
 
 // Drei große Knöpfe; „Schon gesehen“ klappt die Bewertung auf
 const MAIN = [['known', '✓', 'Schon gesehen'], ['want', '+', 'Merken'], ['noInterest', '–', 'Nein danke']];
@@ -189,12 +190,12 @@ async function feedback(cardEl, status) {
   const mine = md;
   const title = cardEl.querySelector('[data-titlefix]')?.textContent || m.title; // ggf. der englische statt fremder Schrift
   if (status === 'started') { status = await askStarted(title); if (!status) return; }
-  const old = store.setMark(profile.id, mine, id, status, { g: m.genre_ids, l: m.original_language, y: tmdb.year(m.release_date), n: title });
+  const old = store.setMark(profile.id, mine, id, status, { g: m.genre_ids, l: m.original_language, y: tmdb.year(m.release_date), n: title, o: 1 });
   cardEl.hidden = true;
-  toast(`${label(mine, status)}: ${title}`, {
+  seenToast(`${label(mine, status)}: ${title}`, {
     label: 'Rückgängig',
     run: () => { store.restoreMark(profile.id, mine, id, old); cardEl.hidden = false; },
-  });
+  }, profile.id, mine, id, status);
   await refreshPool();
   append(nextFromPool(1));
 }

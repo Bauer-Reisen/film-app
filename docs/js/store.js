@@ -166,6 +166,9 @@ export function profilesForPicker() {
 // bei Büchern 'dropped' (abgebrochen); 'seen' heißt bei Büchern „Gelesen“.
 const MARKS = { movie: 'movies', tv: 'shows', book: 'books', game: 'games' };
 const BOOK_META = ['a', 'ak', 'c', 'pg', 'r', 'rd']; // Autor·in, Autor-Nummer, Cover, Seiten, r = in der Bewertungsrunde schon gefragt (seit 1.16.0), rd = erscheint (JJJJMM oder JJJJ, seit 1.30.0)
+// Trefferquote (seit 1.32.0): o = kam aus einem Vorschlag, v = wegen eines Vorschlags gesehen/gelesen/gespielt
+const DONE = new Set(['seen', 'liked', 'loved', 'disliked', 'dropped']);
+export const isDone = (s) => DONE.has(s);
 const GAME_META = ['c', 'p', 'm', 'cm', 'on']; // Cover, Plattformen, Spielweisen, Couch-/Online-Koop
 export function setMark(profileId, media, movieId, status, meta = {}) {
   const p = getProfile(profileId);
@@ -174,6 +177,10 @@ export function setMark(profileId, media, movieId, status, meta = {}) {
   const old = list[movieId] || null;
   if (status) {
     list[movieId] = { s: status, t: Date.now(), g: meta.g ?? old?.g ?? [], l: meta.l ?? old?.l ?? '', y: meta.y ?? old?.y ?? null, n: meta.n ?? old?.n ?? '' }; // n = Titel (für Begründungen)
+    if (meta.o || old?.o) list[movieId].o = 1;
+    // Aus einem Vorschlag gemerkt und jetzt gesehen? Dann zählt es automatisch als „wegen des Vorschlags“
+    const via = meta.v || old?.v || (old?.o && (old.s === 'want' || old.s === 'paused') && DONE.has(status));
+    if (via && (DONE.has(status) || status === 'paused')) list[movieId].v = 1;
     if (media === 'book' && p.pendingBooks?.length) p.pendingBooks = p.pendingBooks.filter((x) => x.id !== movieId); // markiert = wartet nicht mehr
     if (media === 'game') for (const k of GAME_META) { const v = meta[k] ?? old?.[k]; if (v != null && v !== '') list[movieId][k] = v; }
     if (media === 'book') for (const k of BOOK_META) { const v = meta[k] ?? old?.[k]; if (v != null && v !== '') list[movieId][k] = v; }
@@ -184,6 +191,8 @@ export function setMark(profileId, media, movieId, status, meta = {}) {
   save();
   return old;
 }
+export const getMark = (profileId, media, id) => getProfile(profileId)?.[MARKS[media]]?.[id] || null;
+export function setVia(profileId, media, id) { const m = getMark(profileId, media, id); if (m) { m.v = 1; save(); } }
 export const setMovie = (profileId, movieId, status, meta) => setMark(profileId, 'movie', movieId, status, meta);
 
 export function restoreMark(profileId, media, movieId, old) {
