@@ -1,13 +1,13 @@
 // Seite „Überrasch mich“: Vorhang → Aufdecken → Rückmeldung oder anderer Film.
-import * as store from './store.js?v=1.34.0';
-import * as tmdb from './tmdb.js?v=1.34.0';
-import { esc, toast } from './ui.js?v=1.34.0';
-import { markButtons } from './cards.js?v=1.34.0';
-import { trailerBtn } from './trailer.js?v=1.34.0';
-import { draw, genreName } from './surprise.js?v=1.34.0';
-import { currentIds } from './suggest.js?v=1.34.0';
-import { MEDIA, mediaOf, marksOf, tvLength, askStarted, stateLabel, STARTED, pressed, pressedExact } from './media.js?v=1.34.0';
-import { seenToast } from './via.js?v=1.34.0';
+import * as store from './store.js?v=1.34.1';
+import * as tmdb from './tmdb.js?v=1.34.1';
+import { esc, toast } from './ui.js?v=1.34.1';
+import { markButtons } from './cards.js?v=1.34.1';
+import { trailerBtn } from './trailer.js?v=1.34.1';
+import { draw, genreName } from './surprise.js?v=1.34.1';
+import { currentIds } from './suggest.js?v=1.34.1';
+import { MEDIA, mediaOf, marksOf, tvLength, askStarted, stateLabel, STARTED, pressed, pressedExact } from './media.js?v=1.34.1';
+import { seenToast } from './via.js?v=1.34.1';
 
 // Drei große Knöpfe; „Schon gesehen“ klappt die Bewertung auf
 const MAIN = [['known', '✓', 'Schon gesehen'], ['want', '+', 'Merken'], ['noInterest', '–', 'Nein danke']];
@@ -19,14 +19,15 @@ let cur = null; // { profileId, media, movie, genre, revealed }
 let md = 'movie';
 let busy = false;
 // Höchstlänge für Filme (der große Knopf = egal wie lang)
-const LIMITS = [[90, 'bis 90 Min.'], [120, 'bis 2 Std.'], [150, 'bis 2½ Std.']];
+// Zahl = höchstens so viele Minuten, negativ = mindestens (Lust auf ein langes Epos)
+const LIMITS = [[90, 'bis 90 Min.'], [120, 'bis 2 Std.'], [-150, '🎬 Epos (ab 2½ Std.)']];
 const limitText = (max) => LIMITS.find((l) => l[0] === max)?.[1] || '';
 // Erst: „Nicht zu lang?“ unter dem großen Knopf. Unter dem Vorhang: Länge wechseln (mit „egal“)
 const limitRow = (now) => {
   if (md !== 'movie') return '';
   const btn = (n, l) => `<button class="btn btn-small" type="button" data-sn="draw" data-max="${n}"${now === undefined ? '' : ` aria-pressed="${(now || 0) === n}"`}>${l}</button>`;
   const list = now === undefined ? LIMITS : [[0, 'egal'], ...LIMITS];
-  return `<div class="sneak-limits" role="group" aria-label="Länge"><span class="muted small">${now === undefined ? 'Nicht zu lang?' : 'Länge:'}</span>${list.map(([n, l]) => btn(n, l)).join('')}</div>`;
+  return `<div class="sneak-limits" role="group" aria-label="Länge"><span class="muted small">${now === undefined ? 'Wie lang?' : 'Länge:'}</span>${list.map(([n, l]) => btn(n, l)).join('')}</div>`;
 };
 
 const box = () => document.getElementById('sneak');
@@ -93,14 +94,17 @@ function paint() {
     </article>`;
 }
 
-const other = () => (md === 'tv' ? 'Andere Serie' : `Anderen Film${cur?.max ? ` (${limitText(cur.max)})` : ''}`);
+const other = () => (md === 'tv' ? 'Andere Serie' : cur?.max < 0 ? 'Anderes Epos' : `Anderen Film${cur?.max ? ` (${limitText(cur.max)})` : ''}`);
 
 async function newFilm(max = null) {
   if (busy) return;
   busy = true;
   paint();
   try {
-    const res = await draw(profile, currentIds(md), md, max);
+    // TMDB nennt in der Liste manchmal eine andere Länge als beim Film selbst – dann noch mal ziehen (10 Min. Spielraum)
+    const fits = (r) => !r || !max || !r.movie.runtime || (max > 0 ? r.movie.runtime <= max + 10 : r.movie.runtime >= -max - 10);
+    let res = await draw(profile, currentIds(md), md, max);
+    for (let i = 0; i < 2 && !fits(res); i++) res = await draw(store.getProfile(profile.id) || profile, currentIds(md), md, max);
     cur = res ? { profileId: profile.id, media: md, movie: res.movie, genre: res.genre, revealed: false, max } : null;
     if (!res) toast('Gerade findet sich nichts Passendes. Versuch es gleich noch mal.');
   } catch (err) {

@@ -1,6 +1,6 @@
 // Kurzer Rundgang für neue Profile: sechs Karten nacheinander, jederzeit überspringbar.
 // Danach (oder beim Überspringen) gilt er als gesehen; unter „Profil“ lässt er sich nochmal ansehen.
-import { dialog, esc } from './ui.js?v=1.34.0';
+import { dialog, esc } from './ui.js?v=1.34.1';
 
 // Jede Karte hat eine Kennung (id) und den Stand (Version), in dem ihr Text zuletzt geprüft wurde.
 // Der Wächter scripts/check-tour.js prüft vor jedem Hochladen, ob jede Neuerung hier erklärt ist.
@@ -19,7 +19,7 @@ export const STEPS = [
   },
   {
     id: 'mehr', stand: '1.34.0', icon: '🍿', title: 'Noch mehr',
-    text: '<strong>Überrasch mich</strong>: ein richtig guter Titel abseits deines Geschmacks, verdeckt wie in der Sneak Preview – auf Wunsch nicht zu lang (z. B. bis 2 Std.). Bei den Vorschlägen unter <strong>Filter &amp; mehr</strong>: Genre, Themen, Zeit, <strong>Gruppenabend</strong>, <strong>Kinderfilme</strong> (zum Spaß oder <strong>🎓 Wissen &amp; Natur</strong>, mit Link zum Elternratgeber FLIMMO) und dein <strong>Lieblingsfilm</strong>. In der <strong>Merkliste</strong> steht alles Gemerkte – unter „Mehr dazu“ auch, wo du es schauen kannst. Bei Serien trägst du unter <strong>Weiterschauen</strong> ein, bis zu welcher Folge du bist; neue Folgen und Staffeln stehen dann oben bei den Serien-Vorschlägen.',
+    text: '<strong>Überrasch mich</strong>: ein richtig guter Titel abseits deines Geschmacks, verdeckt wie in der Sneak Preview – auf Wunsch mit passender Länge (z. B. bis 2 Std. oder ein langes Epos). Bei den Vorschlägen unter <strong>Filter &amp; mehr</strong>: Genre, Themen, Zeit, <strong>Gruppenabend</strong>, <strong>Kinderfilme</strong> (zum Spaß oder <strong>🎓 Wissen &amp; Natur</strong>, mit Link zum Elternratgeber FLIMMO) und dein <strong>Lieblingsfilm</strong>. In der <strong>Merkliste</strong> steht alles Gemerkte – unter „Mehr dazu“ auch, wo du es schauen kannst. Bei Serien trägst du unter <strong>Weiterschauen</strong> ein, bis zu welcher Folge du bist; neue Folgen und Staffeln stehen dann oben bei den Serien-Vorschlägen.',
   },
   {
     id: 'buecher', stand: '1.31.2', icon: '📚', title: 'Bücher',
