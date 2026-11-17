@@ -1,12 +1,19 @@
 // „Was ist neu?“ – nach einem Update einmal pro Profil, wenn man die App wieder öffnet.
 // Neue Profile bekommen stattdessen den Rundgang (tour.js) und sehen die alten Neuigkeiten nicht.
 // Neueste zuerst; nur Änderungen, die man sieht und kennen sollte.
-import { dialog } from './ui.js?v=1.32.0';
+import { dialog } from './ui.js?v=1.33.0';
 
 // PFLICHT bei jedem Eintrag: „tour“ nennt die Rundgang-Karte(n) aus tour.js, die die Neuerung erklären,
 // oder 'klein', wenn sie nicht in den Rundgang gehört. Größere Umbauten: Kartentext ergänzen und dort
 // „stand“ auf diese Version setzen. Der Wächter scripts/check-tour.js stoppt sonst das Hochladen.
 export const NEWS = [
+  {
+    v: '1.33.0', tour: ['mehr'], title: 'Serien: Wo bin ich gerade?',
+    items: [
+      'Auf der Merkliste unter <strong>Weiterschauen</strong> trägst du ein, bis zu welcher Folge du bist. Nach jedem Abend ein Tipp auf <strong>✓ Folge gesehen</strong> – die App kennt Staffeln, Folgen und den Termin der nächsten Folge.',
+      'Bei den Serien-Vorschlägen steht oben <strong>Neu für dich</strong>, wenn es etwas gibt: eine neue Folge deiner Serie, eine neue Staffel deiner Lieblingsserie oder bald ein Staffelstart.',
+    ],
+  },
   {
     v: '1.32.0', tour: ['vorschlaege'], title: 'Deine Trefferquote',
     items: [

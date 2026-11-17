@@ -21,7 +21,7 @@ const ROUTES = [
   [/^\/3\/genre\/(movie|tv)\/list$/, 7 * DAY],
   // Serien
   [/^\/3\/discover\/tv$/, DAY],
-  [/^\/3\/tv\/\d+$/, 7 * DAY],
+  [/^\/3\/tv\/\d+$/, DAY], // täglich frisch: neue Folgen und Termine
   [/^\/3\/tv\/\d+\/(recommendations|keywords|aggregate_credits|content_ratings)$/, 7 * DAY],
   [/^\/3\/person\/\d+\/tv_credits$/, 7 * DAY],
   [/^\/3\/search\/tv$/, 3600],

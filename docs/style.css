@@ -607,3 +607,11 @@ ul.plain { list-style: none; padding: 0; margin: 0; display: flex; flex-directio
 .hits { margin: 0; padding-left: 18px; }
 .hits li { margin: 0 0 6px; }
 .toast.multi span { flex: 1 1 100%; }
+
+/* Serien: Wo bin ich? */
+.ep-box { margin: 4px 0 8px; padding: 8px 10px; border-radius: 10px; background: rgba(127,127,127,.12); }
+.ep-box p { margin: 0 0 6px; }
+.ep-box .row { gap: 6px; flex-wrap: wrap; margin: 0; }
+.ep-pick { display: flex; gap: 10px; }
+.ep-pick .field { flex: 1; }
+.ep-pick select { width: 100%; min-height: 44px; font-size: 16px; }

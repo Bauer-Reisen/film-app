@@ -170,6 +170,7 @@ const BOOK_META = ['a', 'ak', 'c', 'pg', 'r', 'rd']; // Autor·in, Autor-Nummer,
 const DONE = new Set(['seen', 'liked', 'loved', 'disliked', 'dropped']);
 export const isDone = (s) => DONE.has(s);
 const GAME_META = ['c', 'p', 'm', 'cm', 'on']; // Cover, Plattformen, Spielweisen, Couch-/Online-Koop
+const TV_META = ['ep', 'epT']; // Serien: bis hierher gesehen [Staffel, Folge] und wann eingetragen (seit 1.33.0)
 export function setMark(profileId, media, movieId, status, meta = {}) {
   const p = getProfile(profileId);
   if (!p) return null;
@@ -182,6 +183,7 @@ export function setMark(profileId, media, movieId, status, meta = {}) {
     const via = meta.v || old?.v || (old?.o && (old.s === 'want' || old.s === 'paused') && DONE.has(status));
     if (via && (DONE.has(status) || status === 'paused')) list[movieId].v = 1;
     if (media === 'book' && p.pendingBooks?.length) p.pendingBooks = p.pendingBooks.filter((x) => x.id !== movieId); // markiert = wartet nicht mehr
+    if (media === 'tv') for (const k of TV_META) { const v = meta[k] ?? old?.[k]; if (v != null && v !== '') list[movieId][k] = v; }
     if (media === 'game') for (const k of GAME_META) { const v = meta[k] ?? old?.[k]; if (v != null && v !== '') list[movieId][k] = v; }
     if (media === 'book') for (const k of BOOK_META) { const v = meta[k] ?? old?.[k]; if (v != null && v !== '') list[movieId][k] = v; }
     p.marksSinceBackup = (p.marksSinceBackup || 0) + 1;

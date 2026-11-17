@@ -1,17 +1,18 @@
 // Seite „Merkliste“: alle Filme bzw. Serien mit „Merken“, neueste zuerst.
 // Bei Serien steht oben „Weiterschauen“ (angefangen, will ich zu Ende schauen).
 // Titel und Poster kommen immer in der Profilsprache (Startliste oder TMDB).
-import * as store from './store.js?v=1.32.0';
-import * as tmdb from './tmdb.js?v=1.32.0';
-import { esc, toast } from './ui.js?v=1.32.0';
-import { trailerBtn } from './trailer.js?v=1.32.0';
-import { titleText } from './runtime.js?v=1.32.0';
-import { SEED_MOVIES } from './seeds.js?v=1.32.0';
-import { SEED_SHOWS } from './seeds-tv.js?v=1.32.0';
-import { peopleSlot, fillPeopleSlots } from './people.js?v=1.32.0';
-import { markButtons, moreBox } from './cards.js?v=1.32.0';
-import { isUpcoming, startText } from './upcoming.js?v=1.32.0';
-import { MEDIA, mediaOf, marksOf, tvLength, askStarted, stateLabel, justWatchUrl, shopLink } from './media.js?v=1.32.0';
+import * as store from './store.js?v=1.33.0';
+import * as tmdb from './tmdb.js?v=1.33.0';
+import { esc, toast } from './ui.js?v=1.33.0';
+import { trailerBtn } from './trailer.js?v=1.33.0';
+import { titleText } from './runtime.js?v=1.33.0';
+import { SEED_MOVIES } from './seeds.js?v=1.33.0';
+import { SEED_SHOWS } from './seeds-tv.js?v=1.33.0';
+import { peopleSlot, fillPeopleSlots } from './people.js?v=1.33.0';
+import { markButtons, moreBox } from './cards.js?v=1.33.0';
+import { isUpcoming, startText } from './upcoming.js?v=1.33.0';
+import * as eps from './episodes.js?v=1.33.0';
+import { MEDIA, mediaOf, marksOf, tvLength, askStarted, stateLabel, justWatchUrl, shopLink } from './media.js?v=1.33.0';
 
 const seedById = { movie: new Map(SEED_MOVIES.map((m) => [m.id, m])), tv: new Map(SEED_SHOWS.map((m) => [m.id, m])) };
 // Zwei große Knöpfe; „Gesehen“ klappt die Bewertung auf
@@ -66,9 +67,13 @@ export async function mount(p) {
       soon,
       overview: d?.overview || '',
       g: m.g, l: m.l,
+      det: md === 'tv' && m.s === 'paused' ? d : null, // für „Wo bin ich?“
     });
   }));
   if (mine !== run || !box() || media() !== md) return;
+  // Serien mit neuer Folge zuerst, dann die, bei denen es weitergeht
+  const rank = (m) => { const p = eps.progress(info.get(`tv:${m.id}`)?.det, m); return p.kind === 'ready' ? (p.isNew ? 0 : 1) : 2; };
+  if (md === 'tv') paused.sort((a, b) => rank(a) - rank(b));
   box().innerHTML = `
     ${paused.length ? `<h2>Weiterschauen</h2><p class="muted small">Angefangen und liegen geblieben – die willst du noch zu Ende schauen.</p>
       <div class="suggestions">${paused.map(card).join('')}</div>${wanted.length ? '<h2>Gemerkt</h2>' : ''}` : ''}
@@ -102,6 +107,7 @@ function card(m) {
       <div class="film-info">
         <h3 class="film-title">${titleText(x.title, m.id, md) || esc(x.title)}</h3>
         <p class="rating muted small">${esc(meta)}</p>${soon}
+        ${x.det ? eps.progressBox(x.det, marksOf(profile, md)[m.id]) : ''}
         <div class="film-extra">${moreBox(x.overview ? `<p>${esc(x.overview)}</p>` : '', `
           ${peopleSlot(m.id, md)}
           <p class="shop-links">${shopLink(esc(justWatchUrl(x.title, profile.language)), '📺 Wo kann ich das schauen?')}</p>`)}${trailerBtn(m.id, x.title, false, md)}</div>
@@ -111,6 +117,8 @@ function card(m) {
 }
 
 export function handleClick(e) {
+  const ep = e.target.closest('[data-ep]');
+  if (ep) { epAct(ep); return true; }
   const btn = e.target.closest('[data-wl]');
   if (!btn) return false;
   act(btn);
@@ -135,4 +143,41 @@ async function act(btn) {
     label: 'Rückgängig',
     run: () => { store.restoreMark(profile.id, md, id, old); if (action === 'paused') mount(profile); else { cardEl.hidden = false; updateCount(); } },
   });
+}
+
+// Staffel/Folge: weiterzählen, Stelle ändern, am Ende bewerten
+async function epAct(btn) {
+  const cardEl = btn.closest('[data-wfilm]');
+  const id = Number(cardEl.dataset.wfilm);
+  const x = info.get(`tv:${id}`);
+  const mark = marksOf(profile, 'tv')[id];
+  if (!x?.det || !mark) return;
+  const what = btn.dataset.ep;
+  if (what === 'next') {
+    const p = eps.progress(x.det, mark);
+    if (p.kind !== 'ready') return;
+    const before = mark.ep;
+    eps.setEp(profile.id, id, p.next);
+    rerender(cardEl, id);
+    toast(`${x.title}: ${eps.se(p.next)} gesehen`, { label: 'Rückgängig', run: () => { eps.setEp(profile.id, id, before); rerender(cardEl, id); } });
+    return;
+  }
+  if (what === 'pick') {
+    const ep = await eps.pickEp(x.det, mark, x.title);
+    if (!ep) return;
+    eps.setEp(profile.id, id, ep);
+    rerender(cardEl, id);
+    return;
+  }
+  if (what.startsWith('rate:')) {
+    const status = what.slice(5);
+    const old = store.setMark(profile.id, 'tv', id, status, { g: x.g, l: x.l, y: x.y, n: x.title });
+    cardEl.hidden = true;
+    toast(`${stateLabel('tv', status).replace(/^[^\p{L}]+/u, '')}: ${x.title}`, { label: 'Rückgängig', run: () => { store.restoreMark(profile.id, 'tv', id, old); cardEl.hidden = false; } });
+  }
+}
+function rerender(cardEl, id) {
+  const m = { id, ...marksOf(profile, 'tv')[id] };
+  const el = document.querySelector(`[data-wfilm="${id}"]`) || cardEl;
+  el.outerHTML = card(m);
 }
