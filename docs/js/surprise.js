@@ -1,9 +1,9 @@
 // „Überrasch mich“: ein guter Film abseits des eigenen Geschmacks.
 // Kern des Geschmacks bestimmen → fremdes Ziel wählen → bei TMDB suchen → stufenweise lockern.
-import { SURPRISE, SURPRISE_TV } from './config.js?v=1.33.0';
-import { MEDIA, mediaOf, marksOf } from './media.js?v=1.33.0';
-import * as tmdb from './tmdb.js?v=1.33.0';
-import * as store from './store.js?v=1.33.0';
+import { SURPRISE, SURPRISE_TV } from './config.js?v=1.34.0';
+import { MEDIA, mediaOf, marksOf } from './media.js?v=1.34.0';
+import * as tmdb from './tmdb.js?v=1.34.0';
+import * as store from './store.js?v=1.34.0';
 
 // TMDB-Genres (ohne „TV-Film“) mit deutschem und englischem Namen
 export const GENRES = {
@@ -56,9 +56,10 @@ function foreignGenres(profile, k, md) {
 /**
  * Sucht einen Überraschungsfilm.
  * exclude: zusätzliche Nummern, die nicht kommen dürfen (z. B. aktuelle Vorschläge)
+ * maxMin: höchstens so viele Minuten (nur Filme; null = egal)
  * Gibt { movie (Details), genre, stage } zurück oder null.
  */
-export async function draw(profile, exclude = new Set(), md = mediaOf(profile)) {
+export async function draw(profile, exclude = new Set(), md = mediaOf(profile), maxMin = null) {
   const S = md === 'tv' ? { ...SURPRISE, ...SURPRISE_TV } : SURPRISE;
   const c = MEDIA[md];
   const k = core(profile, md);
@@ -86,7 +87,9 @@ export async function draw(profile, exclude = new Set(), md = mediaOf(profile)) 
       requests++;
       const data = await tmdb.get(c.discover, {
         language: lang, sort_by: 'vote_average.desc', 'vote_average.gte': S.minVote, 'vote_count.gte': S.minVotes,
-        without_genres: md === 'tv' ? `${c.without},10762` : c.without, page, ...params,
+        without_genres: md === 'tv' ? `${c.without},10762` : c.without, page,
+        // Länge: ab 60 Min. (sonst kämen Kurzfilme und Filme ohne Angabe), höchstens maxMin
+        ...(maxMin && md === 'movie' ? { 'with_runtime.gte': 60, 'with_runtime.lte': maxMin } : {}), ...params,
       });
       const fits = (data.results || []).filter((m) => ok(m, { checkCore }));
       if (fits.length) return pickRandom(fits);

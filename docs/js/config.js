@@ -1,7 +1,7 @@
 // ALLE Einstellungen und Grenzwerte an einer Stelle.
 // Wer etwas nachjustieren will (z. B. Mindestbewertung), ändert es nur hier.
 
-export const VERSION = '1.33.0';
+export const VERSION = '1.34.0';
 
 // Adresse des Cloudflare Workers (nicht geheim – der Schlüssel liegt nur dort).
 export const WORKER_URL = 'https://film-app-tmdb.film-app.workers.dev';
@@ -85,6 +85,12 @@ export const KIDS = {
   minVote: 6.5, minVotes: 300,
   studioBonus: 0.4, // kleiner Vorrang für eigene Lieblingsstudios
   usFallback: { 0: ['G'], 6: ['G', 'PG'], 12: ['G', 'PG', 'PG-13'] },
+  // Unterhaltung: deutsche und neuere Titel dazumischen (sonst gewinnen immer die alten Welterfolge)
+  german: { minVote: 6.0, minVotes: 10, years: 12, every: 4 }, // jeder 4. Platz ein deutscher Titel
+  recent: { years: 4, minVotes: 80, bonus: 0.5 },
+  shortMax: 80, // „Kurz“: höchstens so viele Minuten
+  // Wissen & Natur: Dokus zum Thema; bekannte Wissensformate (kids-wissen.js) stehen weit oben
+  wissen: { minVote: 6.5, minVotes: 20, handBonus: 3 },
 };
 
 // Ab so vielen Markierungen (je Filme bzw. Serien) schlägt „Geschmack“ vor, bei den Vorschlägen weiterzumachen
@@ -112,6 +118,10 @@ export const KIDS_TV = {
   genres: [10762, 16, 10751],
   without: '80,10768',
   minVote: 7.0, minVotes: 100,
+  german: { minVote: 6.0, minVotes: 5, years: 12, every: 4 },
+  recent: { years: 4, minVotes: 50, bonus: 0.5 },
+  shortMax: 15, // kurze Folgen
+  wissen: { minVote: 6.5, minVotes: 10, handBonus: 3 },
   usFallback: { 0: ['TV-Y', 'TV-G'], 6: ['TV-Y', 'TV-Y7', 'TV-G', 'TV-PG'], 12: ['TV-Y', 'TV-Y7', 'TV-G', 'TV-PG', 'TV-14'] },
 };
 

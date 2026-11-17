@@ -467,6 +467,9 @@ body:has(.toast.show) .to-top, .no-tabs .to-top { display: none; } /* nicht mit 
 .ages { display: flex; max-width: 420px; margin: 4px 0 8px; }
 .kids-adv { margin: 4px 0 8px; }
 .ages .seg { flex: 1; min-width: 0; min-height: 52px; font-size: 18px; }
+.kids-mode { display: flex; max-width: 420px; margin: 4px 0 4px; }
+.kids-mode .seg { flex: 1; min-width: 0; min-height: 48px; padding: 0 6px; }
+.kids-topics .chip[aria-pressed="true"] { border-color: var(--accent); background: var(--accent); color: var(--accent-text); font-weight: 700; }
 
 /* Über diese App */
 .about-tmdb .tmdb-logo { display: block; width: 180px; height: auto; }
@@ -615,3 +618,6 @@ ul.plain { list-style: none; padding: 0; margin: 0; display: flex; flex-directio
 .ep-pick { display: flex; gap: 10px; }
 .ep-pick .field { flex: 1; }
 .ep-pick select { width: 100%; min-height: 44px; font-size: 16px; }
+/* Überrasch mich: Länge */
+.sneak-limits { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px; margin: 10px 0 0; }
+.sneak-limits .btn[aria-pressed="true"] { background: var(--accent); color: var(--accent-text); border-color: var(--accent); font-weight: 700; }

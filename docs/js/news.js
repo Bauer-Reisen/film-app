@@ -1,12 +1,20 @@
 // „Was ist neu?“ – nach einem Update einmal pro Profil, wenn man die App wieder öffnet.
 // Neue Profile bekommen stattdessen den Rundgang (tour.js) und sehen die alten Neuigkeiten nicht.
 // Neueste zuerst; nur Änderungen, die man sieht und kennen sollte.
-import { dialog } from './ui.js?v=1.33.0';
+import { dialog } from './ui.js?v=1.34.0';
 
 // PFLICHT bei jedem Eintrag: „tour“ nennt die Rundgang-Karte(n) aus tour.js, die die Neuerung erklären,
 // oder 'klein', wenn sie nicht in den Rundgang gehört. Größere Umbauten: Kartentext ergänzen und dort
 // „stand“ auf diese Version setzen. Der Wächter scripts/check-tour.js stoppt sonst das Hochladen.
 export const NEWS = [
+  {
+    v: '1.34.0', tour: ['mehr'], title: 'Kinderfilme neu – und Überraschungen nicht zu lang',
+    items: [
+      'Bei <strong>Kinderfilmen</strong> und <strong>Kinderserien</strong> wählst du oben <strong>🎈 Unterhaltung</strong> oder <strong>🎓 Wissen &amp; Natur</strong> – mit Themen wie Körper, Tiere, Weltall oder Geschichte und Sendungen wie „Checker Tobi“ oder „Es war einmal … das Leben“.',
+      'Unterhaltung ist bunter: mehr deutsche und neuere Titel, und mit <strong>Kurz</strong> nur Filme unter 80 Minuten. Unter „Mehr dazu“ gibt es jetzt auch einen Link zur <strong>FBW</strong> (Prädikat „wertvoll“).',
+      'Bei <strong>Überrasch mich</strong> kannst du sagen: <strong>nicht zu lang</strong> – bis 90 Minuten, 2 oder 2½ Stunden.',
+    ],
+  },
   {
     v: '1.33.0', tour: ['mehr'], title: 'Serien: Wo bin ich gerade?',
     items: [

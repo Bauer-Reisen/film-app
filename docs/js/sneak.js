@@ -1,13 +1,13 @@
 // Seite „Überrasch mich“: Vorhang → Aufdecken → Rückmeldung oder anderer Film.
-import * as store from './store.js?v=1.33.0';
-import * as tmdb from './tmdb.js?v=1.33.0';
-import { esc, toast } from './ui.js?v=1.33.0';
-import { markButtons } from './cards.js?v=1.33.0';
-import { trailerBtn } from './trailer.js?v=1.33.0';
-import { draw, genreName } from './surprise.js?v=1.33.0';
-import { currentIds } from './suggest.js?v=1.33.0';
-import { MEDIA, mediaOf, marksOf, tvLength, askStarted, stateLabel, STARTED, pressed, pressedExact } from './media.js?v=1.33.0';
-import { seenToast } from './via.js?v=1.33.0';
+import * as store from './store.js?v=1.34.0';
+import * as tmdb from './tmdb.js?v=1.34.0';
+import { esc, toast } from './ui.js?v=1.34.0';
+import { markButtons } from './cards.js?v=1.34.0';
+import { trailerBtn } from './trailer.js?v=1.34.0';
+import { draw, genreName } from './surprise.js?v=1.34.0';
+import { currentIds } from './suggest.js?v=1.34.0';
+import { MEDIA, mediaOf, marksOf, tvLength, askStarted, stateLabel, STARTED, pressed, pressedExact } from './media.js?v=1.34.0';
+import { seenToast } from './via.js?v=1.34.0';
 
 // Drei große Knöpfe; „Schon gesehen“ klappt die Bewertung auf
 const MAIN = [['known', '✓', 'Schon gesehen'], ['want', '+', 'Merken'], ['noInterest', '–', 'Nein danke']];
@@ -18,6 +18,16 @@ let profile = null;
 let cur = null; // { profileId, media, movie, genre, revealed }
 let md = 'movie';
 let busy = false;
+// Höchstlänge für Filme (der große Knopf = egal wie lang)
+const LIMITS = [[90, 'bis 90 Min.'], [120, 'bis 2 Std.'], [150, 'bis 2½ Std.']];
+const limitText = (max) => LIMITS.find((l) => l[0] === max)?.[1] || '';
+// Erst: „Nicht zu lang?“ unter dem großen Knopf. Unter dem Vorhang: Länge wechseln (mit „egal“)
+const limitRow = (now) => {
+  if (md !== 'movie') return '';
+  const btn = (n, l) => `<button class="btn btn-small" type="button" data-sn="draw" data-max="${n}"${now === undefined ? '' : ` aria-pressed="${(now || 0) === n}"`}>${l}</button>`;
+  const list = now === undefined ? LIMITS : [[0, 'egal'], ...LIMITS];
+  return `<div class="sneak-limits" role="group" aria-label="Länge"><span class="muted small">${now === undefined ? 'Nicht zu lang?' : 'Länge:'}</span>${list.map(([n, l]) => btn(n, l)).join('')}</div>`;
+};
 
 const box = () => document.getElementById('sneak');
 
@@ -44,6 +54,7 @@ function paint() {
         <p><strong>${md === 'tv' ? 'Eine richtig gute Serie' : 'Ein richtig guter Film'} – aber abseits von dem, was du sonst schaust.</strong></p>
         <p class="muted">${md === 'tv' ? 'Sie' : 'Er'} kommt verdeckt wie in der Sneak Preview. Du siehst erst nur Genre, Jahrzehnt und Länge.</p>
         <p><button class="btn btn-primary btn-big" type="button" data-sn="draw">Überrasch mich</button></p>
+        ${limitRow()}
       </div>`;
     return;
   }
@@ -58,7 +69,8 @@ function paint() {
         <p class="curtain-text">${esc(hint)}</p>
         <button class="btn btn-primary btn-big" type="button" data-sn="reveal">Aufdecken</button>
       </div>
-      <p class="center"><button class="btn" type="button" data-sn="draw">${other()}</button></p>`;
+      <p class="center"><button class="btn" type="button" data-sn="draw">${other()}</button></p>
+      ${limitRow(cur.max)}`;
     return;
   }
   const s = marksOf(profile, md)[m.id]?.s || null;
@@ -81,15 +93,15 @@ function paint() {
     </article>`;
 }
 
-const other = () => (md === 'tv' ? 'Andere Serie' : 'Anderen Film');
+const other = () => (md === 'tv' ? 'Andere Serie' : `Anderen Film${cur?.max ? ` (${limitText(cur.max)})` : ''}`);
 
-async function newFilm() {
+async function newFilm(max = null) {
   if (busy) return;
   busy = true;
   paint();
   try {
-    const res = await draw(profile, currentIds(md), md);
-    cur = res ? { profileId: profile.id, media: md, movie: res.movie, genre: res.genre, revealed: false } : null;
+    const res = await draw(profile, currentIds(md), md, max);
+    cur = res ? { profileId: profile.id, media: md, movie: res.movie, genre: res.genre, revealed: false, max } : null;
     if (!res) toast('Gerade findet sich nichts Passendes. Versuch es gleich noch mal.');
   } catch (err) {
     toast(err.message);
@@ -102,7 +114,12 @@ async function newFilm() {
 
 export function handleClick(e) {
   const act = e.target.closest('[data-sn]')?.dataset.sn;
-  if (act === 'draw') { newFilm(); return true; }
+  if (act === 'draw') {
+    const b = e.target.closest('[data-sn]');
+    // „Anderen Film“ behält die gewählte Länge
+    newFilm(b.dataset.max ? Number(b.dataset.max) || null : b.closest('#sneak .card') ? null : cur?.max ?? null);
+    return true;
+  }
   if (act === 'reveal') { cur.revealed = true; paint(); return true; }
   const fb = e.target.closest('[data-snfb]');
   if (fb && cur) { feedback(fb.dataset.snfb); return true; }
