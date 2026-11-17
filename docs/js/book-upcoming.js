@@ -4,11 +4,12 @@
 // Streng gefiltert: nur gedruckte Bücher auf Deutsch von der Autor·in selbst – keine Hörbücher, Neuauflagen,
 // Taschenbuch-Ausgaben schon erschienener Bücher, Sonderausgaben, Sammelbände oder Fanartikel.
 // Neue Bände deiner ★/♥-Reihen zählen am meisten. Höchstens drei Einträge; erscheint nur, wenn es etwas gibt.
-import * as store from './store.js?v=1.36.1';
-import * as books from './books.js?v=1.36.1';
-import { esc, toast } from './ui.js?v=1.36.1';
-import { seriesOf } from './book-series.js?v=1.36.1';
-import { UPCOMING as U } from './config.js?v=1.36.1';
+import * as store from './store.js?v=1.36.2';
+import * as books from './books.js?v=1.36.2';
+import { esc, toast } from './ui.js?v=1.36.2';
+import { seriesOf } from './book-series.js?v=1.36.2';
+import { UPCOMING as U } from './config.js?v=1.36.2';
+import { pageEl } from './media.js?v=1.36.2';
 
 const SRU = 'https://services.dnb.de/sru/dnb';
 const LIKED = new Set(['liked', 'loved']);
@@ -21,7 +22,7 @@ let items = [];
 let run = 0;
 const memo = new Map();
 
-const box = () => document.getElementById('upcoming');
+const box = () => pageEl('upcoming', 'book');
 const fold = (s) => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/ß/g, 'ss');
 const clean = (s) => String(s || '').replace(/[\u0098\u009c]/g, '').replace(/\s+/g, ' ').trim();
 const ymNow = () => { const d = new Date(); return d.getFullYear() * 100 + d.getMonth() + 1; };

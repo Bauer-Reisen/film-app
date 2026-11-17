@@ -1,9 +1,9 @@
 // Serien: Wo bin ich gerade? (Staffel/Folge) – und was ist neu?
 // Gespeichert an der Markierung der Serie: ep = [Staffel, Folge] (bis hierher gesehen), epT = wann eingetragen.
 // Die Folgen-Daten kommen aus den Serien-Details von TMDB (seasons, last_episode_to_air, next_episode_to_air).
-import * as store from './store.js?v=1.36.1';
-import { dialog, esc } from './ui.js?v=1.36.1';
-import { findEp } from './ep-find.js?v=1.36.1';
+import * as store from './store.js?v=1.36.2';
+import { dialog, esc } from './ui.js?v=1.36.2';
+import { findEp } from './ep-find.js?v=1.36.2';
 
 const cmp = (a, b) => a[0] - b[0] || a[1] - b[1];
 const day = (t) => new Date(t).toLocaleDateString('sv-SE'); // JJJJ-MM-TT

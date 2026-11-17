@@ -1,11 +1,11 @@
 // Seite „Geschmack“ bei Spielen: 3 Startfragen, Startliste (ca. 100), Suche, „Weitere laden“.
 // Knöpfe: Gespielt · Mag ich · Mag ich nicht · Merken; Tipp aufs Cover = ★ Lieblingsspiel.
-import * as store from './store.js?v=1.36.1';
-import * as games from './games.js?v=1.36.1';
-import { esc, dialog, toast } from './ui.js?v=1.36.1';
-import { pressed } from './media.js?v=1.36.1';
-import { PLATFORMS, TIMES } from './game-data.js?v=1.36.1';
-import { SEED_GAMES } from './seeds-games.js?v=1.36.1';
+import * as store from './store.js?v=1.36.2';
+import * as games from './games.js?v=1.36.2';
+import { esc, dialog, toast } from './ui.js?v=1.36.2';
+import { pressed, pageEl } from './media.js?v=1.36.2';
+import { PLATFORMS, TIMES } from './game-data.js?v=1.36.2';
+import { SEED_GAMES } from './seeds-games.js?v=1.36.2';
 
 const GAME_MARKS = [['seen', '✓', 'Gespielt'], ['liked', '♥', 'Mag ich'], ['disliked', '✕', 'Mag ich nicht'], ['want', '+', 'Merken']];
 const W = games.W;
@@ -17,7 +17,7 @@ const extra = { list: [], offset: 0, key: '' };
 let searchTimer = null;
 let searchRun = 0;
 const marks = () => profile.games || {};
-const body = () => document.getElementById('taste-body');
+const body = () => pageEl('taste-body', 'game');
 
 // Von außen („🎮 Das Spiel dazu“ bei Filmen/Serien/Büchern): gleich danach suchen
 export function openSearch(q) { ui.query = q || ''; }
@@ -70,7 +70,7 @@ export function render(p) {
 
 export async function mount(p) {
   profile = p;
-  const input = document.getElementById('taste-search');
+  const input = pageEl('taste-search', 'game');
   input?.addEventListener('input', () => {
     clearTimeout(searchTimer);
     ui.query = input.value.trim();

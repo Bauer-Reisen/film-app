@@ -1,16 +1,16 @@
 // Seite „Geschmack“ bei Büchern: Autor·innen, Themen und Genres in Stufen, Bücher markieren, Suche (auch ISBN), Scannen.
-import * as store from './store.js?v=1.36.1';
-import * as books from './books.js?v=1.36.1';
-import { esc, toast } from './ui.js?v=1.36.1';
-import { SEED_BOOKS, SEED_AUTHORS } from './seeds-books.js?v=1.36.1';
-import { THEMES, themeById } from './themes.js?v=1.36.1';
-import { BOOK_GENRES, bookGenreById } from './book-genres.js?v=1.36.1';
-import { MEDIA, stateLabel, pressed } from './media.js?v=1.36.1';
-import { TASTE_HINT_AFTER } from './config.js?v=1.36.1';
-import { authorsFromFilms } from './bridge-books.js?v=1.36.1';
-import { unrated } from './book-rate.js?v=1.36.1';
-import { requestPaste } from './book-share.js?v=1.36.1';
-import { seriesBooks, fillSeriesSlots as seriesSlots } from './book-series.js?v=1.36.1';
+import * as store from './store.js?v=1.36.2';
+import * as books from './books.js?v=1.36.2';
+import { esc, toast } from './ui.js?v=1.36.2';
+import { SEED_BOOKS, SEED_AUTHORS } from './seeds-books.js?v=1.36.2';
+import { THEMES, themeById } from './themes.js?v=1.36.2';
+import { BOOK_GENRES, bookGenreById } from './book-genres.js?v=1.36.2';
+import { MEDIA, stateLabel, pressed, pageEl } from './media.js?v=1.36.2';
+import { TASTE_HINT_AFTER } from './config.js?v=1.36.2';
+import { authorsFromFilms } from './bridge-books.js?v=1.36.2';
+import { unrated } from './book-rate.js?v=1.36.2';
+import { requestPaste } from './book-share.js?v=1.36.2';
+import { seriesBooks, fillSeriesSlots as seriesSlots } from './book-series.js?v=1.36.2';
 
 const STEP = 20;
 const SCAN = true; // Knopf „Bücher scannen“
@@ -198,7 +198,7 @@ export function mount(view, p) {
   fillBody();
 }
 
-const body = () => document.getElementById('taste-body');
+const body = () => pageEl('taste-body', 'book');
 const searching = () => ui.query.trim().length >= 2;
 
 function fillBody() {
@@ -327,10 +327,10 @@ async function fillListView() {
   if (v.kind === 'author') fillAuthorInfo(v);
   let list = [];
   try { list = await viewList(v); } catch (err) {
-    if (ui.view === v && document.getElementById('author-books')) document.getElementById('author-books').innerHTML = `<p class="muted center">${esc(err.message)}</p>`;
+    if (ui.view === v && pageEl('author-books', 'book')) pageEl('author-books', 'book').innerHTML = `<p class="muted center">${esc(err.message)}</p>`;
     return;
   }
-  const box = document.getElementById('author-books');
+  const box = pageEl('author-books', 'book');
   if (ui.view !== v || !box) return;
   const shown = remember(list || []);
   box.innerHTML = shown.length
@@ -360,8 +360,8 @@ async function fillAuthorInfo(v) {
   // Kurzbeschreibung in der Sprache der App (deutsch), die längere Beschreibung gibt es meist nur auf Englisch
   try { a = await books.authorInfo(v.id, String(profile.language || 'de').startsWith('de') ? 'de' : 'en'); } catch { return; }
   if (!a || ui.view !== v) return;
-  const dates = document.getElementById('author-dates');
-  const bio = document.getElementById('author-bio');
+  const dates = pageEl('author-dates', 'book');
+  const bio = pageEl('author-bio', 'book');
   const year = (d) => (String(d).match(/\d{4}/) || [''])[0];
   const life = year(a.born) ? (year(a.died) ? `${year(a.born)}–${year(a.died)}` : `geboren ${year(a.born)}`) : '';
   const shortHasYear = year(a.born) && a.short.includes(year(a.born));
@@ -477,7 +477,7 @@ function fromLiked(skip) {
     found.set(key, e);
   }
   const list = [...found.values()].sort((a, b) => b.score - a.score).slice(0, 12);
-  const box = document.getElementById('from-liked');
+  const box = pageEl('from-liked', 'book');
   if (!box || !list.length) return;
   box.innerHTML = `<h2>Aus deinen Büchern</h2><div class="tiles">${list.map(authorCard).join('')}</div>`;
   list.forEach((x) => removeKnown(x));
@@ -495,7 +495,7 @@ async function fromFilms(skip) {
   try { list = (await authorsFromFilms(profile)).filter((x) => !skip.has(x.id) && !skip.has(personKey(x.n))); } catch { return; }
   const shown = new Set([...document.querySelectorAll('#from-liked .tile-name')].map((t) => personKey(t.textContent)));
   list = list.filter((x) => !shown.has(personKey(x.n)));
-  const box = document.getElementById('from-films');
+  const box = pageEl('from-films', 'book');
   if (!box || !list.length || ui.sub !== 'autoren' || searching()) return;
   box.innerHTML = `<h2>Aus deinen Filmen und Serien</h2><p class="muted small">Sie haben die Bücher zu Filmen und Serien geschrieben, die du magst.</p>
     <div class="tiles">${list.map((x) => authorCard({ ...x, fromFilms: true })).join('')}</div>`;

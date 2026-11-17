@@ -1,18 +1,18 @@
 // Seite „Vorschläge“ bei Büchern: Liste mit Begründung, Rückmeldungen, Rückgängig, „Mehr“,
 // „Heute Lust auf …“ und „Aus welcher Zeit“.
-import * as store from './store.js?v=1.36.1';
-import * as books from './books.js?v=1.36.1';
-import { esc, toast } from './ui.js?v=1.36.1';
-import { THEMES, themeById } from './themes.js?v=1.36.1';
-import { MEDIA, stateLabel } from './media.js?v=1.36.1';
-import { computeBooks, visibleBooks, hasBookSources, BOOK_ERAS, bookEraById, BOOK_POINTS } from './book-recommend.js?v=1.36.1';
-import { coverImg, bookMetaHtml, rememberBooks } from './book-taste.js?v=1.36.1';
-import { movieHint } from './book-extra.js?v=1.36.1';
-import { fillSeriesSlots } from './book-series.js?v=1.36.1';
-import { markButtons, moreBox, filterBox } from './cards.js?v=1.36.1';
-import { BOOK_GENRES, bookGenreById } from './book-genres.js?v=1.36.1';
-import * as upcoming from './book-upcoming.js?v=1.36.1';
-import { seenToast } from './via.js?v=1.36.1';
+import * as store from './store.js?v=1.36.2';
+import * as books from './books.js?v=1.36.2';
+import { esc, toast } from './ui.js?v=1.36.2';
+import { THEMES, themeById } from './themes.js?v=1.36.2';
+import { MEDIA, stateLabel, pageEl } from './media.js?v=1.36.2';
+import { computeBooks, visibleBooks, hasBookSources, BOOK_ERAS, bookEraById, BOOK_POINTS } from './book-recommend.js?v=1.36.2';
+import { coverImg, bookMetaHtml, rememberBooks } from './book-taste.js?v=1.36.2';
+import { movieHint } from './book-extra.js?v=1.36.2';
+import { fillSeriesSlots } from './book-series.js?v=1.36.2';
+import { markButtons, moreBox, filterBox } from './cards.js?v=1.36.2';
+import { BOOK_GENRES, bookGenreById } from './book-genres.js?v=1.36.2';
+import * as upcoming from './book-upcoming.js?v=1.36.2';
+import { seenToast } from './via.js?v=1.36.2';
 
 // Drei große Knöpfe; „Schon gelesen“ klappt die Bewertung auf
 const MAIN = [['known', '✓', 'Schon gelesen'], ['want', '+', 'Merken'], ['noInterest', '–', 'Nein danke']];
@@ -32,7 +32,7 @@ let mood = '';
 let era = '';
 let genre = ''; // Genre-Filter (seit 1.26.0)
 const calc = () => computeBooks(profile, page, { theme: mood, era, genre });
-const box = () => document.getElementById('suggest-list');
+const box = () => pageEl('suggest-list', 'book');
 const active = () => [genre && bookGenreById.get(genre)?.n, mood && themeById.get(mood)?.n, era && bookEraById.get(era)?.n].filter(Boolean).join(' · ');
 
 function pickers() {
@@ -80,9 +80,9 @@ export async function mount(p) {
   byId.clear();
   const mine = ++run;
   shown = []; page = 1;
-  const sel = document.getElementById('mood');
-  const selEra = document.getElementById('era');
-  const selGenre = document.getElementById('genre');
+  const sel = pageEl('mood', 'book');
+  const selEra = pageEl('era', 'book');
+  const selGenre = pageEl('genre', 'book');
   if (sel && selEra && selGenre) sel.onchange = selEra.onchange = selGenre.onchange = () => {
     mood = sel.value;
     era = selEra.value;

@@ -1,10 +1,10 @@
 // Seite „Lieblingsfilm“ bzw. „Lieblingsserie“: einer deiner ★-Titel zum Wiedersehen.
 // Bevorzugt Filme, die hier am längsten nicht mehr vorgeschlagen wurden.
-import * as store from './store.js?v=1.36.1';
-import * as tmdb from './tmdb.js?v=1.36.1';
-import { esc, toast } from './ui.js?v=1.36.1';
-import { trailerBtn } from './trailer.js?v=1.36.1';
-import { MEDIA, mediaOf, marksOf, fieldName, tvLength } from './media.js?v=1.36.1';
+import * as store from './store.js?v=1.36.2';
+import * as tmdb from './tmdb.js?v=1.36.2';
+import { esc, toast } from './ui.js?v=1.36.2';
+import { trailerBtn } from './trailer.js?v=1.36.2';
+import { MEDIA, mediaOf, marksOf, fieldName, tvLength, pageEl } from './media.js?v=1.36.2';
 
 let profile = null;
 let cur = null;       // { profileId, details }
@@ -14,7 +14,7 @@ let md = 'movie';
 const W = () => MEDIA[md].w;
 const shownKey = () => fieldName('rewatchShown', md);
 
-const box = () => document.getElementById('rewatch');
+const box = () => pageEl('rewatch', 'movie', 'tv');
 const pool = (status) => Object.entries(marksOf(profile, md)).filter(([, m]) => m.s === status).map(([id]) => Number(id));
 
 // Einen ziehen: aus dem am längsten nicht gezeigten Drittel zufällig

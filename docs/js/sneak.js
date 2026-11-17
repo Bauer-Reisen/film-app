@@ -1,14 +1,14 @@
 // Seite „Überrasch mich“: Vorhang → Aufdecken → Rückmeldung oder anderer Film.
-import * as store from './store.js?v=1.36.1';
-import * as tmdb from './tmdb.js?v=1.36.1';
-import { esc, toast } from './ui.js?v=1.36.1';
-import { markButtons } from './cards.js?v=1.36.1';
-import { trailerBtn } from './trailer.js?v=1.36.1';
-import { draw, genreName } from './surprise.js?v=1.36.1';
-import { currentIds } from './suggest.js?v=1.36.1';
-import { MEDIA, mediaOf, marksOf, tvLength, askStarted, stateLabel, STARTED, pressed, pressedExact } from './media.js?v=1.36.1';
-import { seenToast } from './via.js?v=1.36.1';
-import { creditsSlot, fillCredits } from './credits.js?v=1.36.1';
+import * as store from './store.js?v=1.36.2';
+import * as tmdb from './tmdb.js?v=1.36.2';
+import { esc, toast } from './ui.js?v=1.36.2';
+import { markButtons } from './cards.js?v=1.36.2';
+import { trailerBtn } from './trailer.js?v=1.36.2';
+import { draw, genreName } from './surprise.js?v=1.36.2';
+import { currentIds } from './suggest.js?v=1.36.2';
+import { MEDIA, mediaOf, marksOf, tvLength, askStarted, stateLabel, STARTED, pressed, pressedExact, pageEl } from './media.js?v=1.36.2';
+import { seenToast } from './via.js?v=1.36.2';
+import { creditsSlot, fillCredits } from './credits.js?v=1.36.2';
 
 // Drei große Knöpfe; „Schon gesehen“ klappt die Bewertung auf
 const MAIN = [['known', '✓', 'Schon gesehen'], ['want', '+', 'Merken'], ['noInterest', '–', 'Nein danke']];
@@ -31,7 +31,7 @@ const limitRow = (now) => {
   return `<div class="sneak-limits" role="group" aria-label="Länge"><span class="muted small">${now === undefined ? 'Wie lang?' : 'Länge:'}</span>${list.map(([n, l]) => btn(n, l)).join('')}</div>`;
 };
 
-const box = () => document.getElementById('sneak');
+const box = () => pageEl('sneak', 'movie', 'tv');
 
 export function render(p) {
   profile = p;

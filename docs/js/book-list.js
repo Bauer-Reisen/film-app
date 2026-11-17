@@ -1,14 +1,14 @@
 // Seite „Leseliste“: alle Bücher mit „Merken“ oder „Weiterlesen“ (liegen geblieben), neueste zuerst.
 // Titel und Cover in der Lesesprache des Profils.
-import * as store from './store.js?v=1.36.1';
-import * as books from './books.js?v=1.36.1';
-import { esc, toast } from './ui.js?v=1.36.1';
-import { stateLabel, amazonBookUrl, shopLink } from './media.js?v=1.36.1';
-import { coverImg, bookMetaHtml } from './book-taste.js?v=1.36.1';
-import { markButtons, moreBox } from './cards.js?v=1.36.1';
-import { movieHint } from './book-extra.js?v=1.36.1';
-import { fillSeriesSlots } from './book-series.js?v=1.36.1';
-import { isComing, releaseText } from './book-upcoming.js?v=1.36.1';
+import * as store from './store.js?v=1.36.2';
+import * as books from './books.js?v=1.36.2';
+import { esc, toast } from './ui.js?v=1.36.2';
+import { stateLabel, amazonBookUrl, shopLink, pageEl } from './media.js?v=1.36.2';
+import { coverImg, bookMetaHtml } from './book-taste.js?v=1.36.2';
+import { markButtons, moreBox } from './cards.js?v=1.36.2';
+import { movieHint } from './book-extra.js?v=1.36.2';
+import { fillSeriesSlots } from './book-series.js?v=1.36.2';
+import { isComing, releaseText } from './book-upcoming.js?v=1.36.2';
 
 // Zwei große Knöpfe; „Gelesen“ klappt die Bewertung auf
 const MAIN = [['known', '✓', 'Gelesen'], ['remove', '–', 'Entfernen']];
@@ -17,7 +17,7 @@ const KNOWN = [['liked', '♥', 'Mag ich'], ['seen', '✓', 'Ganz okay'], ['disl
 let profile = null;
 let run = 0;
 const info = new Map();
-const box = () => document.getElementById('watch-list');
+const box = () => pageEl('watch-list', 'book');
 const wanted = () => Object.entries(profile.books || {}).filter(([, m]) => m.s === 'want' || m.s === 'paused').sort((a, b) => b[1].t - a[1].t).map(([id, m]) => ({ id, ...m }));
 
 export function render(p) {
@@ -56,7 +56,7 @@ export async function mount(p) {
 
 function updateCount() {
   const n = wanted().length;
-  const el = document.getElementById('watch-count');
+  const el = pageEl('watch-count', 'book');
   if (el) el.textContent = n ? `${n} ${n === 1 ? 'Buch' : 'Bücher'} auf der Leseliste. Tipp aufs Cover = ★ Lieblingsbuch.` : 'Alles gelesen – die Leseliste ist leer.';
 }
 

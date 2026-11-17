@@ -1,16 +1,16 @@
 // „Überrasch mich“ bei Büchern: ein viel gelesenes, gut bewertetes Buch aus einem Genre, das du sonst nicht liest.
 // Vorhang (nur Genre, Zeit, Seitenzahl) → Aufdecken → Rückmeldung oder anderes Buch.
-import * as store from './store.js?v=1.36.1';
-import * as books from './books.js?v=1.36.1';
-import { esc, toast } from './ui.js?v=1.36.1';
-import { markButtons } from './cards.js?v=1.36.1';
-import { SURPRISE } from './config.js?v=1.36.1';
-import { BOOK_GENRES, bookGenreById } from './book-genres.js?v=1.36.1';
-import { MEDIA, stateLabel, pressed, pressedExact } from './media.js?v=1.36.1';
-import { coverImg, bookMetaHtml, nextStatus } from './book-taste.js?v=1.36.1';
-import { movieHint } from './book-extra.js?v=1.36.1';
-import { currentBookIds } from './book-suggest.js?v=1.36.1';
-import { seenToast } from './via.js?v=1.36.1';
+import * as store from './store.js?v=1.36.2';
+import * as books from './books.js?v=1.36.2';
+import { esc, toast } from './ui.js?v=1.36.2';
+import { markButtons } from './cards.js?v=1.36.2';
+import { SURPRISE } from './config.js?v=1.36.2';
+import { BOOK_GENRES, bookGenreById } from './book-genres.js?v=1.36.2';
+import { MEDIA, stateLabel, pressed, pressedExact, pageEl } from './media.js?v=1.36.2';
+import { coverImg, bookMetaHtml, nextStatus } from './book-taste.js?v=1.36.2';
+import { movieHint } from './book-extra.js?v=1.36.2';
+import { currentBookIds } from './book-suggest.js?v=1.36.2';
+import { seenToast } from './via.js?v=1.36.2';
 
 // Drei große Knöpfe; „Schon gelesen“ klappt die Bewertung auf
 const MAIN = [['known', '✓', 'Schon gelesen'], ['want', '+', 'Merken'], ['noInterest', '–', 'Nein danke']];
@@ -24,7 +24,7 @@ const pickRandom = (arr) => arr[Math.floor(Math.random() * arr.length)];
 let profile = null;
 let cur = null; // { profileId, book, genre, revealed }
 let busy = false;
-const box = () => document.getElementById('sneak');
+const box = () => pageEl('sneak', 'book');
 
 // Kern: Genres, die mindestens 15 % der gelesenen Bücher ausmachen
 function coreGenres(p) {

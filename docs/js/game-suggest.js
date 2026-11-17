@@ -1,12 +1,13 @@
 // Spiele: Vorschläge berechnen (harte Filter, Punkte, Indie-Mischung) und die Seite „Vorschläge“.
-import * as store from './store.js?v=1.36.1';
-import * as games from './games.js?v=1.36.1';
-import { esc, toast } from './ui.js?v=1.36.1';
-import { RECOMMEND_GAME as R } from './config.js?v=1.36.1';
-import { GENRES, INDIE, MODES } from './game-data.js?v=1.36.1';
-import { WORLDS } from './seeds-games.js?v=1.36.1';
-import { markButtons, moreBox, filterBox } from './cards.js?v=1.36.1';
-import { seenToast } from './via.js?v=1.36.1';
+import * as store from './store.js?v=1.36.2';
+import * as games from './games.js?v=1.36.2';
+import { esc, toast } from './ui.js?v=1.36.2';
+import { RECOMMEND_GAME as R } from './config.js?v=1.36.2';
+import { GENRES, INDIE, MODES } from './game-data.js?v=1.36.2';
+import { WORLDS } from './seeds-games.js?v=1.36.2';
+import { markButtons, moreBox, filterBox } from './cards.js?v=1.36.2';
+import { seenToast } from './via.js?v=1.36.2';
+import { pageEl } from './media.js?v=1.36.2';
 
 const MAIN = [['known', '✓', 'Schon gespielt'], ['want', '+', 'Merken'], ['noInterest', '–', 'Nein danke']];
 const KNOWN = [['liked', '♥', 'Mag ich'], ['seen', '✓', 'Ganz okay'], ['disliked', '✕', 'Mag ich nicht']];
@@ -167,7 +168,7 @@ let pool = [];
 let shown = 0;
 let run = 0;
 const byId = new Map();
-const box = () => document.getElementById('suggest-list');
+const box = () => pageEl('suggest-list', 'game');
 let mode = ''; // „Heute: …“ – gilt nur, solange die App offen ist
 const modeName = () => MODES.find((m) => m.id === mode)?.n || '';
 
@@ -190,7 +191,7 @@ export function render(p) {
 export async function mount(p) {
   profile = p;
   const mine = ++run;
-  const sel = document.getElementById('gmode');
+  const sel = pageEl('gmode', 'game');
   if (sel) sel.onchange = () => {
     mode = sel.value;
     const now = document.querySelector('.filters-now');

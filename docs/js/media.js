@@ -1,6 +1,6 @@
 // Filme oder Serien: alles, was sich zwischen beiden unterscheidet, steht hier.
 // Die Seiten fragen hier nach (Adressen, Wörter, Profilfelder), statt alles doppelt zu bauen.
-import { dialog, esc } from './ui.js?v=1.36.1';
+import { dialog, esc } from './ui.js?v=1.36.2';
 
 // Serien-Genres, die nie vorgeschlagen werden: Nachrichten, Reality, Seifenoper, Talkshow
 export const TV_EXCLUDE = [10763, 10764, 10766, 10767];
@@ -64,6 +64,10 @@ export const areasOf = (profile) => {
   return on.length ? on : ['movie'];
 };
 // Gewählter Bereich – ist er ausgeschaltet, der erste eingeschaltete (meist Filme)
+// Element der Seite – aber nur, wenn oben noch derselbe Bereich gewählt ist (sonst null).
+// Sonst landen spät fertig geladene Bücher in der Film-Seite (gleiche Platz-Namen), seit 1.36.2.
+export const pageEl = (id, ...md) => (md.includes(document.body.dataset.media) ? document.getElementById(id) : null);
+
 export const mediaOf = (profile) => {
   const on = areasOf(profile);
   const m = profile?.settings?.media;

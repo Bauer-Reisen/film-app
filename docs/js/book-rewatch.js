@@ -1,18 +1,18 @@
 // Seite „Lieblingsbuch“: eins deiner ★-Bücher zum Wiederlesen.
 // Bevorzugt Bücher, die hier am längsten nicht mehr kamen. Funktioniert auch ohne Netz (gespeicherte Angaben).
-import * as store from './store.js?v=1.36.1';
-import * as books from './books.js?v=1.36.1';
-import { esc, toast } from './ui.js?v=1.36.1';
-import { MEDIA } from './media.js?v=1.36.1';
-import { coverImg, bookMetaHtml } from './book-taste.js?v=1.36.1';
-import { movieHint } from './book-extra.js?v=1.36.1';
+import * as store from './store.js?v=1.36.2';
+import * as books from './books.js?v=1.36.2';
+import { esc, toast } from './ui.js?v=1.36.2';
+import { MEDIA, pageEl } from './media.js?v=1.36.2';
+import { coverImg, bookMetaHtml } from './book-taste.js?v=1.36.2';
+import { movieHint } from './book-extra.js?v=1.36.2';
 
 const W = MEDIA.book.w;
 let profile = null;
 let cur = null; // { profileId, book, onlyLiked }
 let skipped = new Set();
 let run = 0;
-const box = () => document.getElementById('rewatch');
+const box = () => pageEl('rewatch', 'book');
 const pool = (status) => Object.entries(profile.books || {}).filter(([, m]) => m.s === status).map(([id]) => id);
 
 function pick() {

@@ -1,12 +1,12 @@
 // Kasten „Demnächst von deinen Lieblingen“ oben bei den Vorschlägen (nur Filme).
 // Neue Filme deiner Lieblingspersonen und -studios und neue Teile deiner ★/♥-Filmreihen.
 // Erscheint nur, wenn es etwas gibt; höchstens drei Einträge. „Kein Interesse“ = „Nein danke“ (kommt nie wieder).
-import * as store from './store.js?v=1.36.1';
-import * as tmdb from './tmdb.js?v=1.36.1';
-import { esc, toast } from './ui.js?v=1.36.1';
-import { trailerBtn } from './trailer.js?v=1.36.1';
-import { marksOf, creditsOf } from './media.js?v=1.36.1';
-import { UPCOMING as U } from './config.js?v=1.36.1';
+import * as store from './store.js?v=1.36.2';
+import * as tmdb from './tmdb.js?v=1.36.2';
+import { esc, toast } from './ui.js?v=1.36.2';
+import { trailerBtn } from './trailer.js?v=1.36.2';
+import { marksOf, creditsOf, pageEl } from './media.js?v=1.36.2';
+import { UPCOMING as U } from './config.js?v=1.36.2';
 
 const LIKED = new Set(['liked', 'loved']);
 let profile = null;
@@ -14,7 +14,7 @@ let items = [];
 let run = 0;
 
 const iso = (d) => d.toISOString().slice(0, 10);
-const box = () => document.getElementById('upcoming');
+const box = () => pageEl('upcoming', 'movie');
 const fmt = (s) => new Date(`${s}T12:00:00`).toLocaleDateString('de-DE', { day: 'numeric', month: 'numeric', year: 'numeric' });
 
 // Start in Deutschland (Kino, sonst digital), sonst das allgemeine Datum

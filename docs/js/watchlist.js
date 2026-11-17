@@ -1,19 +1,19 @@
 // Seite „Merkliste“: alle Filme bzw. Serien mit „Merken“, neueste zuerst.
 // Bei Serien steht oben „Weiterschauen“ (angefangen, will ich zu Ende schauen).
 // Titel und Poster kommen immer in der Profilsprache (Startliste oder TMDB).
-import * as store from './store.js?v=1.36.1';
-import * as tmdb from './tmdb.js?v=1.36.1';
-import { esc, toast } from './ui.js?v=1.36.1';
-import { trailerBtn } from './trailer.js?v=1.36.1';
-import { titleText } from './runtime.js?v=1.36.1';
-import { SEED_MOVIES } from './seeds.js?v=1.36.1';
-import { SEED_SHOWS } from './seeds-tv.js?v=1.36.1';
-import { peopleSlot, fillPeopleSlots } from './people.js?v=1.36.1';
-import { markButtons, moreBox } from './cards.js?v=1.36.1';
-import { isUpcoming, startText } from './upcoming.js?v=1.36.1';
-import * as eps from './episodes.js?v=1.36.1';
-import { creditsSlot } from './credits.js?v=1.36.1';
-import { MEDIA, mediaOf, marksOf, tvLength, askStarted, stateLabel, justWatchUrl, shopLink } from './media.js?v=1.36.1';
+import * as store from './store.js?v=1.36.2';
+import * as tmdb from './tmdb.js?v=1.36.2';
+import { esc, toast } from './ui.js?v=1.36.2';
+import { trailerBtn } from './trailer.js?v=1.36.2';
+import { titleText } from './runtime.js?v=1.36.2';
+import { SEED_MOVIES } from './seeds.js?v=1.36.2';
+import { SEED_SHOWS } from './seeds-tv.js?v=1.36.2';
+import { peopleSlot, fillPeopleSlots } from './people.js?v=1.36.2';
+import { markButtons, moreBox } from './cards.js?v=1.36.2';
+import { isUpcoming, startText } from './upcoming.js?v=1.36.2';
+import * as eps from './episodes.js?v=1.36.2';
+import { creditsSlot } from './credits.js?v=1.36.2';
+import { MEDIA, mediaOf, marksOf, tvLength, askStarted, stateLabel, justWatchUrl, shopLink, pageEl } from './media.js?v=1.36.2';
 
 const seedById = { movie: new Map(SEED_MOVIES.map((m) => [m.id, m])), tv: new Map(SEED_SHOWS.map((m) => [m.id, m])) };
 // Zwei große Knöpfe; „Gesehen“ klappt die Bewertung auf
@@ -26,7 +26,7 @@ let run = 0;
 const info = new Map(); // 'media:id' → { title, poster, y, length, overview, g, l }
 
 const media = () => mediaOf(profile);
-const box = () => document.getElementById('watch-list');
+const box = () => pageEl('watch-list', 'movie', 'tv');
 const listOf = (status) => Object.entries(marksOf(profile)).filter(([, m]) => m.s === status).sort((a, b) => b[1].t - a[1].t).map(([id, m]) => ({ id: Number(id), ...m }));
 
 export function render(p) {
