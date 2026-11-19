@@ -184,9 +184,11 @@ body:has(.toast.show) .to-top, .no-tabs .to-top { display: none; } /* nicht mit 
 .news ul { margin: 0 0 4px; padding-left: 1.2em; }
 .news li { margin: 4px 0; }
 .tour p { text-align: left; }
-.tour-dots { display: flex; justify-content: center; gap: 8px; margin: 14px 0 0 !important; }
-.tour-dots span { width: 8px; height: 8px; border-radius: 50%; background: var(--line); }
-.tour-dots span.on { background: var(--accent); }
+.tour-dots { display: flex; justify-content: center; flex-wrap: wrap; margin: 14px 0 0 !important; }
+.tour-dots button { width: 32px; height: 32px; padding: 0; border: 0; background: none; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+.tour-dots button span { width: 10px; height: 10px; border-radius: 50%; background: var(--line); }
+.tour-dots button.on span { background: var(--accent); transform: scale(1.3); }
+.tour-skip { display: block; margin: 4px auto 0; background: none; border: 0; color: inherit; opacity: .7; font: inherit; font-size: 14px; text-decoration: underline; padding: 6px; cursor: pointer; }
 
 /* ---------- Seiten ohne Tab-Leiste („Wer schaut?") ---------- */
 .no-tabs .tabs { display: none; }
