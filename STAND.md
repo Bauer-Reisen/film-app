@@ -303,3 +303,5 @@ Die Nutzerin kann nicht programmieren. Antworte auf Deutsch, knapp und ohne Fach
   - Die App vergleicht beim Öffnen `version.json` mit ihrer eigenen Nummer und lädt bei Abweichung selbst neu. Ohne neue Nummer bekommen Handys das Update erst nach etwa 10 Minuten oder noch später.
 - **Hochladen:** `git push`. Die Anmeldung bei GitHub ist gespeichert, und der Hook prüft vorher auf Schlüssel.
 
+- [x] **Version 1.38.1** (19.11.2026, live): Rundgang: Punkte oben antippbar (springt zu der Karte), ab Karte 2 „← Zurück“ statt „Überspringen“, dazu kleiner Link „Rundgang überspringen“ (Wunsch 19.11.2026, in allen Apps gleich). Umsetzung in tour.js: Schleife mit Index, Punkte als `<button data-schritt>`.
+- [x] **Version 1.38.2** (22.11.2026, live): Reparatur Rundgang: Antippen eines Punkts oben schloss am Handy den ganzen Rundgang. Jetzt springt er zur Karte. Ursache: `dialog()` in ui.js band jeden Knopf im Fenster ans Schließen; jetzt nur noch die Knöpfe unten (`.dlg-buttons`). tour.js schließt beim Punkt selbst über „cancel“ (wie Sziget 0.1.1). Mit echten Klicks bei 375 px geprüft: Punkt, „← Zurück“, „Rundgang überspringen“. Kein „Was ist neu?“.

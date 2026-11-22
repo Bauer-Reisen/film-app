@@ -46,8 +46,8 @@ export function dialog({ title, body = '', buttons = [{ label: 'OK', value: true
       }
       finish(btn);
     });
-    // Knöpfe ohne Prüfung (Abbrechen, Löschen …) direkt auswerten
-    d.querySelectorAll('button[type="button"]').forEach((b) =>
+    // Nur die Knöpfe unten (Abbrechen, Löschen …) direkt auswerten – Knöpfe im Inhalt regeln das selbst
+    d.querySelectorAll('.dlg-buttons button[type="button"]').forEach((b) =>
       b.addEventListener('click', () => finish(buttons[b.value])));
     d.addEventListener('cancel', (e) => { e.preventDefault(); finish(null); }); // Esc-Taste
     d.addEventListener('close', () => finish(null));

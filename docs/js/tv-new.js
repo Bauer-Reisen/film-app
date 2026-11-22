@@ -1,11 +1,11 @@
 // Kasten „Neu für dich“ oben bei den Serien-Vorschlägen:
 // neue Folgen deiner angefangenen Serien, neue Staffeln deiner Lieblingsserien, kommende Staffelstarts.
 // Erscheint nur, wenn es etwas gibt. ✕ blendet einen Eintrag aus (bis es wieder etwas Neues gibt).
-import * as store from './store.js?v=1.38.1';
-import * as tmdb from './tmdb.js?v=1.38.1';
-import { esc, toast } from './ui.js?v=1.38.1';
-import { marksOf, pageEl } from './media.js?v=1.38.1';
-import * as eps from './episodes.js?v=1.38.1';
+import * as store from './store.js?v=1.38.2';
+import * as tmdb from './tmdb.js?v=1.38.2';
+import { esc, toast } from './ui.js?v=1.38.2';
+import { marksOf, pageEl } from './media.js?v=1.38.2';
+import * as eps from './episodes.js?v=1.38.2';
 
 const MAX = 4;
 const LIKED = new Set(['liked', 'loved']);

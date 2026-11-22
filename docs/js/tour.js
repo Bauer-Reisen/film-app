@@ -1,6 +1,6 @@
 // Kurzer Rundgang für neue Profile: sechs Karten nacheinander, jederzeit überspringbar.
 // Danach (oder beim Überspringen) gilt er als gesehen; unter „Profil“ lässt er sich nochmal ansehen.
-import { dialog, esc } from './ui.js?v=1.38.1';
+import { dialog, esc } from './ui.js?v=1.38.2';
 
 // Jede Karte hat eine Kennung (id) und den Stand (Version), in dem ihr Text zuletzt geprüft wurde.
 // Der Wächter scripts/check-tour.js prüft vor jedem Hochladen, ob jede Neuerung hier erklärt ist.
@@ -60,8 +60,15 @@ export async function runTour(name = '', withGames = false) {
     });
     // Punkte oben antippen = zu diesem Schritt springen
     let sprung = null;
-    [...document.querySelectorAll('dialog')].pop()?.querySelectorAll('[data-schritt]')
-      .forEach((b) => b.addEventListener('click', () => { sprung = b.dataset.schritt; }));
+    // Punkte oben antippen = zu dieser Karte springen; „Rundgang überspringen" = beenden.
+    // Erst merken, wohin es geht, dann diesen Dialog schließen (ohne Ergebnis).
+    const dlg = [...document.querySelectorAll('dialog.dlg')].pop();
+    dlg?.querySelectorAll('[data-schritt]').forEach((b) => b.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      sprung = b.dataset.schritt;
+      dlg.dispatchEvent(new Event('cancel', { cancelable: true }));
+    }));
     const res = await offen;
     if (sprung === 'ende') return;
     if (sprung !== null) { i = Number(sprung); continue; }

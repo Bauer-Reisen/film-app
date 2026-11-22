@@ -1,8 +1,8 @@
 // „Meine Abos“: Welche Streamingdienste hat das Profil – und läuft ein Titel dort (in Deutschland, im Abo)?
 // Daten: TMDB „watch/providers“, die von JustWatch kommen (Quelle muss genannt werden).
 // Einstellungen: settings.abos = ['netflix', …], settings.aboOnly = true/false (Schalter bei den Vorschlägen).
-import * as tmdb from './tmdb.js?v=1.38.1';
-import { MEDIA } from './media.js?v=1.38.1';
+import * as tmdb from './tmdb.js?v=1.38.2';
+import { MEDIA } from './media.js?v=1.38.2';
 
 // [Schlüssel, Name, TMDB-Nummern] – bei TMDB nachgeschlagen (Liste für DE). Varianten zählen mit
 // (z. B. „Netflix mit Werbung“, „Paramount+ über Amazon“).
