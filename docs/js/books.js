@@ -1,9 +1,10 @@
 // Buchdaten von Open Library (frei, ohne Schlüssel).
 // Erst über unseren Worker (/ol/…). Kennt der Worker die Adressen noch nicht, direkt bei Open Library
 // (die Seite erlaubt das ausdrücklich). Merkt sich Antworten für die Sitzung, höchstens 4 Anfragen gleichzeitig.
-import { WORKER_URL } from './config.js?v=1.38.2';
-import { SEED_BOOKS } from './seeds-books.js?v=1.38.2';
-import { genresOf } from './book-genres.js?v=1.38.2';
+import { WORKER_URL } from './config.js?v=1.38.3';
+import { SEED_BOOKS } from './seeds-books.js?v=1.38.3';
+import { genresOf } from './book-genres.js?v=1.38.3';
+import * as dnb from './book-dnb.js?v=1.38.3';
 
 const OL = 'https://openlibrary.org';
 let direct = false;
@@ -95,6 +96,7 @@ export function fromDoc(d, lang = 'en') {
   return {
     id,
     title: (seed && (seed.t[lang] || seed.t.en)) || (edOk && ed.title) || d.title,
+    wt: d.title, // Werktitel (meist Original), zum Abgleichen
     cover: (seed && (seed.c[lang] || seed.c.en)) || (edOk && ed.cover_i) || d.cover_i || ed?.cover_i || null,
     a: latinName([seed?.a, ...(d.author_name || [])].filter(Boolean)) || '',
     ak: (d.author_key || [])[0] || seed?.ak || null,
@@ -194,11 +196,37 @@ export function cleanIsbn(raw) {
 export async function byIsbn(isbn, lang = 'en') {
   const ed = await get(`/isbn/${isbn}.json`);
   const key = ed?.works?.[0]?.key;
-  if (!key) return null;
+  if (!key) return byIsbnDnb(isbn, lang);
   const id = canonical(key.replace('/works/', ''));
   const book = await byId(id, lang).catch(() => null);
   if (book) return book;
   return { id, title: ed.title, cover: ed.covers?.[0] || null, a: '', ak: null, y: null, pg: ed.number_of_pages || null, g: [], s: [], r: 0, rating: null };
+}
+
+// Open Library kennt die ISBN nicht (oft bei deutschen Ausgaben): Titel und Autor·in von der Nationalbibliothek holen,
+// damit das Werk bei Open Library suchen (Originaltitel zuerst); sonst ein Buch nur mit den DNB-Angaben (seit 1.38.3)
+async function byIsbnDnb(isbn, lang) {
+  const r = await dnb.byIsbn(isbn).catch(() => null);
+  if (!r) return null;
+  const a = dnb.fullName(r.author);
+  const last = lastOf(a);
+  const first = fold(a).charAt(0);
+  // Gleiche Person (Nachname + erster Buchstabe des Vornamens) und alle Titelwörter stehen im Treffer
+  const words = (t) => fold(t).split(/[^a-z0-9]+/).filter((w) => w.length >= 2 && !STOP.has(w));
+  const fits = (b, title) => {
+    if (lastOf(b.a) !== last || (first && fold(b.a).charAt(0) !== first) || BUNDLE.test(b.title)) return false;
+    const have = new Set([...words(b.title), ...words(b.wt)]); // Titel in der Lesesprache oder Werktitel
+    const need = words(title);
+    return need.length > 0 && need.every((w) => have.has(w));
+  };
+  if (last) {
+    for (const title of [...new Set([r.orig, r.title].filter(Boolean))]) {
+      const hit = (await search({ title, author: last }, lang, 5).catch(() => [])).find((b) => fits(b, title));
+      if (hit) return { ...hit, pg: hit.pg || r.pg };
+    }
+  }
+  // Kein Cover: die Bilder der Nationalbibliothek lassen sich im Browser derzeit nicht laden (Bot-Sperre)
+  return { id: `DNB${r.id}`, title: r.title, cover: null, a, ak: null, y: r.year, pg: r.pg, g: [], s: [], r: 0, rating: null };
 }
 
 // Autor·innen suchen

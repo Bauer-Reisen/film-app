@@ -1,18 +1,18 @@
 // Seite „Kinderfilme“ bzw. „Kinderserien“: gute Titel mit passender Altersfreigabe.
 // Zwei Arten: „Unterhaltung“ (gut bewertet und beliebt, dazu deutsche und neuere Titel)
 // und „Wissen & Natur“ (bekannte Wissensformate und Dokus zu einem Thema).
-import { KIDS, KIDS_TV } from './config.js?v=1.38.2';
-import * as store from './store.js?v=1.38.2';
-import * as tmdb from './tmdb.js?v=1.38.2';
-import { esc, toast } from './ui.js?v=1.38.2';
-import { markButtons, moreBox } from './cards.js?v=1.38.2';
-import { runtimeSlot } from './runtime.js?v=1.38.2';
-import { trailerBtn } from './trailer.js?v=1.38.2';
-import { ageOk, ageOf } from './age.js?v=1.38.2';
-import { MEDIA, mediaOf, marksOf, askStarted, stateLabel, pressedExact } from './media.js?v=1.38.2';
-import { seenToast } from './via.js?v=1.38.2';
-import { creditsSlot } from './credits.js?v=1.38.2';
-import { TOPICS, handFor, topicOf } from './kids-wissen.js?v=1.38.2';
+import { KIDS, KIDS_TV } from './config.js?v=1.38.3';
+import * as store from './store.js?v=1.38.3';
+import * as tmdb from './tmdb.js?v=1.38.3';
+import { esc, toast } from './ui.js?v=1.38.3';
+import { markButtons, moreBox } from './cards.js?v=1.38.3';
+import { runtimeSlot } from './runtime.js?v=1.38.3';
+import { trailerBtn } from './trailer.js?v=1.38.3';
+import { ageOk, ageOf } from './age.js?v=1.38.3';
+import { MEDIA, mediaOf, marksOf, askStarted, stateLabel, pressedExact } from './media.js?v=1.38.3';
+import { seenToast } from './via.js?v=1.38.3';
+import { creditsSlot } from './credits.js?v=1.38.3';
+import { TOPICS, handFor, topicOf } from './kids-wissen.js?v=1.38.3';
 
 // Drei große Knöpfe; „Schon gesehen“ klappt die Bewertung auf
 const MAIN = [['known', '✓', 'Schon gesehen'], ['want', '+', 'Merken'], ['noInterest', '–', 'Nein danke']];

@@ -4,14 +4,14 @@
 // Streng gefiltert: nur gedruckte Bücher auf Deutsch von der Autor·in selbst – keine Hörbücher, Neuauflagen,
 // Taschenbuch-Ausgaben schon erschienener Bücher, Sonderausgaben, Sammelbände oder Fanartikel.
 // Neue Bände deiner ★/♥-Reihen zählen am meisten. Höchstens drei Einträge; erscheint nur, wenn es etwas gibt.
-import * as store from './store.js?v=1.38.2';
-import * as books from './books.js?v=1.38.2';
-import { esc, toast } from './ui.js?v=1.38.2';
-import { seriesOf } from './book-series.js?v=1.38.2';
-import { UPCOMING as U } from './config.js?v=1.38.2';
-import { pageEl } from './media.js?v=1.38.2';
+import * as store from './store.js?v=1.38.3';
+import * as books from './books.js?v=1.38.3';
+import { esc, toast } from './ui.js?v=1.38.3';
+import { seriesOf } from './book-series.js?v=1.38.3';
+import { UPCOMING as U } from './config.js?v=1.38.3';
+import { pageEl } from './media.js?v=1.38.3';
+import { sru, parse } from './book-dnb.js?v=1.38.3';
 
-const SRU = 'https://services.dnb.de/sru/dnb';
 const LIKED = new Set(['liked', 'loved']);
 const MONTHS = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
 // Alles, was kein neues Buch ist
@@ -20,7 +20,6 @@ const NOT_NEW = /neuausgabe|neuauflage|sonderausgabe|sonderedition|sonder-editio
 let profile = null;
 let items = [];
 let run = 0;
-const memo = new Map();
 
 const box = () => pageEl('upcoming', 'book');
 const fold = (s) => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/ß/g, 'ss');
@@ -44,47 +43,10 @@ export function isComing(rd) {
 export const upcomingSlot = () => '<section id="upcoming" class="upcoming" hidden aria-label="Demnächst von deinen Lieblingen"></section>';
 
 // ---------- Nationalbibliothek ----------
-function sru(query, schema = 'MARC21-xml', max = 30) {
-  const url = `${SRU}?version=1.1&operation=searchRetrieve&recordSchema=${schema}&maximumRecords=${max}&query=${encodeURIComponent(query)}`;
-  if (!memo.has(url)) {
-    const p = fetch(url).then((r) => { if (!r.ok) throw new Error('DNB'); return r.text(); })
-      .then((t) => new DOMParser().parseFromString(t, 'text/xml'));
-    memo.set(url, p);
-    p.catch(() => memo.delete(url));
-  }
-  return memo.get(url);
-}
 // Suchwörter für den Titel (Füllwörter findet die Suche nicht)
 const STOPW = new Set('der die das und ein eine einer eines von vom mit dem den des für fur zum zur auf aus the and'.split(' '));
 const titleQuery = (t) => clean(t).toLowerCase().split(/[^\p{L}\p{N}]+/u).filter((w) => w.length >= 3 && !STOPW.has(w)).slice(0, 4).map((w) => `tit=${w}`).join(' and ');
 const count = (doc) => Number(doc.getElementsByTagName('numberOfRecords')[0]?.textContent || 0);
-
-// Ein Datensatz → { id, title, sub, author, ym, year, isbn, series, vol } (Rohdaten, noch ungefiltert)
-function parse(rec) {
-  const cf = (tag) => [...rec.getElementsByTagName('controlfield')].find((x) => x.getAttribute('tag') === tag)?.textContent || '';
-  const df = (tag) => [...rec.getElementsByTagName('datafield')].filter((x) => x.getAttribute('tag') === tag).map((f) => {
-    const o = {};
-    for (const s of f.getElementsByTagName('subfield')) { const c = s.getAttribute('code'); if (!(c in o)) o[c] = clean(s.textContent); }
-    return o;
-  });
-  const f008 = cf('008');
-  const t = df('245')[0] || {};
-  const series = [...df('490'), ...df('800'), ...df('830')].map((s) => ({ n: s.t || s.a || '', v: s.v || '' })).filter((s) => s.n);
-  return {
-    id: cf('001'),
-    lang: f008.slice(35, 38),
-    year: Number(f008.slice(7, 11)) || null,
-    ym: Number((df('263')[0]?.a || '').slice(0, 6)) || null,
-    title: clean(t.a).replace(/[\s:;/.]+$/, '').replace(/[.\s]+(deutsche|dt\.) ausgabe$/i, ''),
-    sub: [t.b, t.n, t.p].filter(Boolean).join(' '),
-    author: df('100')[0]?.a || '',
-    edition: df('250').map((e) => e.a).join(' '),
-    content: df('336').map((e) => e.b),
-    media: df('337').map((e) => e.b),
-    isbn: df('020').map((e) => (e.a || '').replace(/[^\dX]/gi, '')).find((x) => x.length === 13) || '',
-    series,
-  };
-}
 
 // „Sebastian Fitzek“ → { q: 'Fitzek, Sebastian', last: 'fitzek', first: 's' }
 function nameParts(n) {

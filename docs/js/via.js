@@ -1,7 +1,7 @@
 // Trefferquote: Hat jemand einen Vorschlag wirklich wegen des Vorschlags geschaut, gelesen oder gespielt?
 // Nach „Schon gesehen“ & Co. auf einer Vorschlagsseite bietet die Meldung einen Knopf dafür an.
-import * as store from './store.js?v=1.38.2';
-import { toast } from './ui.js?v=1.38.2';
+import * as store from './store.js?v=1.38.3';
+import { toast } from './ui.js?v=1.38.3';
 
 const WORD = { movie: 'geschaut', tv: 'geschaut', book: 'gelesen', game: 'gespielt' };
 

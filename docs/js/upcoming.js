@@ -1,12 +1,12 @@
 // Kasten „Demnächst von deinen Lieblingen“ oben bei den Vorschlägen (nur Filme).
 // Neue Filme deiner Lieblingspersonen und -studios und neue Teile deiner ★/♥-Filmreihen.
 // Erscheint nur, wenn es etwas gibt; höchstens drei Einträge. „Kein Interesse“ = „Nein danke“ (kommt nie wieder).
-import * as store from './store.js?v=1.38.2';
-import * as tmdb from './tmdb.js?v=1.38.2';
-import { esc, toast } from './ui.js?v=1.38.2';
-import { trailerBtn } from './trailer.js?v=1.38.2';
-import { marksOf, creditsOf, pageEl } from './media.js?v=1.38.2';
-import { UPCOMING as U } from './config.js?v=1.38.2';
+import * as store from './store.js?v=1.38.3';
+import * as tmdb from './tmdb.js?v=1.38.3';
+import { esc, toast } from './ui.js?v=1.38.3';
+import { trailerBtn } from './trailer.js?v=1.38.3';
+import { marksOf, creditsOf, pageEl } from './media.js?v=1.38.3';
+import { UPCOMING as U } from './config.js?v=1.38.3';
 
 const LIKED = new Set(['liked', 'loved']);
 let profile = null;
